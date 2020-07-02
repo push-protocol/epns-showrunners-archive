@@ -10,7 +10,7 @@ The following channels are actively running on EPNS protocol:
 | **[-] Transaction Watcher** | Watcher | Watches individual subscribers wallets for transactions and sends them encrypted notification on transaction | Vedran (TG Community) |
 | **[-] ENS Domain Expiry** | Watcher | Sends notification to a subscriber when their ENS domain name is expiring | EPNS Team |
 | **[-] Compound Liquidation Alerter** | Watcher | Send notification to a subscriber if their assets are put for liquidation | EPNS Team |
-| **[x] BTC Tracker** | Price Tracking | Send $BTC price alerts every 6 hours | EPNS Team |
+| ** [x] BTC Tracker** | Price Tracking | Send $BTC price alerts every 6 hours | EPNS Team |
 | **[x] ETH Tracker** | Price Tracking | Send $ETH price alerts every 6 hours | EPNS Team |
 
 - To subscribe to channels, please visit our [Alpha dApp](https://app.epns.io)
