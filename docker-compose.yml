@@ -1,0 +1,20 @@
+version: '3.5'
+services:
+  showrunners:
+    container_name: showrunners
+    restart: always
+    build: .
+    volumes:
+      - .:/showrunners/app
+      - /showrunners/app/node_modules
+    env_file:
+      - ./.env
+    # networks:
+    #   - epns
+    ports:
+      - 5432:5432
+
+networks:
+  epns:
+    name: epns
+    driver: bridge
