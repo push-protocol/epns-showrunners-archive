@@ -29,5 +29,24 @@ export default (app: Router) => {
     },
   );
 
+  // to add an incoming feed
+  route.post(
+    '/get_new_price',
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/btcticker endpoint with body: %o', req.body )
+
+      try {
+        const btcTicker = Container.get(BtcTickerChannel);
+        const { data } = await btcTicker.getNewPrice();
+
+        return res.status(201).json({ data });
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return next(e);
+      }
+    },
+  );
 
 };
