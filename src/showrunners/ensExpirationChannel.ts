@@ -62,12 +62,10 @@ export default class EnsExpirationChannel {
                 .then(eventLog => {
 
                   let whiteList = [  '0x4F3BDE9380AEDA90C8A6724AF908bb5a2fac7f54'];
-                	let cv;
-                  let nnnn;
-                  let n;
-                	let b = 'u';
-                	 
-
+                	let addressCount;
+                  let address;
+                  let sevenDays = 604800;
+                
                 	for (let i = 0; i < eventLog.length ;i++) {
                     	
                       let usersAddress = eventLog[0].args.user;
@@ -85,12 +83,12 @@ export default class EnsExpirationChannel {
                           .then(expiredDate => {
 
                             let date = ethers.utils.formatUnits(expiredDate,0).split('.')[0];
-                           
-                            //let ipfshash = 'QmQhzsCoqShH8zEbQtSkh73NUxWYm2L3erx2XKcQfWbjuB';
-
+                            
                             let currentDate = (new Date().getTime()- new Date().getMilliseconds())/1000;
                            
-                              if(date - currentDate > 39600000){
+                              //if(date - currentDate > 28720495){ for testing where 
+                              //28720495 is miliseconds time gotten after deduction of currentDate from date
+                          if(date < sevenDays ){     
                             if(whiteList.includes(eventLog[i].args.user)){
                             
                             }
@@ -102,27 +100,27 @@ export default class EnsExpirationChannel {
                                   logger.info("Transaction sent: %o", tx);
                                   whiteList.push(eventLog[i].args.user)
                                   resolve({ success: 1, data: tx });
-                                  console.log(n, whiteList)
                                 })
                                   .catch(err => {
                                     reject("Unable to complete transaction, error: %o", err)
                                     throw err;
-                                  });}}
+                                  });}}else{console.log(currentDate, date);}
                               
 
-                          if(date - currentDate > 39800000){
-                                	nnnn = usersAddress;
+                          //if(date - currentDate > 28720495){ for testing where 
+                              //28720495 is miliseconds time gotten after deduction of currentDate from date 
+                          if(date > sevenDays ){
+                                	address = usersAddress;
 		                            for (let r = 0; r < whiteList.length; r++) {
-		                    		if(whiteList[r] === nnnn){
-		                    	 	cv = r;
+		                    		if(whiteList[r] === address){
+                              addressCount = r;
 		                    	 } 
 		                    	}
 		                    }
 
-		                    if(whiteList[cv] === eventLog[i].args.user){
-                            	whiteList.splice(cv, 1);	
-                            }
-                          console.log(b, whiteList)
+		                    if(whiteList[addressCount] === eventLog[i].args.user){
+                            	whiteList.splice(addressCount, 1);}	
+                            
                           })
                       })
                     }

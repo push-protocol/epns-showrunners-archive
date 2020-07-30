@@ -76,7 +76,7 @@ export default {
    * ENS Related
    */
   ensDeployedContract: process.env.ENS_DEPLOYED_CONTRACT,
-  ensDeployedContractABI: require('./ens.json'),
+  ensDeployedContractABI: require('./ens_contract.json'),
 
   /**
    * IPFS related
@@ -103,4 +103,6 @@ export default {
   btcTickerPrivateKey: process.env.BTC_TICKER_PRIVATE_KEY,
   ethTickerPrivateKey: process.env.ETH_TICKER_PRIVATE_KEY,
   ensTickerPrivateKey: process.env.ENS_TICKER_PRIVATE_KEY,
+
+  infuraId: process.env.DEV_WEB3_PROVIDER,
 };
