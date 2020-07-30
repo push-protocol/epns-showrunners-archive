@@ -18,6 +18,7 @@ import schedule from 'node-schedule';
 
 import BtcTickerChannel from '../showrunners/btcTickerChannel';
 import EthTickerChannel from '../showrunners/ethTickerChannel';
+import EnsExpirationChannel from '../showrunners/ensExpirationChannel';
 
 
 export default ({ logger }) => {
@@ -54,4 +55,21 @@ export default ({ logger }) => {
       logger.error(`Error Object: %o`, err);
     }
   });
+
+
+// 1.3 ENS TICKER CHANNEL
+logger.info('-- 🛵 Scheduling Showrunner - ETH Ticker Channel [on 6 Hours]');
+schedule.scheduleJob('0 0 */6 * * *', async function(){
+  const ensTicker = Container.get(EnsExpirationChannel);
+  const taskName = 'ETH Ticker Fetch and sendMessageToContract()';
+
+  try {
+    await ensTicker.sendMessageToContract();
+    logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+  }
+  catch (err) {
+    logger.error(`❌ Cron Task Failed -- ${taskName}`);
+    logger.error(`Error Object: %o`, err);
+  }
+});
 };

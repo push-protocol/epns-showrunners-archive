@@ -1,13 +1,13 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { Container } from 'typedi';
-import EthTickerChannel from '../../showrunners/ethTickerChannel';
+import EnsExpirationChannel from '../../showrunners/ensExpirationChannel';
 import middlewares from '../middlewares';
 import { celebrate, Joi } from 'celebrate';
 
 const route = Router();
 
 export default (app: Router) => {
-  app.use('/showrunners/ethticker', route);
+  app.use('/showrunners/ensticker', route);
 
   // to add an incoming feed
   route.post(
@@ -16,10 +16,9 @@ export default (app: Router) => {
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
       Logger.debug('Calling /showrunners/ethticker endpoint with body: %o', req.body )
-m
       try {
-        const ethTicker = Container.get(EthTickerChannel);
-        const { success, data } = await ethTicker.sendMessageToContract();
+        const ensTicker = Container.get(EnsExpirationChannel);
+        const { success, data } = await ensTicker.sendMessageToContract();
 
         return res.status(201).json({ success, data });
       } catch (e) {
