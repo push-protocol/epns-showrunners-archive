@@ -85,15 +85,16 @@ export default class EnsExpirationChannel {
                             let date = ethers.utils.formatUnits(expiredDate,0).split('.')[0];
                             
                             let currentDate = (new Date().getTime()- new Date().getMilliseconds())/1000;
+                            let ipfshashh = 'QmQhzsCoqShH8zEbQtSkh73NUxWYm2L3erx2XKcQfWbjuB';
                            
-                              //if(date - currentDate > 28720495){ for testing where 
+                              if(date - currentDate > 26720495){  
                               //28720495 is miliseconds time gotten after deduction of currentDate from date
-                          if(date < sevenDays ){     
+                          //if(date < sevenDays ){     
                             if(whiteList.includes(eventLog[i].args.user)){
                             
                             }
                             else if (!whiteList.includes(eventLog[i].args.user)){
-                            	let txPromise = epnsContractWithSigner.sendMessage(eventLog[i].args.user, 1, ipfshash, 1);
+                            	let txPromise = epnsContractWithSigner.sendMessage(eventLog[i].args.user, parseInt(payload.data.type), ipfshash, 1);
                               
                               txPromise
                                 .then(function(tx) {
@@ -144,11 +145,11 @@ export default class EnsExpirationChannel {
 			logger.debug('Preparing message...');
 
          return await new Promise((resolve, reject) => {
- 		      const title = "k";
-          const message = "m";
+ 		      const title = "ENS Name Expiration";
+          const message = "7 days to expiration";
 
-          const payloadTitle = "o";
-          const payloadMsg = "y";
+          const payloadTitle = "Your ENS name is about to expire";
+          const payloadMsg = "Dear user, your ENS will be expiring in 7 days kindly click on this write up for a guide on how to renew your ENS name";
 
           const payload = {
             "notification": {
@@ -160,7 +161,7 @@ export default class EnsExpirationChannel {
               "secret": "",
               "asub": payloadTitle,
               "amsg": payloadMsg,
-              "acta": "",
+              "acta": "https://medium.com/the-ethereum-name-service/the-great-renewal-its-time-to-renew-your-eth-names-or-else-lose-them-afccea4852cb",
               "aimg": ""
             }
           };
