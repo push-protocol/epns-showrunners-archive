@@ -31,7 +31,7 @@ export default ({ logger }) => {
     const taskName = 'BTC Ticker Fetch and sendMessageToContract()';
 
     try {
-      await btcTicker.sendMessageToContract();
+      // await btcTicker.sendMessageToContract();
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
@@ -47,7 +47,7 @@ export default ({ logger }) => {
     const taskName = 'ETH Ticker Fetch and sendMessageToContract()';
 
     try {
-      await ethTicker.sendMessageToContract();
+      // await ethTicker.sendMessageToContract();
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
@@ -58,10 +58,10 @@ export default ({ logger }) => {
 
 
 // 1.3 ENS TICKER CHANNEL
-logger.info('-- 🛵 Scheduling Showrunner - ENS Ticker Channel [on 24 Hours]');
+logger.info('-- 🛵 Scheduling Showrunner - ENS Domain Expiry Channel [on 24 Hours]');
 schedule.scheduleJob('0 0 */24 * * *', async function(){
   const ensTicker = Container.get(EnsExpirationChannel);
-  const taskName = 'ETH Ticker Fetch and sendMessageToContract()';
+  const taskName = 'ENS Domain Expiry and sendMessageToContract()';
 
   try {
     await ensTicker.sendMessageToContract();

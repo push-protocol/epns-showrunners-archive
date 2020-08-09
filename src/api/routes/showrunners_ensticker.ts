@@ -7,7 +7,7 @@ import { celebrate, Joi } from 'celebrate';
 const route = Router();
 
 export default (app: Router) => {
-  app.use('/showrunners/ensticker', route);
+  app.use('/showrunners/ensdomain', route);
 
   // to add an incoming feed
   route.post(
