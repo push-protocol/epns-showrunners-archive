@@ -63,11 +63,11 @@ export default class BtcTickerChannel {
               throw err;
             });
         })
-      .catch(err => {
-        logger.error(err);
-        reject("Unable to proceed with cmc, error: %o", err);
-        throw err;
-      });
+        .catch(err => {
+          logger.error(err);
+          reject("Unable to proceed with cmc, error: %o", err);
+          throw err;
+        });
     });
   }
 

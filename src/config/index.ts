@@ -102,7 +102,7 @@ export default {
 
   btcTickerPrivateKey: process.env.BTC_TICKER_PRIVATE_KEY,
   ethTickerPrivateKey: process.env.ETH_TICKER_PRIVATE_KEY,
-  ensTickerPrivateKey: process.env.ENS_TICKER_PRIVATE_KEY,
+  ensDomainExpiryPrivateKey: process.env.ENS_DOMAIN_EXPIRY_PRIVATE_KEY,
 
   infuraId: process.env.DEV_WEB3_PROVIDER,
 };
