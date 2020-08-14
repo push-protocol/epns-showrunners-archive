@@ -4,7 +4,7 @@ import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDi
 import events from '../subscribers/events';
 
 import { ethers } from 'ethers';
-import Web3 from 'web3';
+import { keccak256, toUtf8Bytes } from 'ethers/utils';
 
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
@@ -26,18 +26,16 @@ export default class EnsExpirationChannel {
 
     return await new Promise((resolve, reject) => {
       // Preparing to get all subscribers of the channel
-      const web3 = new Web3(config.infuraId);
       const provider = new ethers.providers.InfuraProvider('ropsten');
 
       let wallet = new ethers.Wallet(config.ensDomainExpiryPrivateKey, provider);
+
       let epnsContract = new ethers.Contract(config.deployedContract, config.deployedContractABI, provider);
+      let epnsContractWithSigner = epnsContract.connect(wallet);
+
       let ensContract = new ethers.Contract(config.ensDeployedContract, config.ensDeployedContractABI, provider);
 
-      let epnsContractWithSigner = epnsContract.connect(wallet);
-      let ensContractWithSigner = ensContract.connect(wallet);
-
-
-      const filter = epnsContractWithSigner.filters.Subscribe("0x4F3BDE9380AEDA90C8A6724AF908bb5a2fac7f54")
+      const filter = epnsContract.filters.Subscribe("0x4F3BDE9380AEDA90C8A6724AF908bb5a2fac7f54")
 
       let fromBlock = 0
 
@@ -50,8 +48,11 @@ export default class EnsExpirationChannel {
           // Loop through all addresses in the channel and decide who to send notification
           for (let i = 0; i < eventLog.length ;i++) {
             // Get user address
-            let usersAddress = eventLog[0].args.user;
-            this.checkENSDomainExpiry(usersAddress, provider, ensContractWithSigner, sha3);
+            let usersAddress = eventLog[i].args.user;
+            this.checkENSDomainExpiry(usersAddress, provider, ensContract, epnsContractWithSigner);
+
+            // HARSH COMMENT: FIGURE OUT WHEN ALL IPFSHASH HAVE ARRIVED, ALSO STORE THEM IN AN ARRAY WITH USER ADDRESS
+            // ONCE DONE, DO TXPROMISE SEQUENTIALLY
           }
 
           resolve("ENS Domain Expiry in progress");
@@ -63,31 +64,35 @@ export default class EnsExpirationChannel {
   }
 
   // To Check for domain expiry
-  public async checkENSDomainExpiry(usersAddress, provider, ensContractWithSigner) {
+  public async checkENSDomainExpiry(usersAddress, provider, ensContract, epnsContractWithSigner) {
     const logger = this.logger;
 
     // Lookup the address
     provider.lookupAddress(usersAddress)
       .then(ensAddressName => {
         let addressName = ensAddressName;
-        let removeEth = addressName.split('.')[0];
-        
-        const sha3 = require("web3-utils").sha3;
-        let hashedName = sha3(removeEth);
+        let removeEth = addressName.slice(0, -4);
 
-        ensContractWithSigner.nameExpires(hashedName)
+        let hashedName = keccak256(toUtf8Bytes(removeEth));
+        logger.debug("Checking Domain: %s for Hashed Name: %s", removeEth, hashedName);
+
+        ensContract.nameExpires(hashedName)
           .then(expiredDate => {
               // convert the date returned
-              let date = ethers.utils.formatUnits(expiredDate,0).split('.')[0];
+              let expiryDate = ethers.utils.formatUnits(expiredDate, 0).split('.')[0];
 
               // get current date
-              let currentDate = (new Date().getTime()- new Date().getMilliseconds())/1000;
+              let currentDate = (new Date().getTime() - new Date().getMilliseconds()) / 1000;
 
               // get date difference
-              let dateDiff = date - currentDate; // some seconds
+              let dateDiff = expiryDate - currentDate; // some seconds
+              let checkDateDiff = 60 * 60 * 24 * 330; // if not then it's within 7 days
 
-              // if difference exceeds the date, then it's already expired, if not then it's in 7 days
-              if (dateDiff > 0 && dateDiff < 60 * 60 * 24 * 7) {
+              // Log it
+              logger.debug("Domain %s exists with Expiry Date: %d | Date Diff: %d | Checking against: %d", removeEth, expiryDate, dateDiff, checkDateDiff);
+
+              // if difference exceeds the date, then it's already expired
+              if (dateDiff > 0 && dateDiff < checkDateDiff) {
 
                 // logic loop, it has 7 days or less to expire but not expired
                 this.getENSDomainExpiryPayload(dateDiff)
@@ -98,40 +103,31 @@ export default class EnsExpirationChannel {
                     const ipfs = require("nano-ipfs-store").at("https://ipfs.infura.io:5001");
                     ipfs.add(jsonisedPayload)
                       .then(ipfshash => {
+                        // HARSH: Send IPFS HASH UPWARD
+                        // DONT RUN TX HERE
+
                         // Sign the transaction and send it to chain
                         const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
 
                         logger.info("Payload prepared: %o, ipfs hash generated: %o, sending data to on chain from address %s...", payload, ipfshash, walletAddress);
-
-                        let provider = new ethers.providers.InfuraProvider('ropsten');
-                        let wallet = new ethers.Wallet(config.ensDomainExpiryPrivateKey, provider);
-
-                        // define contract
-                        let contract = new ethers.Contract(config.deployedContract, config.deployedContractABI, provider);
-                        // logger.info("Contract defined at address: %s with object: %o", ethers.utils.computeAddress(config.btcTickerPrivateKey), contract);
-
-                        // connect as a signer of the non-constant methode
-                        let contractWithSigner = contract.connect(wallet);
-                        let txPromise = contractWithSigner.sendMessage(usersAddress, parseInt(payload.data.type), ipfshash, 3);
+                        let txPromise = epnsContractWithSigner.sendMessage(ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey), parseInt(payload.data.type), ipfshash, 1);
 
                         txPromise
                           .then(function(tx) {
                             logger.info("Transaction sent: %o", tx);
-                            return resolve({ success: 1, data: tx });
                           })
                           .catch(err => {
-                            reject("Unable to complete transaction, error: %o", err)
+                            logger.error("Unable to complete transaction, error: %o", err)
                             throw err;
                           });
                       })
                       .catch(err => {
-                        reject("Unable to obtain ipfshash, error: %o", err)
+                        logger.error("Unable to obtain ipfshash, error: %o", err)
                         throw err;
                       });
                   })
                   .catch(err => {
-                    logger.error(err);
-                    reject("Unable to proceed with cmc, error: %o", err);
+                    logger.error("Unable to proceed with ENS Name Expiry Function, error: %o", err);
                     throw err;
                   });
               }
@@ -149,7 +145,7 @@ export default class EnsExpirationChannel {
 			const logger = this.logger;
 			logger.debug('Preparing payload...');
 
-      const numOfDays = floor(dateDiff / (60 * 60 * 24));
+      const numOfDays = Math.floor(dateDiff / (60 * 60 * 24));
 
       return await new Promise((resolve, reject) => {
         const title = "ENS Name Expiration";
@@ -164,7 +160,7 @@ export default class EnsExpirationChannel {
             "body": message
           },
           "data": {
-            "type": "3",
+            "type": "1",
             "secret": "",
             "asub": payloadTitle,
             "amsg": payloadMsg,
@@ -172,6 +168,8 @@ export default class EnsExpirationChannel {
             "aimg": ""
           }
         };
+
+        logger.debug('Payload Prepared: %o', payload);
 
         resolve(payload);
     });
