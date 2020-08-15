@@ -36,13 +36,15 @@ export default class EnsExpirationChannel {
       let epnsContractWithSigner = epnsContract.connect(wallet);
       let ensContractWithSigner = ensContract.connect(wallet);
 
+      const sha3 = require("web3-utils").sha3;
+
 
       const filter = epnsContractWithSigner.filters.Subscribe("0x4F3BDE9380AEDA90C8A6724AF908bb5a2fac7f54")
 
       let fromBlock = 0
 
       // Function to get all the addresses in the channel
-      epnsContract.queryFilter(filter, fromBlock)
+      epnsContractWithSigner.queryFilter(filter, fromBlock)
         .then(eventLog => {
           // Log the event
           logger.debug("Event log returned %o", eventLog);
@@ -63,7 +65,7 @@ export default class EnsExpirationChannel {
   }
 
   // To Check for domain expiry
-  public async checkENSDomainExpiry(usersAddress, provider, ensContractWithSigner) {
+  public async checkENSDomainExpiry(usersAddress, provider, ensContractWithSigner, sha3) {
     const logger = this.logger;
 
     // Lookup the address
@@ -72,7 +74,7 @@ export default class EnsExpirationChannel {
         let addressName = ensAddressName;
         let removeEth = addressName.split('.')[0];
         
-        const sha3 = require("web3-utils").sha3;
+        
         let hashedName = sha3(removeEth);
 
         ensContractWithSigner.nameExpires(hashedName)
