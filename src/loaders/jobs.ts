@@ -31,7 +31,7 @@ export default ({ logger }) => {
     const taskName = 'BTC Ticker Fetch and sendMessageToContract()';
 
     try {
-      // await btcTicker.sendMessageToContract();
+      await btcTicker.sendMessageToContract();
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
@@ -47,7 +47,7 @@ export default ({ logger }) => {
     const taskName = 'ETH Ticker Fetch and sendMessageToContract()';
 
     try {
-      // await ethTicker.sendMessageToContract();
+      await ethTicker.sendMessageToContract();
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
