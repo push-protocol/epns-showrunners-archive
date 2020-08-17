@@ -190,7 +190,7 @@ export default class EnsExpirationChannel {
 
                 // get date difference
                 let dateDiff = expiryDate - currentDate; // some seconds
-                let checkDateDiff = 60 * 60 * 24 * 500; // if not then it's within 7 days
+                let checkDateDiff = 60 * 60 * 24 * 7; // if not then it's within 7 days
 
                 // Log it
                 logger.debug(
