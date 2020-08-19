@@ -4,7 +4,6 @@ import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDi
 import events from '../subscribers/events';
 
 import { ethers } from 'ethers';
-import { keccak256, toUtf8Bytes } from 'ethers/utils';
 
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
@@ -21,6 +20,82 @@ export default class EnsExpirationChannel {
 
   // To form and write to smart contract
   public async sendMessageToContract() {
+    const logger = this.logger;
+    logger.debug('Checking for expired address... ');
+
+    return await new Promise((resolve, reject) => {
+      // Preparing to get all subscribers of the channel
+      const mainnetProvider = new ethers.providers.InfuraProvider();
+      const provider = new ethers.providers.InfuraProvider('ropsten');
+
+      let wallet = new ethers.Wallet(config.ensDomainExpiryPrivateKey, provider);
+
+      let epnsContract = new ethers.Contract(config.deployedContract, config.deployedContractABI, provider);
+      let epnsContractWithSigner = epnsContract.connect(wallet);
+
+      let ensContract = new ethers.Contract(config.ensDeployedContract, config.ensDeployedContractABI, mainnetProvider);
+
+      const filter = epnsContract.filters.Subscribe("0x4F3BDE9380AEDA90C8A6724AF908bb5a2fac7f54")
+
+      let fromBlock = 0
+
+      // Function to get all the addresses in the channel
+      epnsContract.queryFilter(filter, fromBlock)
+        .then(eventLog => {
+          // Log the event
+          logger.debug("Event log returned %o", eventLog);
+
+          // Loop through all addresses in the channel and decide who to send notification
+          let allTransactions = [];
+          eventLog.forEach((log) => {
+            // Get user address
+            const userAddress = log.args.user;
+            allTransactions.push(
+              this.checkENSDomainExpiry(userAddress, provider, ensContract)
+                .then((result) => {
+                  return result;
+                })
+            );
+          });
+
+          // resolve all transactionss
+          Promise.all(allTransactions)
+            .then(async (results) => {
+              logger.debug("All Transactions Loaded: %o", results);
+
+              for (const object of results) {
+                if (object.success) {
+                  // Send notification
+                  const wallet = object.wallet;
+                  const ipfshash = object.ipfshash;
+                  const payloadType = object.payloadType;
+
+                  logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
+                  try {
+                    let tx = await epnsContractWithSigner.sendMessage(wallet, payloadType, ipfshash, 1);
+                    logger.info("Transaction sent: %o", tx);
+                  }
+                  catch (err) {
+                    logger.error("Unable to complete transaction, error: %o", err);
+                  }
+                }
+              }
+
+              logger.debug("ENS Domain Expiry logic completed!");
+            })
+
+          resolve("Processing ENS Domain Expiry logic completed!");
+        })
+        .catch(err => {
+          logger.error("Error occurred while looking at event log: %o", err);
+          reject(err);
+        });
+      });
+  }
+
+
+  // To form and write to smart contract
+  public async sendMessageToContractOld() {
     const logger = this.logger;
     logger.debug('Checking for expired address... ');
 
@@ -46,113 +121,164 @@ export default class EnsExpirationChannel {
           logger.debug("Event log returned %o", eventLog);
 
           // Loop through all addresses in the channel and decide who to send notification
-          for (let i = 0; i < eventLog.length ;i++) {
+          let allTransactions = [];
+          eventLog.forEach((log) => {
             // Get user address
-            let usersAddress = eventLog[i].args.user;
-            this.checkENSDomainExpiry(usersAddress, provider, ensContract, epnsContractWithSigner);
+            const userAddress = log.args.user;
+            allTransactions.push(
+              this.checkENSDomainExpiry(userAddress, provider, ensContract)
+                .then((result) => {
+                  return result;
+                })
+            );
+          });
 
-            // HARSH COMMENT: FIGURE OUT WHEN ALL IPFSHASH HAVE ARRIVED, ALSO STORE THEM IN AN ARRAY WITH USER ADDRESS
-            // ONCE DONE, DO TXPROMISE SEQUENTIALLY
-          }
+          // resolve all transactionss
+          Promise.all(allTransactions)
+            .then(async (results) => {
+              logger.debug("All Transactions Loaded: %o", results);
+
+              for (const object of results) {
+                // Send notification
+                const wallet = object.wallet;
+                const ipfshash = object.ipfshash;
+                const payloadType = object.payloadType;
+
+                logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
+                try {
+                  let tx = await epnsContractWithSigner.sendMessage(wallet, payloadType, ipfshash, 1);
+
+                  logger.info("Transaction sent: %o", tx);
+                }
+                catch (err) {
+                  logger.error("Unable to complete transaction, error: %o", err);
+                }
+              }
+            })
 
           resolve("ENS Domain Expiry in progress");
         })
         .catch(err => {
           logger.error("Error occurred while looking at event log: %o", err);
+
+          reject(err);
         });
     });
   }
 
   // To Check for domain expiry
-  public async checkENSDomainExpiry(usersAddress, provider, ensContract, epnsContractWithSigner) {
+  public async checkENSDomainExpiry(userAddress, provider, ensContract) {
     const logger = this.logger;
 
-    // Lookup the address
-    provider.lookupAddress(usersAddress)
-      .then(ensAddressName => {
-        let addressName = ensAddressName;
-        let removeEth = addressName.slice(0, -4);
+    return new Promise((resolve, reject) => {
+      // Lookup the address
+      provider.lookupAddress(userAddress)
+        .then(ensAddressName => {
+          let addressName = ensAddressName;
+          let removeEth = addressName.slice(0, -4);
 
-        let hashedName = keccak256(toUtf8Bytes(removeEth));
-        logger.debug("Checking Domain: %s for Hashed Name: %s", removeEth, hashedName);
+          let hashedName = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(removeEth));
+          logger.debug("Checking Domain: %s for Hashed Name: %s", removeEth, hashedName);
 
-        ensContract.nameExpires(hashedName)
-          .then(expiredDate => {
-              // convert the date returned
-              let expiryDate = ethers.utils.formatUnits(expiredDate, 0).split('.')[0];
+          ensContract.nameExpires(hashedName)
+            .then(expiredDate => {
+                // convert the date returned
+                let expiryDate = ethers.utils.formatUnits(expiredDate, 0).split('.')[0];
 
-              // get current date
-              let currentDate = (new Date().getTime() - new Date().getMilliseconds()) / 1000;
+                // get current date
+                let currentDate = (new Date().getTime() - new Date().getMilliseconds()) / 1000;
 
-              // get date difference
-              let dateDiff = expiryDate - currentDate; // some seconds
-              let checkDateDiff = 60 * 60 * 24 * 330; // if not then it's within 7 days
+                // get date difference
+                let dateDiff = expiryDate - currentDate; // some seconds
+                let checkDateDiff = 60 * 60 * 24 * 7; // if not then it's within 7 days
 
-              // Log it
-              logger.debug("Domain %s exists with Expiry Date: %d | Date Diff: %d | Checking against: %d", removeEth, expiryDate, dateDiff, checkDateDiff);
+                // Log it
+                logger.debug(
+                  "Domain %s exists with Expiry Date: %d | Date Diff: %d | Checking against: %d | %o",
+                  removeEth,
+                  expiryDate,
+                  dateDiff,
+                  checkDateDiff,
+                  (dateDiff < checkDateDiff) ? "Near Expiry! Alert User..." : "Long time to expire, don't alert"
+                );
 
-              // if difference exceeds the date, then it's already expired
-              if (dateDiff > 0 && dateDiff < checkDateDiff) {
+                // if difference exceeds the date, then it's already expired
+                if (dateDiff > 0 && dateDiff < checkDateDiff) {
 
-                // logic loop, it has 7 days or less to expire but not expired
-                this.getENSDomainExpiryPayload(dateDiff)
-                  .then(payload => {
-                    const jsonisedPayload = JSON.stringify(payload);
+                  // logic loop, it has 7 days or less to expire but not expired
+                  this.getENSDomainExpiryPayload(ensAddressName, dateDiff)
+                    .then(payload => {
+                      const jsonisedPayload = JSON.stringify(payload);
 
-                    // handle payloads, etc
-                    const ipfs = require("nano-ipfs-store").at("https://ipfs.infura.io:5001");
-                    ipfs.add(jsonisedPayload)
-                      .then(ipfshash => {
-                        // HARSH: Send IPFS HASH UPWARD
-                        // DONT RUN TX HERE
+                      // handle payloads, etc
+                      const ipfs = require("nano-ipfs-store").at("https://ipfs.infura.io:5001");
+                      ipfs.add(jsonisedPayload)
+                        .then(ipfshash => {
+                          // Sign the transaction and send it to chain
+                          const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
+                          logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, walletAddress);
 
-                        // Sign the transaction and send it to chain
-                        const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
-
-                        logger.info("Payload prepared: %o, ipfs hash generated: %o, sending data to on chain from address %s...", payload, ipfshash, walletAddress);
-                        let txPromise = epnsContractWithSigner.sendMessage(ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey), parseInt(payload.data.type), ipfshash, 1);
-
-                        txPromise
-                          .then(function(tx) {
-                            logger.info("Transaction sent: %o", tx);
-                          })
-                          .catch(err => {
-                            logger.error("Unable to complete transaction, error: %o", err)
-                            throw err;
+                          resolve({
+                            success: true,
+                            wallet: userAddress,
+                            ipfshash: ipfshash,
+                            payloadType: parseInt(payload.data.type)
                           });
-                      })
-                      .catch(err => {
-                        logger.error("Unable to obtain ipfshash, error: %o", err)
-                        throw err;
+
+                        })
+                        .catch(err => {
+                          logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", userAddress, err)
+                          resolve({
+                            success: false,
+                            err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
+                          });
+                        });
+                    })
+                    .catch(err => {
+                      logger.error("Unable to proceed with ENS Name Expiry Function for wallet: %s, error: %o", userAddress, err);
+                      resolve({
+                        success: false,
+                        err: "Unable to proceed with ENS Name Expiry Function for wallet: " + userAddress + " | error: " + err
                       });
-                  })
-                  .catch(err => {
-                    logger.error("Unable to proceed with ENS Name Expiry Function, error: %o", err);
-                    throw err;
+                    });
+                }
+                else {
+                  resolve({
+                    success: false,
+                    err: "Date Expiry condition unmet for wallet: " + userAddress
                   });
-              }
-          })
-          .catch(err => {
-            logger.error("Error occurred on Name Expiry for ENS Address: %s: %o", ensAddressName, err);
-          })
-      })
-      .catch(err => {
-        logger.error("Error occurred in lookup of address[%s]: %o", usersAddress, err);
-      });
+                }
+            })
+            .catch(err => {
+              logger.error("Error occurred on Name Expiry for ENS Address: %s: %o", ensAddressName, err);
+              resolve({
+                success: false,
+                err: err
+              });
+            })
+        })
+        .catch(err => {
+          logger.error("Error occurred in lookup of address[%s]: %o", userAddress, err);
+          resolve({
+            success: false,
+            err: err
+          });
+        });
+    });
   }
 
-	public async getENSDomainExpiryPayload(dateDiff) {
+	public async getENSDomainExpiryPayload(ensAddressName, dateDiff) {
 			const logger = this.logger;
 			logger.debug('Preparing payload...');
 
       const numOfDays = Math.floor(dateDiff / (60 * 60 * 24));
 
       return await new Promise((resolve, reject) => {
-        const title = "ENS Name Expiration";
-        const message = numOfDays + " days to expiration";
+        const title = "ENS Domain Expiry Alert!";
+        const message = ensAddressName + " is set to expire in " + numOfDays + " days";
 
-        const payloadTitle = "Your ENS name is about to expire";
-        const payloadMsg = "Dear user, your ENS will be expiring in " + numOfDays + " days, kindly click on this write up for a guide on how to renew your ENS name";
+        const payloadTitle = "ENS Domain Expiry Alert!";
+        const payloadMsg = "[d:" + ensAddressName + "] is set to expire in " + numOfDays + " days, tap me to renew it! [timestamp: " + Math.floor(new Date() / 1000) + "]";
 
         const payload = {
           "notification": {
@@ -160,11 +286,11 @@ export default class EnsExpirationChannel {
             "body": message
           },
           "data": {
-            "type": "1",
+            "type": "3",
             "secret": "",
             "asub": payloadTitle,
             "amsg": payloadMsg,
-            "acta": "https://medium.com/the-ethereum-name-service/the-great-renewal-its-time-to-renew-your-eth-names-or-else-lose-them-afccea4852cb",
+            "acta": "https://app.ens.domains/name/" + ensAddressName,
             "aimg": ""
           }
         };
