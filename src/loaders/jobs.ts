@@ -19,6 +19,7 @@ import schedule from 'node-schedule';
 import BtcTickerChannel from '../showrunners/btcTickerChannel';
 import EthTickerChannel from '../showrunners/ethTickerChannel';
 import EnsExpirationChannel from '../showrunners/ensExpirationChannel';
+import CompoundLiquidationChannel from '../showrunners/compoundLiquidationChannel';
 
 
 export default ({ logger }) => {
@@ -65,6 +66,22 @@ schedule.scheduleJob('0 0 */24 * * *', async function(){
 
   try {
     await ensTicker.sendMessageToContract();
+    logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+  }
+  catch (err) {
+    logger.error(`❌ Cron Task Failed -- ${taskName}`);
+    logger.error(`Error Object: %o`, err);
+  }
+});
+
+// 1.4 COMPOUND LIQUIDATION CHANNEL
+logger.info('-- 🛵 Scheduling Showrunner - Compound Liquidation Channel [on 24 Hours]');
+schedule.scheduleJob('0 0 */24 * * *', async function(){
+  const compoundTicker = Container.get(CompoundLiquidationChannel);
+  const taskName = 'Compound Liquidation and sendMessageToContract()';
+
+  try {
+    await compoundTicker.sendMessageToContract();
     logger.info(`🐣 Cron Task Completed -- ${taskName}`);
   }
   catch (err) {

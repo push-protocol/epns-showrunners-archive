@@ -78,6 +78,12 @@ export default {
   ensDeployedContract: process.env.ENS_DEPLOYED_CONTRACT,
   ensDeployedContractABI: require('./ens_contract.json'),
 
+   /**
+   * COMPOUND Related
+   */
+  compComptrollerDeployedContract: process.env.COMPOUND_COMPTROLLER_DEPLOYED_CONTRACT,
+  compComptrollerDeployedContractABI: require('./comp_comptroller.json'),
+
   /**
    * IPFS related
    */
@@ -103,6 +109,7 @@ export default {
   btcTickerPrivateKey: process.env.BTC_TICKER_PRIVATE_KEY,
   ethTickerPrivateKey: process.env.ETH_TICKER_PRIVATE_KEY,
   ensDomainExpiryPrivateKey: process.env.ENS_DOMAIN_EXPIRY_PRIVATE_KEY,
+  compComptrollerPrivateKey: process.env.COMP_COMPTROLLER_PRIVATE_KEY,
 
   infuraId: process.env.DEV_WEB3_PROVIDER,
 };
