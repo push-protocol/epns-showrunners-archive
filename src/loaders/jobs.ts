@@ -58,18 +58,18 @@ export default ({ logger }) => {
 
 
 // 1.3 ENS TICKER CHANNEL
-logger.info('-- 🛵 Scheduling Showrunner - ENS Domain Expiry Channel [on 24 Hours]');
-schedule.scheduleJob('0 0 */24 * * *', async function(){
-  const ensTicker = Container.get(EnsExpirationChannel);
-  const taskName = 'ENS Domain Expiry and sendMessageToContract()';
-
-  try {
-    await ensTicker.sendMessageToContract();
-    logger.info(`🐣 Cron Task Completed -- ${taskName}`);
-  }
-  catch (err) {
-    logger.error(`❌ Cron Task Failed -- ${taskName}`);
-    logger.error(`Error Object: %o`, err);
-  }
-});
+// logger.info('-- 🛵 Scheduling Showrunner - ENS Domain Expiry Channel [on 24 Hours]');
+// schedule.scheduleJob('0 0 */24 * * *', async function(){
+//   const ensTicker = Container.get(EnsExpirationChannel);
+//   const taskName = 'ENS Domain Expiry and sendMessageToContract()';
+//
+//   try {
+//     await ensTicker.sendMessageToContract();
+//     logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+//   }
+//   catch (err) {
+//     logger.error(`❌ Cron Task Failed -- ${taskName}`);
+//     logger.error(`Error Object: %o`, err);
+//   }
+// });
 };
