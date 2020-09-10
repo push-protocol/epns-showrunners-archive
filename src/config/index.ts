@@ -84,6 +84,18 @@ export default {
   compComptrollerDeployedContract: process.env.COMPOUND_COMPTROLLER_DEPLOYED_CONTRACT,
   compComptrollerDeployedContractABI: require('./comp_comptroller.json'),
 
+  cDaiDeployedContract:process.env.CDAI,
+  cDaiDeployedContractABI: require('./cDai.json'),
+
+  cBatDeployedContract:process.env.CBAT,
+  cBatDeployedContractABI: require('./cBat.json'),
+
+  cEthDeployedContract:process.env.CETH,
+  cEthDeployedContractABI: require('./cEth.json'),
+
+  priceOracleDeployedContract:process.env.PRICE,
+  priceOracleDeployedContractABI: require('./priceOracle.json'),
+
   /**
    * IPFS related
    */

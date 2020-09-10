@@ -96,6 +96,50 @@ export default class CompoundLiquidationChannel {
     const logger = this.logger;
     return new Promise((resolve, reject) => {
 
+      let cDaiAddress = 0xdb5ed4605c11822811a39f94314fdb8f0fb59a2c;
+      let cBatAddress = 0x9e95c0b2412ce50c37a121622308e7a6177f819d;
+      let cEthAddress = 0xbe839b6d93e3ea47effcca1f27841c917a8794f3;
+
+      let cDai = new ethers.Contract(config.cDaiDeployedContract,config.cDaiDeployedContractABI,  provider);
+      let cBat = new ethers.Contract(config.cBatDeployedContract,config.cBatDeployedContractABI,  provider);
+      let cEth = new ethers.Contract(config.cEthDeployedContract,config.cEthDeployedContractABI,  provider);
+      let price = new ethers.Contract(config.priceOracleDeployedContract,config.priceOracleDeployedContractABI,  provider);
+      
+      compComptrollerContract.getAssetsIn('0x06953Def7866D3d3c1628e24bCd2Bc86BB9CB5ac')
+        .then(result => {  
+          console.log(result)
+        for (let i = 0; i < result.length; i++) {
+            if(result[i] == cDaiAddress) {
+              let contract = cDai;
+              let address = config.cDaiDeployedContract
+              this.getUserTotalLiquidityFromAllAssetEntered(contract,address,compComptrollerContract,price)
+              .then(result =>{
+                console.log(result)
+                return result;
+              })
+            }
+
+            if(result[i] == cBatAddress) {
+              let contract = cBat;
+              let address = config.cBatDeployedContract
+              this.getUserTotalLiquidityFromAllAssetEntered (contract,address,compComptrollerContract,price)
+              .then(result =>{
+                console.log(result)
+                return result;
+              })
+            }
+
+            if(result[i] == cEthAddress) {
+              let contract = cEth;
+              let address = config.cEthDeployedContract
+              this.getUserTotalLiquidityFromAllAssetEntered (contract,address,compComptrollerContract,price)
+              .then(result =>{
+                console.log(result)
+                return result;
+              })
+            }
+        }
+        })
       // Lookup the address
       provider.lookupAddress(userAddress)
       .then(ensAddressName => {
@@ -164,6 +208,55 @@ export default class CompoundLiquidationChannel {
           });
       });
     });
+  }
+
+  public async getUserTotalLiquidityFromAllAssetEntered (contract,address,compComptrollerContract,price) {
+    const logger = this.logger;
+    logger.debug('Preparing user liquidity info...');
+    return await new Promise((resolve, reject) => {
+      let sumCollateral;
+      let cTokenBalance;
+      let exchangeRateStored;
+      let oraclePrice;
+      let collateralFactor;
+      
+      contract.getAccountSnapshot('0x06953Def7866D3d3c1628e24bCd2Bc86BB9CB5ac')
+       .then(result => {
+        let {1:result1, 3:result2} = result;
+        result2 = (result2/1e18)
+        result1 = result1/1e8
+        cTokenBalance = result1;
+        exchangeRateStored = result2    
+  
+      price.getUnderlyingPrice(address)
+       .then(result => {
+        let result3 = (result / 1e18)
+        oraclePrice = result3   
+  
+      compComptrollerContract.markets(address)
+        .then(result => {
+          let {1:result4} = result;
+          result4 = (result4 / 1e18) * 100;
+          collateralFactor = result4;
+  
+       sumCollateral = (cTokenBalance*exchangeRateStored*oraclePrice*collateralFactor)/1e12;
+        resolve(sumCollateral)
+      })
+      .catch(err => {
+        logger.error("Error occurred while looking at markets: %o", err);
+        reject(err);
+      })
+      })
+      .catch(err => {
+        logger.error("Error occurred while looking at getUnderlyingPrice: %o", err);
+        reject(err);
+      })
+     })
+     .catch(err => {
+      logger.error("Error occurred while looking at getAccountSnapshot: %o", err);
+      reject(err);
+    })
+     })
   }
 
   public async getCompoundLiquidityPayload(addressName, liquidity) {
