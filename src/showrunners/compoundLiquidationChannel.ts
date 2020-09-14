@@ -96,108 +96,104 @@ export default class CompoundLiquidationChannel {
     const logger = this.logger;
     return new Promise((resolve, reject) => {
 
-      let cDaiAddress = 0xdb5ed4605c11822811a39f94314fdb8f0fb59a2c;
-      let cBatAddress = 0x9e95c0b2412ce50c37a121622308e7a6177f819d;
-      let cEthAddress = 0xbe839b6d93e3ea47effcca1f27841c917a8794f3;
-
-      let cDai = new ethers.Contract(config.cDaiDeployedContract,config.cDaiDeployedContractABI,  provider);
-      let cBat = new ethers.Contract(config.cBatDeployedContract,config.cBatDeployedContractABI,  provider);
-      let cEth = new ethers.Contract(config.cEthDeployedContract,config.cEthDeployedContractABI,  provider);
-      let price = new ethers.Contract(config.priceOracleDeployedContract,config.priceOracleDeployedContractABI,  provider);
       
-      compComptrollerContract.getAssetsIn('0x06953Def7866D3d3c1628e24bCd2Bc86BB9CB5ac')
-        .then(result => {  
-          console.log(result)
-        for (let i = 0; i < result.length; i++) {
-            if(result[i] == cDaiAddress) {
-              let contract = cDai;
-              let address = config.cDaiDeployedContract
-              this.getUserTotalLiquidityFromAllAssetEntered(contract,address,compComptrollerContract,price)
-              .then(result =>{
-                console.log(result)
-                return result;
-              })
-            }
-
-            if(result[i] == cBatAddress) {
-              let contract = cBat;
-              let address = config.cBatDeployedContract
-              this.getUserTotalLiquidityFromAllAssetEntered (contract,address,compComptrollerContract,price)
-              .then(result =>{
-                console.log(result)
-                return result;
-              })
-            }
-
-            if(result[i] == cEthAddress) {
-              let contract = cEth;
-              let address = config.cEthDeployedContract
-              this.getUserTotalLiquidityFromAllAssetEntered (contract,address,compComptrollerContract,price)
-              .then(result =>{
-                console.log(result)
-                return result;
-              })
-            }
-        }
-        })
       // Lookup the address
       provider.lookupAddress(userAddress)
       .then(ensAddressName => {
         let addressName = ensAddressName;
 
-        //fetching userAddress amount in $ left before liquidation
-        compComptrollerContract.getAccountLiquidity(userAddress)
-        .then(result => {
-          let {1:liquidity} = result;
-          liquidity = ethers.utils.formatEther(liquidity).toString();
-          
-          // checking if liquidity amount left is below $10 and above $0
-          if(liquidity > 0 && liquidity < 10){
-            
-            this.getCompoundLiquidityPayload(addressName, liquidity)
-            .then(payload => {
-              const jsonisedPayload = JSON.stringify(payload);
+        let cDai = new ethers.Contract(config.cDaiDeployedContract,config.cDaiDeployedContractABI,  provider);
+        let cBat = new ethers.Contract(config.cBatDeployedContract,config.cBatDeployedContractABI,  provider);
+        let cEth = new ethers.Contract(config.cEthDeployedContract,config.cEthDeployedContractABI,  provider);
+        let price = new ethers.Contract(config.priceOracleDeployedContract,config.priceOracleDeployedContractABI,  provider);
+        let allLiquidity =[];
+        
+        compComptrollerContract.getAssetsIn(userAddress)
+          .then(marketAddress => {  
+            console.log(marketAddress)
+            for (let i = 0; i < marketAddress.length; i++) {
+              let cAddresses = [0xdb5ed4605c11822811a39f94314fdb8f0fb59a2c, 0x9e95c0b2412ce50c37a121622308e7a6177f819d,0x06953Def7866D3d3c1628e24bCd2Bc86BB9CB5ac,0xbe839b6d93e3ea47effcca1f27841c917a8794f3]
+              let contracts = [cDai,cBat,price,cEth]
 
-              // handle payloads, etc
-              const ipfs = require("nano-ipfs-store").at("https://ipfs.infura.io:5001");
-              ipfs.add(jsonisedPayload)
-                .then(ipfshash => {
-                  resolve({ 
-                    success: true,
-                    wallet: addressName, 
-                    ipfshash: ipfshash,
-                    payloadType: parseInt(payload.data.type)
-                  });
+              if(marketAddress[i] == marketAddress[i])  {
+                  let contract = this.u(marketAddress[i], cAddresses,contracts);
+                  let address = marketAddress[i];
+                  
+                  allLiquidity.push(
+                    this.getUserTotalLiquidityFromAllAssetEntered(contract,address,compComptrollerContract,price,userAddress)
+                    .then(result =>{
+                      return result                  
+                  }))
+                }
+                Promise.all(allLiquidity)
+                .then(result =>{
+                  let sumAllLiquidityOfAsset = 0
+                  for (i = 0; i < result.length; i++) {
+                    
+                    sumAllLiquidityOfAsset += result[i]
+                }
+                  let liquidityAlert = 10*sumAllLiquidityOfAsset/100;
+                  console.log(liquidityAlert)
+
+
+            //fetching userAddress amount in $ left before liquidation
+            compComptrollerContract.getAccountLiquidity(userAddress)
+            .then(result => {
+              let {1:liquidity} = result;
+              liquidity = ethers.utils.formatEther(liquidity).toString();
+              
+              // checking if liquidity amount left is below $10 and above $
+              // if(liquidity > 0 && liquidity < 10){
+                if(liquidity >= liquidityAlert){
+                  console.log(2)
+                
+                this.getCompoundLiquidityPayload(addressName, liquidityAlert)
+                .then(payload => {
+                  const jsonisedPayload = JSON.stringify(payload);
+
+                  // handle payloads, etc
+                  const ipfs = require("nano-ipfs-store").at("https://ipfs.infura.io:5001");
+                  ipfs.add(jsonisedPayload)
+                    .then(ipfshash => {
+                      resolve({ 
+                        success: true,
+                        wallet: addressName, 
+                        ipfshash: ipfshash,
+                        payloadType: parseInt(payload.data.type)
+                      });
+                    })
+                    .catch(err => {
+                      logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", userAddress, err)
+                      resolve({
+                        success: false,
+                        err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
+                      });
+                    });
                 })
                 .catch(err => {
-                  logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", userAddress, err)
+                  logger.error("Unable to proceed with Compound Liquidation Alert!Function for wallet: %s, error: %o", userAddress, err);
                   resolve({
                     success: false,
-                    err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
+                    err: "Unable to proceed with Compound Liquidation Alert! Function for wallet: " + userAddress + " | error: " + err
                   });
                 });
+              }
+              else {
+                resolve({
+                  success: false,
+                  err: "Date Expiry condition unmet for wallet: " + userAddress
+                });
+              }
             })
             .catch(err => {
-              logger.error("Unable to proceed with Compound Liquidation Alert!Function for wallet: %s, error: %o", userAddress, err);
+              logger.error("Error occurred on Compound Liquidation for Address Liquidation amount: %s: %o", userAddress, err);
               resolve({
                 success: false,
-                err: "Unable to proceed with Compound Liquidation Alert! Function for wallet: " + userAddress + " | error: " + err
+                err: err
               });
-            });
-          }
-          else {
-            resolve({
-              success: false,
-              err: "Date Expiry condition unmet for wallet: " + userAddress
-            });
-          }
-        })
-        .catch(err => {
-          logger.error("Error occurred on Compound Liquidation for Address Liquidation amount: %s: %o", userAddress, err);
-          resolve({
-            success: false,
-            err: err
-          });
+            })
+          })
+        }
         })
       })
       .catch(err => {
@@ -209,8 +205,14 @@ export default class CompoundLiquidationChannel {
       });
     });
   }
-
-  public async getUserTotalLiquidityFromAllAssetEntered (contract,address,compComptrollerContract,price) {
+  public u(result,cAddresses, contracts){    
+    for (let p = 0; p < cAddresses.length; p++) {
+      if (result == cAddresses[p]){
+        return contracts[p]
+      }
+    }
+  }
+  public async getUserTotalLiquidityFromAllAssetEntered(contract,address,compComptrollerContract,price,userAddress) {
     const logger = this.logger;
     logger.debug('Preparing user liquidity info...');
     return await new Promise((resolve, reject) => {
@@ -220,7 +222,7 @@ export default class CompoundLiquidationChannel {
       let oraclePrice;
       let collateralFactor;
       
-      contract.getAccountSnapshot('0x06953Def7866D3d3c1628e24bCd2Bc86BB9CB5ac')
+      contract.getAccountSnapshot(userAddress)
        .then(result => {
         let {1:result1, 3:result2} = result;
         result2 = (result2/1e18)
