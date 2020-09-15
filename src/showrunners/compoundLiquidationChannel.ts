@@ -139,9 +139,11 @@ export default class CompoundLiquidationChannel {
                   
                   sumAllLiquidityOfAsset += result[i]
                 }
+
+                // get 10% of user liquidity 
                 let liquidityAlert = 10*sumAllLiquidityOfAsset/100;        
           
-                // checking if liquidity amount left is below $10 and above $
+                // checking if liquidity amount left is below 10%
                 if(liquidityAlert > 0 &&  liquidity < liquidityAlert){
                   this.getCompoundLiquidityPayload(addressName, liquidityAlert)
                     .then(payload => {
