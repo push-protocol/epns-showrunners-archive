@@ -116,8 +116,8 @@ export default class CompoundLiquidationChannel {
           compComptrollerContract.getAssetsIn(userAddress)
             .then(marketAddress => {
               for (let i = 0; i < marketAddress.length; i++) {
-                let cAddresses = [0xdb5ed4605c11822811a39f94314fdb8f0fb59a2c, 0x9e95c0b2412ce50c37a121622308e7a6177f819d,0x06953Def7866D3d3c1628e24bCd2Bc86BB9CB5ac,0xbe839b6d93e3ea47effcca1f27841c917a8794f3]
-                let contracts = [cDai,cBat,price,cEth]
+                let cAddresses = [0xdb5ed4605c11822811a39f94314fdb8f0fb59a2c, 0x9e95c0b2412ce50c37a121622308e7a6177f819d,0xbe839b6d93e3ea47effcca1f27841c917a8794f3]
+                let contracts = [cDai,cBat,cEth]
 
                 if(marketAddress[i] == marketAddress[i])  {
                     let contract = this.assignContract(marketAddress[i], cAddresses,contracts);
@@ -142,7 +142,7 @@ export default class CompoundLiquidationChannel {
                 let liquidityAlert = 10*sumAllLiquidityOfAsset/100;        
           
                 // checking if liquidity amount left is below $10 and above $
-                if(liquidityAlert > 0 &&  liquidity > liquidityAlert){
+                if(liquidityAlert > 0 &&  liquidity < liquidityAlert){
                   this.getCompoundLiquidityPayload(addressName, liquidityAlert)
                     .then(payload => {
                       const jsonisedPayload = JSON.stringify(payload);
