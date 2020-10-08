@@ -19,7 +19,7 @@ export default {
   /**
    * Your favorite port
    */
-  port: parseInt((process.env.PORT || '3000'), 10),
+  port: parseInt(process.env.PORT || '3000', 10),
 
   /**
    * Your favorite port
@@ -45,6 +45,7 @@ export default {
   dbname: process.env.DB_NAME,
   dbuser: process.env.DB_USER,
   dbpass: process.env.DB_PASS,
+  mongodb: process.env.MONGO_URI,
 
   /**
    * File system config

@@ -136,3 +136,4 @@ logs/*
 !logs/.keepfolderalive
 .env
 epns-firebase-adminsdk.json
+external

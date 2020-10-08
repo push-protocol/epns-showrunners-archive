@@ -1,5 +1,7 @@
 import 'reflect-metadata'; // We need this in order to use @Decorators
 
+import mongoose from 'mongoose';
+
 import config from './config';
 
 import express from 'express';
@@ -24,7 +26,7 @@ async function startServer() {
       return;
     }
 
-Logger.info(`
+    Logger.info(`
       ################################################
       ____  _
      / ___|| |__   _____      ___ __ _   _ _ __  _ __   ___ _ __ ___
@@ -39,4 +41,25 @@ Logger.info(`
   });
 }
 
+async function mongo() {
+  mongoose
+    .connect(config.mongodb, {
+      keepAlive: true,
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+      reconnectTries: Number.MAX_VALUE,
+      reconnectInterval: 500,
+    })
+    .then(() => {
+      console.log('MongoDB is connected');
+    })
+    .catch(err => {
+      console.log(err);
+      console.log('MongoDB connection unsuccessful, retry after 5 seconds.');
+      setTimeout(mongo, 5000);
+    });
+}
+
 startServer();
+mongo();
