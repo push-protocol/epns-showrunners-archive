@@ -24,8 +24,12 @@ export default class CompoundLiquidationChannel {
     logger.debug('Checking for liquidated address... ');
     return await new Promise((resolve, reject) => {
       // Preparing to get all subscribers of the channel
-      const mainnetProvider = new ethers.providers.InfuraProvider();
-      const provider = new ethers.providers.InfuraProvider('ropsten');
+      // const mainnetProvider = new ethers.providers.InfuraProvider();
+      // const provider = new ethers.providers.InfuraProvider('ropsten');
+      const network = "ropsten";
+      const provider = ethers.getDefaultProvider(network, {
+        infura: config.infuraId
+    });
 
       let wallet = new ethers.Wallet(config.compComptrollerPrivateKey, provider);
 
@@ -115,6 +119,8 @@ export default class CompoundLiquidationChannel {
           
           compComptrollerContract.getAssetsIn(userAddress)
             .then(marketAddress => {
+              logger.info("Market Address is in: %o | Address: :%o ", marketAddress, addressName); 
+
               for (let i = 0; i < marketAddress.length; i++) {
                 let cAddresses = [0xdb5ed4605c11822811a39f94314fdb8f0fb59a2c, 0x9e95c0b2412ce50c37a121622308e7a6177f819d,0xbe839b6d93e3ea47effcca1f27841c917a8794f3]
                 let contracts = [cDai,cBat,cEth]
@@ -139,13 +145,13 @@ export default class CompoundLiquidationChannel {
                   
                   sumAllLiquidityOfAsset += result[i]
                 }
-
+                logger.info("Entire Liquidity Address has: %o | Address: %o ", sumAllLiquidityOfAsset, addressName);
                 // get 10% of user liquidity 
                 let liquidityAlert = 10*sumAllLiquidityOfAsset/100;        
           
                 // checking if liquidity amount left is below 10%
                 if(liquidityAlert > 0 &&  liquidity < liquidityAlert){
-                  this.getCompoundLiquidityPayload(addressName, liquidityAlert)
+                  this.getCompoundLiquidityPayload(addressName, liquidity, sumAllLiquidityOfAsset)
                     .then(payload => {
                       const jsonisedPayload = JSON.stringify(payload);
 
@@ -266,16 +272,17 @@ export default class CompoundLiquidationChannel {
      })
   }
 
-  public async getCompoundLiquidityPayload(addressName, liquidity) {
+  public async getCompoundLiquidityPayload(addressName, liquidity, sumAllLiquidityOfAsset) {
     const logger = this.logger;
     logger.debug('Preparing payload...');
-
     return await new Promise((resolve, reject) => {
+
+      const percentage = Math.floor((liquidity*100) /sumAllLiquidityOfAsset);
       const title = "Compound Liquidity Alert!";
-      const message =  addressName + " your account has $"+ liquidity + " left before it gets liquidated";
+      const message =  addressName + " your account has %"+ percentage + " left before it gets liquidated";
 
       const payloadTitle = "Compound Liquidity Alert!";
-      const payloadMsg = "Dear [d:" + addressName + "] your account has $"+ liquidity + " left before it gets liquidated";
+      const payloadMsg = "Dear [d:" + addressName + "] your account has %"+ percentage + " left before it gets liquidated";
 
       const payload = {
         "notification": {

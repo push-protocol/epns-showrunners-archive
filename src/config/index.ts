@@ -115,6 +115,9 @@ export default {
   cmcAPIKey: process.env.CMC_API_KEY,
   cmcEndpoint: process.env.CMC_ENDPOINT,
 
+  gasAPIKey: process.env.GAS_API_KEY,
+  gasEndpoint: process.env.GAS_ENDPOINT,
+
   cmcSandboxAPIKey: process.env.CMS_SANDBOX_API_KEY,
   cmcSandboxEndpoint: process.env.CMC_SANDBOX_ENDPOINT,
 
@@ -122,6 +125,7 @@ export default {
   ethTickerPrivateKey: process.env.ETH_TICKER_PRIVATE_KEY,
   ensDomainExpiryPrivateKey: process.env.ENS_DOMAIN_EXPIRY_PRIVATE_KEY,
   compComptrollerPrivateKey: process.env.COMP_COMPTROLLER_PRIVATE_KEY,
+  ethGasStationPrivateKey: process.env.ETH_GAS_STATION_PRIVATE_KEY,
 
-  infuraId: process.env.DEV_WEB3_PROVIDER,
+  infuraId: process.env.ID,
 };
