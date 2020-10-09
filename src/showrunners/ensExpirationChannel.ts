@@ -101,7 +101,7 @@ export default class EnsExpirationChannel {
 
     return await new Promise((resolve, reject) => {
       // Preparing to get all subscribers of the channel
-      const provider = new ethers.providers.InfuraProvider('ropsten');
+      const provider = new ethers.providers.InfuraProvider(config.web3provider);
 
       let wallet = new ethers.Wallet(config.ensDomainExpiryPrivateKey, provider);
 
@@ -175,7 +175,18 @@ export default class EnsExpirationChannel {
       provider.lookupAddress(userAddress)
         .then(ensAddressName => {
           let addressName = ensAddressName;
-          let removeEth = addressName.slice(0, -4);
+
+          if (!addressName) {
+            resolve({
+              success: false,
+              err: `ENS name doesn't exist for address: ${userAddress}, skipping...`
+            });
+          }
+
+          let removeEth = '';
+          if (!addressName) {
+            removeEth = addressName.slice(0, -4);
+          }
 
           let hashedName = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(removeEth));
           logger.debug("Checking Domain: %s for Hashed Name: %s", removeEth, hashedName);
