@@ -37,6 +37,7 @@
     "agenda": "^2.0.2",
     "agendash": "^1.0.0",
     "argon2": "^0.21.0",
+    "async-redis": "^1.1.7",
     "bent": "7.3.1",
     "body-parser": "^1.18.2",
     "celebrate": "^9.1.0",

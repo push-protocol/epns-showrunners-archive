@@ -1,8 +1,8 @@
-const redis = require('redis');
-const { promisify } = require('util');
+const redis = require('async-redis');
+// const { promisify } = require('util');
 
 class RedisService {
-  publisher;
+  client;
   constructor() {
     // const productionEnvironment = process.env.NODE_ENV === 'production';
     // const testEnvironment = process.env.NODE_ENV === 'test';
@@ -14,20 +14,20 @@ class RedisService {
       // })
     };
 
-    this.publisher = redis.createClient(options);
+    this.client = redis.createClient(options);
 
-    const commands = ['del', 'set', 'get', 'quit', 'exists', 'keys'];
+    // const commands = ['del', 'set', 'get', 'quit', 'exists', 'keys'];
 
-    // promisify all the specified commands
-    commands.forEach(command => {
-      this[command] = promisify(this.publisher[command]).bind(this.publisher);
-    });
+    // // promisify all the specified commands
+    // commands.forEach(command => {
+    //   this[command] = promisify(this.client[command]).bind(this.client);
+    // });
 
-    this.publisher.on('ready', async () => {
+    this.client.on('ready', async () => {
       console.log('🐳 Redis Connected!');
     });
 
-    this.publisher.on('error', err => {
+    this.client.on('error', err => {
       console.log(err, 'An error occured with the Redis client.');
     });
   }
