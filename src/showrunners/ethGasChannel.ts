@@ -5,12 +5,16 @@ import events from '../subscribers/events';
 
 import { ethers } from 'ethers';
 import { truncateSync } from 'fs';
+import cache from '../services/cache'
 
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
 
 const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
+const GAS_PRICE = 'gasprice';
+const THRESHOLD_FLAG = 'threshold_flag';
+
 
 @Service()
 export default class GasStationChannel {
@@ -29,25 +33,29 @@ export default class GasStationChannel {
       const pollURL = `${config.gasEndpoint}${gasroute}?api-key=${config.gasAPIKey}`;
 
       getJSON(pollURL)
-        .then(result => {
+        .then(async (result) => {
          let averageGas = result.fast/10;
+         cache.setCache(GAS_PRICE,10)
+         console.log("cache gotten from redis",await cache.getCache(GAS_PRICE))
         //cache interaction
-         let movingAverageForYesterdayFromMongoDB = 90;
-         let flag = false;
-         let flag1 = false;
+        //  let movingAverageForYesterdayFromMongoDB = 90;
+        //  let flag = await cache.getCache(THRESHOLD_FLAG);
+        //  let flag1 = await cache.getCache(THRESHOLD_FLAG);
          
-          if(movingAverageForYesterdayFromMongoDB < averageGas && flag == false){
-            let message = 'has increased'
-            this.sendMessageToContract(message)
-            flag = true; 
-            flag1 = false;                
-          }
-          else if(movingAverageForYesterdayFromMongoDB > averageGas && flag1 == false){
-            let message = 'has reduced'
-            this.sendMessageToContract(message)
-            flag1 = true;
-            flag = false;
-          }
+        //   if(movingAverageForYesterdayFromMongoDB < averageGas && flag == false){
+        //     let message = 'has increased'
+        //     this.sendMessageToContract(message)
+        //     flag = true; 
+        //     flag1 = false; 
+        //     cache.setCache(THRESHOLD_FLAG,true)   
+
+        //   }
+        //   else if(movingAverageForYesterdayFromMongoDB > averageGas && flag1 == false){
+        //     let message = 'has reduced'
+        //     this.sendMessageToContract(message)
+        //     flag1 = true;
+        //     flag = false;
+        //   }
         })
       })
   }

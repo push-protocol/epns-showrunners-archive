@@ -76,7 +76,7 @@ schedule.scheduleJob('0 0 */24 * * *', async function(){
 
 // 1.4 GAS CHANNEL
 logger.info('-- 🛵 Scheduling Showrunner - Gas Channel [on 10 minutes]');
-schedule.scheduleJob('* */10 * * * *', async function(){
+schedule.scheduleJob('0 0 */10 * * * *', async function(){
   const compoundTicker = Container.get(EthGasStationChannel);
   const taskName = 'Gas result and sendMessageToContract()';
 
