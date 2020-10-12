@@ -1,4 +1,4 @@
-import { Service, Inject } from 'typedi';
+import { Service, Inject, Container } from 'typedi';
 import config from '../config';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import events from '../subscribers/events';
@@ -6,7 +6,7 @@ import events from '../subscribers/events';
 import { ethers } from 'ethers';
 import { truncateSync } from 'fs';
 import cache from '../services/cache';
-import gasPrice from '../services/gasPrice';
+import GasPrice from '../services/gasPrice';
 
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
@@ -16,8 +16,8 @@ const utils = require('../helpers/utilsHelper');
 const GAS_PRICE = 'gasprice';
 const THRESHOLD_FLAG = 'threshold_flag';
 
-cache.setCache(THRESHOLD_FLAG,true)
- 
+cache.setCache(THRESHOLD_FLAG, true);
+const gasPrice = Container.get(GasPrice);
 
 @Service()
 export default class GasStationChannel {
@@ -34,24 +34,22 @@ export default class GasStationChannel {
 
       getJSON(pollURL).then(async result => {
         let averageGas10Mins = result.fast / 10;
-        // let todaysAverageGasPrice;     
-        // (averageGasPriceFor90Days * 90 + todaysAverageGasPrice * 1)/90+1  
+        // let todaysAverageGasPrice;
+        // (averageGasPriceFor90Days * 90 + todaysAverageGasPrice * 1)/90+1
         cache.setCache(GAS_PRICE, averageGas10Mins);
         const getPricee = await cache.getCache(GAS_PRICE);
         console.log('cache gotten from redis: %o', getPricee);
-        let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(90)
+        let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(90);
         let flag = await cache.getCache(THRESHOLD_FLAG);
-        
-        if(movingAverageForYesterdayFromMongoDB < averageGas10Mins && flag == 'false'){
-        let message = 'has increased'
-        console.log(message)
-        cache.setCache(THRESHOLD_FLAG,true)   
 
-        }
-        else if(movingAverageForYesterdayFromMongoDB > averageGas10Mins && flag == 'true'){
-        let message = 'has reduced'
-        console.log(message)
-        cache.setCache(THRESHOLD_FLAG,false) 
+        if (movingAverageForYesterdayFromMongoDB < averageGas10Mins && flag == 'false') {
+          let message = 'has increased';
+          console.log(message);
+          cache.setCache(THRESHOLD_FLAG, true);
+        } else if (movingAverageForYesterdayFromMongoDB > averageGas10Mins && flag == 'true') {
+          let message = 'has reduced';
+          console.log(message);
+          cache.setCache(THRESHOLD_FLAG, false);
         }
       });
     });
