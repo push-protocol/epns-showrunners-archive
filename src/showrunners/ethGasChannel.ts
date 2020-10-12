@@ -6,6 +6,7 @@ import events from '../subscribers/events';
 import { ethers } from 'ethers';
 import { truncateSync } from 'fs';
 import cache from '../services/cache';
+import gasPrice from '../services/gasPrice';
 
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
@@ -14,6 +15,9 @@ const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
 const GAS_PRICE = 'gasprice';
 const THRESHOLD_FLAG = 'threshold_flag';
+
+cache.setCache(THRESHOLD_FLAG,true)
+ 
 
 @Service()
 export default class GasStationChannel {
@@ -29,29 +33,26 @@ export default class GasStationChannel {
       const pollURL = `${config.gasEndpoint}${gasroute}?api-key=${config.gasAPIKey}`;
 
       getJSON(pollURL).then(async result => {
-        let averageGas = result.fast / 10;
-        cache.setCache(GAS_PRICE, 10);
-        const getPrice = await cache.getCache(GAS_PRICE);
-        console.log('cache gotten from redis: %o', getPrice);
-        //cache interaction
-        //  let movingAverageForYesterdayFromMongoDB = 90;
-        //  let flag = await cache.getCache(THRESHOLD_FLAG);
-        //  let flag1 = await cache.getCache(THRESHOLD_FLAG);
+        let averageGas10Mins = result.fast / 10;
+        // let todaysAverageGasPrice;     
+        // (averageGasPriceFor90Days * 90 + todaysAverageGasPrice * 1)/90+1  
+        cache.setCache(GAS_PRICE, averageGas10Mins);
+        const getPricee = await cache.getCache(GAS_PRICE);
+        console.log('cache gotten from redis: %o', getPricee);
+        let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(90)
+        let flag = await cache.getCache(THRESHOLD_FLAG);
+        
+        if(movingAverageForYesterdayFromMongoDB < averageGas10Mins && flag == 'false'){
+        let message = 'has increased'
+        console.log(message)
+        cache.setCache(THRESHOLD_FLAG,true)   
 
-        //   if(movingAverageForYesterdayFromMongoDB < averageGas && flag == false){
-        //     let message = 'has increased'
-        //     this.sendMessageToContract(message)
-        //     flag = true;
-        //     flag1 = false;
-        //     cache.setCache(THRESHOLD_FLAG,true)
-
-        //   }
-        //   else if(movingAverageForYesterdayFromMongoDB > averageGas && flag1 == false){
-        //     let message = 'has reduced'
-        //     this.sendMessageToContract(message)
-        //     flag1 = true;
-        //     flag = false;
-        //   }
+        }
+        else if(movingAverageForYesterdayFromMongoDB > averageGas10Mins && flag == 'true'){
+        let message = 'has reduced'
+        console.log(message)
+        cache.setCache(THRESHOLD_FLAG,false) 
+        }
       });
     });
   }
@@ -122,7 +123,6 @@ export default class GasStationChannel {
 
   public async getNewPrice(messages) {
     const logger = this.logger;
-    logger.debug('Getting price of btc... ');
 
     return await new Promise((resolve, reject) => {
       const title = 'Gas Price';
