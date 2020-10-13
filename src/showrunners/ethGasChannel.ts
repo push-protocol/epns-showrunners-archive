@@ -15,9 +15,10 @@ const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
 const GAS_PRICE = 'gasprice';
 const THRESHOLD_FLAG = 'threshold_flag';
-const GAS_PRICE_FOR_THE_DAY = 'gas_price_for_the_day'
+const GAS_PRICE_FOR_THE_DAY = 'gas_price_for_the_day';
 
 cache.setCache(THRESHOLD_FLAG, true);
+cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
 const gasPrice = Container.get(GasPrice);
 
 @Service()
@@ -35,9 +36,9 @@ export default class GasStationChannel {
 
       getJSON(pollURL).then(async result => {
         let averageGas10Mins = result.fast / 10;
-        
+
         cache.setCache(GAS_PRICE, averageGas10Mins);
-        cache.addCache(GAS_PRICE_FOR_THE_DAY, averageGas10Mins)
+        cache.addCache(GAS_PRICE_FOR_THE_DAY, averageGas10Mins);
         const getPricee = await cache.getCache(GAS_PRICE);
         console.log('cache gotten from redis: %o', getPricee);
         let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(90);
@@ -152,11 +153,12 @@ export default class GasStationChannel {
   public async updateMongoDb() {
     const logger = this.logger;
     logger.debug('updating mongodb');
-    
-    const todaysAverageGasPrice = (await cache.getCache(GAS_PRICE_FOR_THE_DAY))/144;
+
+    const todaysAverageGasPrice = (await cache.getCache(GAS_PRICE_FOR_THE_DAY)) / 144;
     cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
     let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(90);
-    const todaysMovingAverage = ((movingAverageForYesterdayFromMongoDB.average * 90) + (todaysAverageGasPrice * 1))/90+1
+    const todaysMovingAverage =
+      (movingAverageForYesterdayFromMongoDB.average * 90 + todaysAverageGasPrice * 1) / 90 + 1;
     gasPrice.setGasPrice(todaysMovingAverage);
   }
 }
