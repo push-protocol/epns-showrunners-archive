@@ -1,4 +1,4 @@
-import { Service, Inject, Container } from 'typedi';
+import { Service, Inject } from 'typedi';
 import config from '../config';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import events from '../subscribers/events';
@@ -19,11 +19,13 @@ const GAS_PRICE_FOR_THE_DAY = 'gas_price_for_the_day';
 
 cache.setCache(THRESHOLD_FLAG, true);
 cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
-const gasPrice = Container.get(GasPrice);
 
 @Service()
 export default class GasStationChannel {
-  constructor(@Inject('logger') private logger, @EventDispatcher() private eventDispatcher: EventDispatcherInterface) {}
+  constructor(
+    @Inject('logger') private logger, 
+    @EventDispatcher() private eventDispatcher: EventDispatcherInterface,
+    ) {}
 
   public async getGasPrice() {
     const logger = this.logger;
@@ -36,23 +38,23 @@ export default class GasStationChannel {
 
       getJSON(pollURL).then(async result => {
         let averageGas10Mins = result.fast / 10;
-
-        cache.setCache(GAS_PRICE, averageGas10Mins);
+        console.log(averageGas10Mins)
         cache.addCache(GAS_PRICE_FOR_THE_DAY, averageGas10Mins);
-        const getPricee = await cache.getCache(GAS_PRICE);
+        const getPricee = await cache.getCache(GAS_PRICE_FOR_THE_DAY);
         console.log('cache gotten from redis: %o', getPricee);
-        let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(90);
+
+        // let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(90);
         let flag = await cache.getCache(THRESHOLD_FLAG);
 
-        if (movingAverageForYesterdayFromMongoDB.average < averageGas10Mins && flag == 'false') {
-          let message = 'has increased';
-          console.log(message);
-          cache.setCache(THRESHOLD_FLAG, true);
-        } else if (movingAverageForYesterdayFromMongoDB.average > averageGas10Mins && flag == 'true') {
-          let message = 'has reduced';
-          console.log(message);
-          cache.setCache(THRESHOLD_FLAG, false);
-        }
+        // if (movingAverageForYesterdayFromMongoDB.average < averageGas10Mins && flag == 'false') {
+        //   let message = 'has increased';
+        //   console.log(message);
+        //   cache.setCache(THRESHOLD_FLAG, true);
+        // } else if (movingAverageForYesterdayFromMongoDB.average > averageGas10Mins && flag == 'true') {
+        //   let message = 'has reduced';
+        //   console.log(message);
+        //   cache.setCache(THRESHOLD_FLAG, false);
+        // }
       });
     });
   }
@@ -150,15 +152,15 @@ export default class GasStationChannel {
     });
   }
 
-  public async updateMongoDb() {
-    const logger = this.logger;
-    logger.debug('updating mongodb');
+  // public async updateMongoDb() {
+  //   const logger = this.logger;
+  //   logger.debug('updating mongodb');
 
-    const todaysAverageGasPrice = (await cache.getCache(GAS_PRICE_FOR_THE_DAY)) / 144;
-    cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
-    let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(90);
-    const todaysMovingAverage =
-      (movingAverageForYesterdayFromMongoDB.average * 90 + todaysAverageGasPrice * 1) / 90 + 1;
-    gasPrice.setGasPrice(todaysMovingAverage);
-  }
+  //   const todaysAverageGasPrice = (await cache.getCache(GAS_PRICE_FOR_THE_DAY)) / 144;
+  //   cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
+  //   let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(90);
+  //   const todaysMovingAverage =
+  //     (movingAverageForYesterdayFromMongoDB.average * 90 + todaysAverageGasPrice * 1) / 90 + 1;
+  //   gasPrice.setGasPrice(todaysMovingAverage);
+  // }
 }
