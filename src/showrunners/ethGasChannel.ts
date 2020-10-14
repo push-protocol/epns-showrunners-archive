@@ -155,10 +155,11 @@ export default class GasStationChannel {
 
     // const todaysAverageGasPrice = (await cache.getCache(GAS_PRICE_FOR_THE_DAY)) / 144;
     // cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
-    let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(0);
+    let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(1);
     console.log(movingAverageForYesterdayFromMongoDB)
     // const todaysMovingAverage =
     //   (movingAverageForYesterdayFromMongoDB.average * 90 + todaysAverageGasPrice * 1) / 90 + 1;
     // gasPrice.setGasPrice(todaysMovingAverage);
+    return movingAverageForYesterdayFromMongoDB;
   }
 }

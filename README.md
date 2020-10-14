@@ -47,10 +47,11 @@ We would need external services of:
 
 - [Mongodb](https://www.mongodb.com/)
 - [Redis](https://www.mongodb.com/)
+- [Mongodb Atlas](https://www.mongodb.com/cloud/atlas)
 
 For local ease of development, we make use of [Docker](https://www.docker.com/).
 
-To start these sercices,
+To start these services,
 
 - Install Docker
 - cd into this project on a terminal
