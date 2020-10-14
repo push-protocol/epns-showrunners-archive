@@ -6,7 +6,7 @@ import events from '../subscribers/events';
 import { ethers } from 'ethers';
 import { truncateSync } from 'fs';
 import cache from '../services/cache';
-import GasPrice from '../services/gasPrice';
+import gasPrice from '../services/gasPrice';
 
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
@@ -19,7 +19,6 @@ const GAS_PRICE_FOR_THE_DAY = 'gas_price_for_the_day';
 
 cache.setCache(THRESHOLD_FLAG, true);
 cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
-const gasPrice = Container.get(GasPrice);
 
 @Service()
 export default class GasStationChannel {
