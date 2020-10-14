@@ -6,7 +6,7 @@ import events from '../subscribers/events';
 import { ethers } from 'ethers';
 import { truncateSync } from 'fs';
 import cache from '../services/cache';
-import GasPrice from '../services/gasPrice';
+import gasPrice from '../services/gasPrice';
 
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
