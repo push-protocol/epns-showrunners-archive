@@ -76,12 +76,28 @@ schedule.scheduleJob('0 0 */24 * * *', async function(){
 
 // 1.4 GAS CHANNEL
 logger.info('-- 🛵 Scheduling Showrunner - Gas Channel [on 10 minutes]');
-schedule.scheduleJob('*/30 * * * * *', async function(){
+schedule.scheduleJob('0 0 */10 * * *', async function(){
   const compoundTicker = Container.get(EthGasStationChannel);
   const taskName = 'Gas result and sendMessageToContract()';
 
   try {
     await compoundTicker.getGasPrice();
+    logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+  }
+  catch (err) {
+    logger.error(`❌ Cron Task Failed -- ${taskName}`);
+    logger.error(`Error Object: %o`, err);
+  }
+});
+
+// 1.4i GAS CHANNEL
+logger.info('-- 🛵 Scheduling Showrunner - Gas Channel [on 10 minutes]');
+schedule.scheduleJob('0 0 */10 * * *', async function(){
+  const compoundTicker = Container.get(EthGasStationChannel);
+  const taskName = 'Gas result and sendMessageToContract()';
+
+  try {
+    await compoundTicker.updateMongoDb();
     logger.info(`🐣 Cron Task Completed -- ${taskName}`);
   }
   catch (err) {

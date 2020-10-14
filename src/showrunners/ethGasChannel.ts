@@ -1,4 +1,4 @@
-import { Service, Inject } from 'typedi';
+import { Service, Inject, Container } from 'typedi';
 import config from '../config';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import events from '../subscribers/events';
@@ -22,10 +22,7 @@ cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
 
 @Service()
 export default class GasStationChannel {
-  constructor(
-    @Inject('logger') private logger, 
-    @EventDispatcher() private eventDispatcher: EventDispatcherInterface,
-    ) {}
+  constructor(@Inject('logger') private logger, @EventDispatcher() private eventDispatcher: EventDispatcherInterface) {}
 
   public async getGasPrice() {
     const logger = this.logger;
@@ -42,7 +39,7 @@ export default class GasStationChannel {
         cache.addCache(GAS_PRICE_FOR_THE_DAY, averageGas10Mins);
         const getPricee = await cache.getCache(GAS_PRICE_FOR_THE_DAY);
         console.log('cache gotten from redis: %o', getPricee);
-
+        gasPrice.setGasPrice(averageGas10Mins)
         // let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(90);
         let flag = await cache.getCache(THRESHOLD_FLAG);
 
@@ -152,15 +149,16 @@ export default class GasStationChannel {
     });
   }
 
-  // public async updateMongoDb() {
-  //   const logger = this.logger;
-  //   logger.debug('updating mongodb');
+  public async updateMongoDb() {
+    const logger = this.logger;
+    logger.debug('updating mongodb');
 
-  //   const todaysAverageGasPrice = (await cache.getCache(GAS_PRICE_FOR_THE_DAY)) / 144;
-  //   cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
-  //   let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(90);
-  //   const todaysMovingAverage =
-  //     (movingAverageForYesterdayFromMongoDB.average * 90 + todaysAverageGasPrice * 1) / 90 + 1;
-  //   gasPrice.setGasPrice(todaysMovingAverage);
-  // }
+    // const todaysAverageGasPrice = (await cache.getCache(GAS_PRICE_FOR_THE_DAY)) / 144;
+    // cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
+    let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(0);
+    console.log(movingAverageForYesterdayFromMongoDB)
+    // const todaysMovingAverage =
+    //   (movingAverageForYesterdayFromMongoDB.average * 90 + todaysAverageGasPrice * 1) / 90 + 1;
+    // gasPrice.setGasPrice(todaysMovingAverage);
+  }
 }
