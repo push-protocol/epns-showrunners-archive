@@ -38,8 +38,15 @@ const getAverageGasPrice = async (days: Number): Promise<{ average: Number }> =>
   }
 };
 
+const clearGasPrices = async (): Promise<null> => {
+  // this.logger.silly('Get gas price');
+  await GasPriceModel.deleteMany({});
+  return null;
+};
+
 const exportMongo = {
   setGasPrice,
   getAverageGasPrice,
+  clearGasPrices,
 };
 export default exportMongo;
