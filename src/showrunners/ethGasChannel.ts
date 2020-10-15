@@ -35,11 +35,11 @@ export default class GasStationChannel {
 
       getJSON(pollURL).then(async result => {
         let averageGas10Mins = result.fast / 10;
-        console.log(averageGas10Mins)
+        console.log('average gas', averageGas10Mins)
         cache.addCache(GAS_PRICE_FOR_THE_DAY, averageGas10Mins);
         const getPricee = await cache.getCache(GAS_PRICE_FOR_THE_DAY);
         console.log('cache gotten from redis: %o', getPricee);
-        gasPrice.setGasPrice(averageGas10Mins)
+        await gasPrice.setGasPrice(averageGas10Mins)
         // let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(90);
         let flag = await cache.getCache(THRESHOLD_FLAG);
 
