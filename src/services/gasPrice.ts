@@ -23,7 +23,7 @@ const getAverageGasPrice = async (days: Number): Promise<{ average: Number }> =>
     if (days < 1) throw new Error('days must be less than 1');
 
     const gasPrices = await GasPriceModel.find()
-      .sort({ $created_at: -1 })
+      .sort({ created_at: -1 })
       .limit(Number(days));
 
     console.log(gasPrices);

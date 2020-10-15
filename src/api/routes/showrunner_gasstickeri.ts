@@ -15,9 +15,9 @@ export default (app: Router) => {
     Logger.debug('Calling /showrunners/compoundliquidation endpoint with body: %o', req.body);
     try {
       const ethGasChannel = Container.get(EthGasStationChannel);
-      const { average } = await ethGasChannel.updateMongoDb();
+      const average = await ethGasChannel.updateMongoDb();
 
-      return res.status(201).json({ average });
+      return res.status(201).json(average );
     } catch (e) {
       Logger.error('🔥 error: %o', e);
       return next(e);
