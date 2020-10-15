@@ -23,14 +23,15 @@ const getAverageGasPrice = async (days: Number): Promise<{ average: Number }> =>
     if (days < 1) throw new Error('days must be less than 1');
 
     const gasPrices = await GasPriceModel.find()
-      .sort({ created_at: -1 })
+      .sort({ _id: -1 })
       .limit(Number(days));
 
     console.log(gasPrices);
 
     // this.logger.silly('calculaste average');
     const totalGas = gasPrices.reduce((initial, value) => initial + value.price, 0);
-    const average = totalGas / Number(days);
+    let average = totalGas / Number(days);
+    average = Math.round((average + Number.EPSILON) * 100) / 100;
     return { average };
   } catch (error) {
     console.log(error);
