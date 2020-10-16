@@ -1,6 +1,11 @@
 import expressLoader from './express';
 import dependencyInjectorLoader from './dependencyInjector';
 
+import config from '../config';
+
+import mongooseLoader from './mongoose';
+import redisLoader from './redis';
+
 import logger from './logger';
 
 import jobsLoader from './jobs';
@@ -15,6 +20,12 @@ export default async ({ expressApp }) => {
 
   const pool = await dbLoader();
   logger.info('✌️   Database connected!');
+
+  const mongoConnection = await mongooseLoader();
+  logger.info('✌️   Mongoose Loaded and connected!');
+
+  const redisCache = await redisLoader( config.redisURL );
+  logger.info('✌️   Redis Loaded! 🐳🐳🐳');
 
   // It returns the agenda instance because it's needed in the subsequent loaders
   await dependencyInjectorLoader({});

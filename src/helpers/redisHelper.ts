@@ -1,3 +1,5 @@
+import Logger from '../loaders/logger';
+
 const redis = require('async-redis');
 // const { promisify } = require('util');
 
@@ -24,11 +26,11 @@ class RedisService {
     // });
 
     this.client.on('ready', async () => {
-      console.log('🐳 Redis Connected!');
+      Logger.info(`🐳   Redis Connected!`);
     });
 
     this.client.on('error', err => {
-      console.log(err, 'An error occured with the Redis client.');
+      Logger.error(`An error occured with the Redis client.`);
     });
   }
 }

@@ -1,5 +1,4 @@
 'use strict';
-import redis from '../helpers/redisHelper';
 
 /**
  * Set cache
@@ -13,7 +12,7 @@ const setCache = async (key: String, value) => {
 };
 
 /**
- * Add cache
+ * Add caches
  * @description adds to already existing value in cache
  * @param {String} key Cache Key
  * @param {Number} value Value to be added

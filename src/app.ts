@@ -35,31 +35,10 @@ async function startServer() {
      |____/|_| |_|\\___/ \\_/\\_/ |_|   \\__,_|_| |_|_| |_|\\___|_|  |___/
 
       🛡️ Server listening on port: ${config.port} 🛡️
-      
+
       ################################################
     `);
   });
 }
 
-async function mongo() {
-  mongoose
-    .connect(config.mongodb, {
-      keepAlive: true,
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useFindAndModify: false,
-      reconnectTries: Number.MAX_VALUE,
-      reconnectInterval: 500,
-    })
-    .then(() => {
-      console.log('MongoDB is connected');
-    })
-    .catch(err => {
-      console.log(err);
-      console.log('MongoDB connection unsuccessful, retry after 5 seconds.');
-      setTimeout(mongo, 5000);
-    });
-}
-
 startServer();
-mongo();
