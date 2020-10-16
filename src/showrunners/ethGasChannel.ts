@@ -13,10 +13,13 @@ const moment = require('moment'); // time library
 
 const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
+
+// variables for mongoDb and redis
 const GAS_PRICE = 'gasprice';
 const THRESHOLD_FLAG = 'threshold_flag';
 const GAS_PRICE_FOR_THE_DAY = 'gas_price_for_the_day';
 
+//initializing redis
 cache.setCache(THRESHOLD_FLAG, true);
 cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
 
@@ -35,23 +38,36 @@ export default class GasStationChannel {
 
       getJSON(pollURL).then(async result => {
         let averageGas10Mins = result.fast / 10;
-        console.log('average gas', averageGas10Mins);
+        logger.info("average: %o", averageGas10Mins);
+
+        //adding average gas every 10mins for 24 hrs to get the todaysAverageGasPrice
         cache.addCache(GAS_PRICE_FOR_THE_DAY, averageGas10Mins);
         const getPricee = await cache.getCache(GAS_PRICE_FOR_THE_DAY);
-        console.log('cache gotten from redis: %o', getPricee);
-        gasPrice.setGasPrice(averageGas10Mins);
-        // let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(90);
+        logger.info('cache gotten from redis: %o', getPricee);
+        
+        // assigning the average gas price for 90 days to variable 
+        let movingAverageGasForTheLast90DaysFromMongoDB = await gasPrice.getAverageGasPrice(15);
+        logger.info('moving average gas: %o', movingAverageGasForTheLast90DaysFromMongoDB.average);
+
+        // assigning the threshold to a variable
         let flag = await cache.getCache(THRESHOLD_FLAG);
 
-        // if (movingAverageForYesterdayFromMongoDB.average < averageGas10Mins && flag == 'false') {
-        //   let message = 'has increased';
-        //   console.log(message);
-        //   cache.setCache(THRESHOLD_FLAG, true);
-        // } else if (movingAverageForYesterdayFromMongoDB.average > averageGas10Mins && flag == 'true') {
-        //   let message = 'has reduced';
-        //   console.log(message);
-        //   cache.setCache(THRESHOLD_FLAG, false);
-        // }
+
+        // checks if the result gotten every 10 minutes is higher than the movingAverageGasForTheLast90DaysFromMongoDB 
+        if (movingAverageGasForTheLast90DaysFromMongoDB.average < averageGas10Mins && flag == 'true') {
+          let message = 'has increased';
+          this.sendMessageToContract(message);
+          cache.setCache(THRESHOLD_FLAG, false);
+        } 
+
+        // checks if the result gotten every 10 minutes is less than the movingAverageGasForTheLast90DaysFromMongoDB 
+        else if (movingAverageGasForTheLast90DaysFromMongoDB.average > averageGas10Mins && flag == 'false') {
+          let message = 'has reduced';
+          this.sendMessageToContract(message);
+          cache.setCache(THRESHOLD_FLAG, true);
+        }
+        const afterIfStatement = await cache.getCache(THRESHOLD_FLAG)
+        logger.info('flag: %o', afterIfStatement)
       });
     });
   }
@@ -153,13 +169,23 @@ export default class GasStationChannel {
     const logger = this.logger;
     logger.debug('updating mongodb');
 
-    // const todaysAverageGasPrice = (await cache.getCache(GAS_PRICE_FOR_THE_DAY)) / 144;
-    // cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
-    let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(13);
-    console.log(movingAverageForYesterdayFromMongoDB.average);
-    // const todaysMovingAverage =
-    //   (movingAverageForYesterdayFromMongoDB.average * 90 + todaysAverageGasPrice * 1) / 90 + 1;
-    // gasPrice.setGasPrice(todaysMovingAverage);
-    return movingAverageForYesterdayFromMongoDB;
+    const gasPricee = await cache.getCache(GAS_PRICE_FOR_THE_DAY)
+    logger.info('todays average gas price before revert: %o', gasPricee)
+
+    const todaysAverageGasPrice = (gasPricee) / 4 //144;
+    logger.info('todays average gas price: %o', todaysAverageGasPrice);
+
+    await cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
+    const gasPriceAfterRever = await cache.getCache(GAS_PRICE_FOR_THE_DAY)
+    logger.info('todays average gas price after revert: %o', gasPriceAfterRever);
+
+    let movingAverageForYesterdayFromMongoDB = await gasPrice.getAverageGasPrice(16) //(90);
+    logger.info('last 90 days moving average: %o',movingAverageForYesterdayFromMongoDB.average);
+
+    const todaysMovingAverage =
+      ((movingAverageForYesterdayFromMongoDB.average * 90) + (todaysAverageGasPrice * 1)) / (90 + 1);
+      logger.info('todays moving average: %o', todaysMovingAverage)
+
+    gasPrice.setGasPrice(todaysMovingAverage);
   }
 }
