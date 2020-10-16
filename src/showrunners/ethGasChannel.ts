@@ -5,16 +5,15 @@ import events from '../subscribers/events';
 
 import { ethers } from 'ethers';
 import { truncateSync } from 'fs';
-import cache from '../services/cache';
-import gasPrice from '../services/gasPrice';
+import Cache from '../services/cache';
+import GasPrice from '../services/gasPrice';
 
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
 
-const db = require('../helpers/dbHelper');
-const utils = require('../helpers/utilsHelper');
-
 // variables for mongoDb and redis
+const cache = Container.get(Cache);
+const gasPrice = Container.get(GasPrice);
 const GAS_PRICE = 'gasprice';
 const THRESHOLD_FLAG = 'threshold_flag';
 const GAS_PRICE_FOR_THE_DAY = 'gas_price_for_the_day';

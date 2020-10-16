@@ -24,11 +24,16 @@ export default async ({ expressApp }) => {
   const mongoConnection = await mongooseLoader();
   logger.info('✌️   Mongoose Loaded and connected!');
 
-  const redisCache = await redisLoader( config.redisURL );
+  const redisCache = await redisLoader({ url: config.redisURL });
   logger.info('✌️   Redis Loaded! 🐳🐳🐳');
 
+  const GasPriceModel = {
+    name: 'GasPriceModel',
+    // Notice the require syntax and the '.default'
+    model: require('../models/gasPrice').default,
+  };
   // It returns the agenda instance because it's needed in the subsequent loaders
-  await dependencyInjectorLoader({});
+  await dependencyInjectorLoader({ redisCache, mongoConnection, models: [GasPriceModel] });
   logger.info('✌️   Dependency Injector loaded');
 
   logger.info('✌️   Loading DB Events listener');

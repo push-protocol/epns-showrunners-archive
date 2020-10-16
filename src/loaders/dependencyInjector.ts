@@ -3,11 +3,28 @@ import LoggerInstance from './logger';
 
 import config from '../config';
 
-export default () => {
+export default ({
+  redisCache,
+  mongoConnection,
+  models,
+}: {
+  redisCache;
+  mongoConnection;
+  models: { name: string; model: any }[];
+}) => {
   try {
-    Container.set('logger', LoggerInstance)
+    models.forEach(m => {
+      console.log(m);
+      Container.set(m.name, m.model);
+    });
+    LoggerInstance.info('✌️   Mongoose Injected');
+    Container.set('logger', LoggerInstance);
     LoggerInstance.info('✌️   Logger Injected');
-    // 
+    Container.set('redis', redisCache);
+    LoggerInstance.info('✌️   Redis Injected');
+    // Container.set('mongoose', mongoConnection);
+
+    //
     // Container.set('dbpool', MysqlInstance)
     // LoggerInstance.info('✌️   Databse Injected');
 
