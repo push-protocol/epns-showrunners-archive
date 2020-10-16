@@ -1,11 +1,12 @@
-import { Service, Inject } from 'typedi';
 import GasPriceModel from '../models/gasPrice';
 import { IGas } from '../interfaces/IGas';
-import config from '../config';
-import argon2 from 'argon2';
-import { randomBytes } from 'crypto';
 
-@Service()
+/**
+ * Set gas price
+ * @description adds average gas price for a day to mongodb
+ * @param {Number} price
+ * @return {Promise<{ gasPrice: IGas }>}
+ */
 const setGasPrice = async (price: Number): Promise<{ gasPrice: IGas }> => {
   let gasPrice = await GasPriceModel.create({
     price,
@@ -17,6 +18,12 @@ const setGasPrice = async (price: Number): Promise<{ gasPrice: IGas }> => {
   return { gasPrice };
 };
 
+/**
+ * Get average gas price
+ * @description returns average gas price for a number of days from mongodb
+ * @param {Number} days
+ * @return {Promise<{ average: Number }>}
+ */
 const getAverageGasPrice = async (days: Number): Promise<{ average: Number }> => {
   // this.logger.silly('Get gas price');
   try {
@@ -38,6 +45,16 @@ const getAverageGasPrice = async (days: Number): Promise<{ average: Number }> =>
   }
 };
 
+/**
+ * Two DP
+ * @description round up a float value top 2 decimal places
+ * @param {Number} value
+ * @return {Number}
+ */
+const twoDP = (value: Number) => {
+  return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+};
+
 const clearGasPrices = async (): Promise<null> => {
   // this.logger.silly('Get gas price');
   await GasPriceModel.deleteMany({});
@@ -48,5 +65,6 @@ const exportMongo = {
   setGasPrice,
   getAverageGasPrice,
   clearGasPrices,
+  twoDP,
 };
 export default exportMongo;
