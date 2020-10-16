@@ -44,7 +44,9 @@ export default {
   dbhost: process.env.DB_HOST,
   dbname: process.env.DB_NAME,
   dbuser: process.env.DB_USER,
-  dbpass: process.env.DB_PASS,
+  dbpass: process.env.DB_PASS, 
+  mongodb: process.env.MONGO_URI,
+
 
   /**
    * File system config
@@ -78,6 +80,24 @@ export default {
   ensDeployedContract: process.env.ENS_DEPLOYED_CONTRACT,
   ensDeployedContractABI: require('./ens_contract.json'),
 
+   /**
+   * COMPOUND Related
+   */
+  // compComptrollerDeployedContract: process.env.COMPOUND_COMPTROLLER_DEPLOYED_CONTRACT,
+  // compComptrollerDeployedContractABI: require('./comp_comptroller.json'),
+
+  // cDaiDeployedContract:process.env.CDAI,
+  // cDaiDeployedContractABI: require('./cDai.json'),
+
+  // cBatDeployedContract:process.env.CBAT,
+  // cBatDeployedContractABI: require('./cBat.json'),
+
+  // cEthDeployedContract:process.env.CETH,
+  // cEthDeployedContractABI: require('./cEth.json'),
+
+  // priceOracleDeployedContract:process.env.PRICE,
+  // priceOracleDeployedContractABI: require('./priceOracle.json'),
+
   /**
    * IPFS related
    */
@@ -97,12 +117,17 @@ export default {
   cmcAPIKey: process.env.CMC_API_KEY,
   cmcEndpoint: process.env.CMC_ENDPOINT,
 
+  gasAPIKey: process.env.GAS_API_KEY,
+  gasEndpoint: process.env.GAS_ENDPOINT,
+
   cmcSandboxAPIKey: process.env.CMS_SANDBOX_API_KEY,
   cmcSandboxEndpoint: process.env.CMC_SANDBOX_ENDPOINT,
 
   btcTickerPrivateKey: process.env.BTC_TICKER_PRIVATE_KEY,
   ethTickerPrivateKey: process.env.ETH_TICKER_PRIVATE_KEY,
   ensDomainExpiryPrivateKey: process.env.ENS_DOMAIN_EXPIRY_PRIVATE_KEY,
+  compComptrollerPrivateKey: process.env.COMP_COMPTROLLER_PRIVATE_KEY,
+  ethGasStationPrivateKey: process.env.ETH_GAS_STATION_PRIVATE_KEY,
 
-  infuraId: process.env.DEV_WEB3_PROVIDER,
+  infuraId: process.env.ID,
 };

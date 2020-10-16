@@ -19,6 +19,7 @@ import schedule from 'node-schedule';
 import BtcTickerChannel from '../showrunners/btcTickerChannel';
 import EthTickerChannel from '../showrunners/ethTickerChannel';
 import EnsExpirationChannel from '../showrunners/ensExpirationChannel';
+import EthGasStationChannel from '../showrunners/ethGasChannel';
 
 
 export default ({ logger }) => {
@@ -57,19 +58,51 @@ export default ({ logger }) => {
   // });
 
 
-// 1.3 ENS TICKER CHANNEL
-// logger.info('-- 🛵 Scheduling Showrunner - ENS Domain Expiry Channel [on 24 Hours]');
-// schedule.scheduleJob('0 0 */24 * * *', async function(){
-//   const ensTicker = Container.get(EnsExpirationChannel);
-//   const taskName = 'ENS Domain Expiry and sendMessageToContract()';
-//
-//   try {
-//     await ensTicker.sendMessageToContract();
-//     logger.info(`🐣 Cron Task Completed -- ${taskName}`);
-//   }
-//   catch (err) {
-//     logger.error(`❌ Cron Task Failed -- ${taskName}`);
-//     logger.error(`Error Object: %o`, err);
-//   }
-// });
+//1.3 ENS TICKER CHANNEL
+logger.info('-- 🛵 Scheduling Showrunner - ENS Domain Expiry Channel [on 24 Hours]');
+schedule.scheduleJob('0 0 */24 * * *', async function(){
+  const ensTicker = Container.get(EnsExpirationChannel);
+  const taskName = 'ENS Domain Expiry and sendMessageToContract()';
+
+  try {
+    await ensTicker.sendMessageToContract();
+    logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+  }
+  catch (err) {
+    logger.error(`❌ Cron Task Failed -- ${taskName}`);
+    logger.error(`Error Object: %o`, err);
+  }
+});
+
+// 1.4 GAS CHANNEL
+logger.info('-- 🛵 Scheduling Showrunner - Gas Channel [on 10 minutes]');
+schedule.scheduleJob('0 0 */10 * * *', async function(){
+  const compoundTicker = Container.get(EthGasStationChannel);
+  const taskName = 'Gas result and sendMessageToContract()';
+
+  try {
+    await compoundTicker.getGasPrice();
+    logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+  }
+  catch (err) {
+    logger.error(`❌ Cron Task Failed -- ${taskName}`);
+    logger.error(`Error Object: %o`, err);
+  }
+});
+
+// 1.4i GAS CHANNEL
+logger.info('-- 🛵 Scheduling Showrunner - Gas Channel [on 10 minutes]');
+schedule.scheduleJob('0 0 */10 * * *', async function(){
+  const compoundTicker = Container.get(EthGasStationChannel);
+  const taskName = 'Gas result and sendMessageToContract()';
+
+  try {
+    await compoundTicker.updateMongoDb();
+    logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+  }
+  catch (err) {
+    logger.error(`❌ Cron Task Failed -- ${taskName}`);
+    logger.error(`Error Object: %o`, err);
+  }
+});
 };
