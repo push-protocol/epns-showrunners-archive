@@ -45,11 +45,11 @@ The Showrunners run on node.js server and are modularized on the ideas and archi
 
 We would need external services of:
 
-- [Mongodb](https://www.mongodb.com/)
-- [Redis](https://www.mongodb.com/)
+- [Mongodb](https://www.mongodb.com/) - Primary Database : [Installation](https://docs.mongodb.com/manual/installation/) We would be using Mongodb Atlas
+- [Redis](https://www.mongodb.com/) - Internal Cache : [Installation](https://redis.io/topics/quickstart)
 - [Mongodb Atlas](https://www.mongodb.com/cloud/atlas)
 
-For local ease of development, we make use of [Docker](https://www.docker.com/).
+For local ease of development, we make use of [Docker](https://docs.docker.com/get-docker/).
 
 To start these services,
 
