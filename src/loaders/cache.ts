@@ -1,9 +1,11 @@
 const redis = require('async-redis');
 import config from '../config';
 
-const CacheInstance = () => {
-  const ReddisInstance = redis.createClient( config.redisURL );
-
+class CacheInstance {
+  private ReddisInstance;
+  constructor() {
+    this.ReddisInstance = redis.createClient(config.redisURL);
+  }
   /**
    * Set cache
    * @description adds a part
@@ -11,9 +13,8 @@ const CacheInstance = () => {
    * @param {String} value Cache Value
    * @return {Promise<{ null }>}
    */
-  const setCache = async (key: String, value: Number) => {
-    this.client = ReddisInstance;
-    return this.client.set(key, value);
+  public async setCache(key: String, value: Number) {
+    return this.ReddisInstance.set(key, value);
   };
 
   /**
@@ -23,11 +24,10 @@ const CacheInstance = () => {
    * @param {Number} value Value to be added
    * @return {Promise<{ null }>}
    */
-  const addCache = async (key: String, value: Number) => {
-    this.client = ReddisInstance;
+  public async addCache(key: String, value: Number) {
     const prev = await this.getCache(key);
     value = Number(prev) + Number(value);
-    return this.client.set(key, value);
+    return this.ReddisInstance.set(key, value);
   };
 
   /**
@@ -36,9 +36,8 @@ const CacheInstance = () => {
    * @param {String} key Cache Key
    * @return {Promise<{ null }>}
    */
-  const removeCache = async (key: String) => {
-    this.client = ReddisInstance;
-    return this.client.del(key);
+  public async removeCache(key: String) {
+    return this.ReddisInstance.del(key);
   };
 
   /**
@@ -47,10 +46,11 @@ const CacheInstance = () => {
    * @param {String} key Cache Key
    * @return {Promise<{ String }>}
    */
-  const getCache = async (key: String) => {
-    this.client = ReddisInstance;
-    return this.client.get(key);
+  public async getCache(key: String) {
+    return this.ReddisInstance.get(key);
   };
+
 }
 
-export default CacheInstance;
+
+export default new CacheInstance();

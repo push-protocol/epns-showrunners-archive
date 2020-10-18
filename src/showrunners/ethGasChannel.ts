@@ -23,8 +23,6 @@ export default class GasStationChannel {
     @EventDispatcher() private eventDispatcher: EventDispatcherInterface,
   ) {
     //initializing cache
-    console.log("%o", this.cached);
-
     this.cached.setCache(THRESHOLD_FLAG, true);
     this.cached.setCache(GAS_PRICE_FOR_THE_DAY, 0);
   }
@@ -110,7 +108,7 @@ export default class GasStationChannel {
   // To get the gas price
   public async getGasPrice() {
     const logger = this.logger;
-    const cache = this.cache;
+    const cache = this.cached;
 
     logger.debug('Getting gas price from ETH Gas Station');
 
@@ -192,7 +190,7 @@ export default class GasStationChannel {
   // To update gas price average
   public async updateGasPriceAverage() {
     const logger = this.logger;
-    const cache = this.cache;
+    const cache = this.cached;
 
     logger.debug('updating mongodb');
 
@@ -252,7 +250,7 @@ export default class GasStationChannel {
         .sort({ _id: -1 })
         .limit(Number(days));
 
-      console.log(gasPrices);
+      // console.log(gasPrices);
 
       // this.logger.silly('calculaste average');
       const totalGas = gasPrices.reduce((initial, value) => initial + value.price, 0);
