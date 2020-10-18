@@ -15,18 +15,17 @@ export default (app: Router) => {
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/compoundliquidation endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners/gas endpoint with body: %o', req.body )
       try {
         const ethGasChannel = Container.get(EthGasStationChannel);
-        const { success,  data } = await ethGasChannel.getGasPrice();
+        const { success, data} = await ethGasChannel.sendMessageToContract();
 
-        return res.status(201).json({ success,  data });
+        return res.status(201).json({ success, data });
       } catch (e) {
         Logger.error('🔥 error: %o', e);
         return next(e);
       }
     },
   );
-
 
 };
