@@ -1,10 +1,8 @@
-import { Service, Inject, Container } from 'typedi';
+const redis = require('async-redis');
+import config from '../config';
 
-@Service()
-export default class CacheService {
-  constructor() {
-    // this.client = Container.get('redis');
-  }
+const CacheInstance = () => {
+  const ReddisInstance = redis.createClient( config.redisURL );
 
   /**
    * Set cache
@@ -13,10 +11,10 @@ export default class CacheService {
    * @param {String} value Cache Value
    * @return {Promise<{ null }>}
    */
-  public async setCache(key: String, value) {
-    this.client = Container.get('redis');
-    await this.client.set(key, value);
-  }
+  const setCache = async (key: String, value: Number) => {
+    this.client = ReddisInstance;
+    return this.client.set(key, value);
+  };
 
   /**
    * Add caches
@@ -25,12 +23,12 @@ export default class CacheService {
    * @param {Number} value Value to be added
    * @return {Promise<{ null }>}
    */
-  public async addCache(key: String, value: Number) {
-    this.client = Container.get('redis');
+  const addCache = async (key: String, value: Number) => {
+    this.client = ReddisInstance;
     const prev = await this.getCache(key);
     value = Number(prev) + Number(value);
-    await this.client.set(key, value);
-  }
+    return this.client.set(key, value);
+  };
 
   /**
    * Remove cache
@@ -38,10 +36,10 @@ export default class CacheService {
    * @param {String} key Cache Key
    * @return {Promise<{ null }>}
    */
-  public async removeCache(key: String) {
-    this.client = Container.get('redis');
-    await this.client.del(key);
-  }
+  const removeCache = async (key: String) => {
+    this.client = ReddisInstance;
+    return this.client.del(key);
+  };
 
   /**
    * Get cache
@@ -49,8 +47,10 @@ export default class CacheService {
    * @param {String} key Cache Key
    * @return {Promise<{ String }>}
    */
-  getCache = async (key: String) => {
-    this.client = Container.get('redis');
+  const getCache = async (key: String) => {
+    this.client = ReddisInstance;
     return this.client.get(key);
   };
 }
+
+export default CacheInstance;

@@ -3,6 +3,8 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import routes from '../api';
 import config from '../config';
+
+
 export default ({ app }: { app: express.Application }) => {
   /**
    * Health Check endpoints

@@ -1,30 +1,22 @@
 import { Container } from 'typedi';
 import LoggerInstance from './logger';
+import CacheInstance from './cache';
 
 import config from '../config';
 
-export default ({
-  redisCache,
-  mongoConnection,
-  models,
-}: {
-  redisCache;
-  mongoConnection;
-  models: { name: string; model: any }[];
-}) => {
+export default ({ models }: { models: { name: string; model: any }[] }) => {
   try {
     models.forEach(m => {
-      console.log(m);
+      LoggerInstance.info('✌️   Loading Mongo DB Model: %s', m)
       Container.set(m.name, m.model);
     });
-    LoggerInstance.info('✌️   Mongoose Injected');
+
     Container.set('logger', LoggerInstance);
     LoggerInstance.info('✌️   Logger Injected');
-    Container.set('redis', redisCache);
-    LoggerInstance.info('✌️   Redis Injected');
-    // Container.set('mongoose', mongoConnection);
 
-    //
+    Container.set('cached', CacheInstance);
+    LoggerInstance.info('✌️   Cache (with Redis) Loaded! 🐳🐳🐳');
+
     // Container.set('dbpool', MysqlInstance)
     // LoggerInstance.info('✌️   Databse Injected');
 

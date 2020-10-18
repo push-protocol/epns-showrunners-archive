@@ -1,5 +1,6 @@
 const redis = require('async-redis');
+import config from '../config';
 
-export default async (options): Promise<Any> => {
-  return redis.createClient(options);
-};
+const ReddisInstance = redis.createClient({ config.redisURL });
+
+export default ReddisInstance;
