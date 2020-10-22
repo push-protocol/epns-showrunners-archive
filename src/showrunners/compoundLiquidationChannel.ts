@@ -11,6 +11,10 @@ const moment = require('moment'); // time library
 const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
 
+function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 @Service()
 export default class CompoundLiquidationChannel {
   constructor(
@@ -77,13 +81,14 @@ export default class CompoundLiquidationChannel {
 
               logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
               try {
-                const nonce = provider.getTransactionCount(wallet.address, 'pending');
-                
+                const nonce = await epnsContractWithSigner.signer.getTransactionCount('pending');
+                console.log("signerAddress: %o | nonce: %o ", null, nonce)
                 const options = {
                   nonce
-              };
-                let tx = await epnsContractWithSigner.sendMessage(wallet, payloadType, ipfshash, 1);
-
+                }
+                let tx = await epnsContractWithSigner.sendMessage(wallet, payloadType, ipfshash, 1, options);
+                await timeout(3000);
+                
                 logger.info("Transaction sent: %o", tx);
               }
               catch (err) {
