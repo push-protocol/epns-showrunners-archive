@@ -82,7 +82,7 @@ export default class CompoundLiquidationChannel {
               logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
               try {
                 const nonce = await epnsContractWithSigner.signer.getTransactionCount('pending');
-                console.log("signerAddress: %o | nonce: %o ", null, nonce)
+                // console.log("signerAddress: %o | nonce: %o ", null, nonce)
                 const options = {
                   nonce
                 }
