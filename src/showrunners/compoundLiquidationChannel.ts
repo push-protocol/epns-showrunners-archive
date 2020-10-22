@@ -31,6 +31,7 @@ export default class CompoundLiquidationChannel {
         infura: config.infuraId
     });
 
+
       let wallet = new ethers.Wallet(config.compComptrollerPrivateKey, provider);
 
       let epnsContract = new ethers.Contract(config.deployedContract, config.deployedContractABI, provider);
@@ -40,7 +41,7 @@ export default class CompoundLiquidationChannel {
 
       const filter = epnsContract.filters.Subscribe("0x4F3BDE9380AEDA90C8A6724AF908bb5a2fac7f54")
 
-      let fromBlock = 0
+      let fromBlock = 0;
        
       //Function to get all the addresses in the channel
       epnsContract.queryFilter(filter, fromBlock)
@@ -76,6 +77,11 @@ export default class CompoundLiquidationChannel {
 
               logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
               try {
+                const nonce = provider.getTransactionCount(wallet.address, 'pending');
+                
+                const options = {
+                  nonce
+              };
                 let tx = await epnsContractWithSigner.sendMessage(wallet, payloadType, ipfshash, 1);
 
                 logger.info("Transaction sent: %o", tx);
