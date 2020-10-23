@@ -39,4 +39,8 @@ Logger.info(`
   });
 }
 
-startServer();
+try {
+  startServer();
+} catch (error) {
+  console.log(error)
+}
