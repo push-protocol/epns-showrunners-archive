@@ -75,34 +75,34 @@ export default ({ logger }) => {
   });
 
   // 1.4.1 GAS CHANNEL
-  logger.info('-- 🛵 Scheduling Showrunner - Gas Channel [on 10 minutes]');
-  schedule.scheduleJob('0 */10 * * * *', async function(){
-    const gasTicker = Container.get(EthGasStationChannel);
-    const taskName = 'Gas result and sendMessageToContract()';
+  // logger.info('-- 🛵 Scheduling Showrunner - Gas Channel [on 10 minutes]');
+  // schedule.scheduleJob('0 */10 * * * *', async function(){
+  //   const gasTicker = Container.get(EthGasStationChannel);
+  //   const taskName = 'Gas result and sendMessageToContract()';
 
-    try {
-      await gasTicker.sendMessageToContract();
-      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
-    }
-    catch (err) {
-      logger.error(`❌ Cron Task Failed -- ${taskName}`);
-      logger.error(`Error Object: %o`, err);
-    }
-  });
+  //   try {
+  //     await gasTicker.sendMessageToContract();
+  //     logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+  //   }
+  //   catch (err) {
+  //     logger.error(`❌ Cron Task Failed -- ${taskName}`);
+  //     logger.error(`Error Object: %o`, err);
+  //   }
+  // });
 
-  // 1.4.2 GAS CHANNEL
-  logger.info('-- 🛵 Scheduling Showrunner - Gas Channel [on 24 minutes]');
-  schedule.scheduleJob('0 0 */24 * * *', async function(){
-    const gasDbTicker = Container.get(EthGasStationChannel);
-    const taskName = 'updated mongoDb';
+  // // 1.4.2 GAS CHANNEL
+  // logger.info('-- 🛵 Scheduling Showrunner - Gas Channel [on 24 minutes]');
+  // schedule.scheduleJob('0 0 */24 * * *', async function(){
+  //   const gasDbTicker = Container.get(EthGasStationChannel);
+  //   const taskName = 'updated mongoDb';
 
-    try {
-      await  gasDbTicker.updateGasPriceAverage();
-      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
-    }
-    catch (err) {
-      logger.error(`❌ Cron Task Failed -- ${taskName}`);
-      logger.error(`Error Object: %o`, err);
-    }
-  });
+  //   try {
+  //     await  gasDbTicker.updateGasPriceAverage();
+  //     logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+  //   }
+  //   catch (err) {
+  //     logger.error(`❌ Cron Task Failed -- ${taskName}`);
+  //     logger.error(`Error Object: %o`, err);
+  //   }
+  // });
 };
