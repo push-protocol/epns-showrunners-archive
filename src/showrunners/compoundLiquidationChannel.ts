@@ -49,14 +49,14 @@ export default class CompoundLiquidationChannel {
        
       //Function to get all the addresses in the channel
       epnsContract.queryFilter(filter, fromBlock)
-        .then(eventLog => {
+        .then(async (eventLog) => {
           // Log the event
           logger.debug("Event log returned %o", eventLog);
            
           // Loop through all addresses in the channel and decide who to send notification
           let allTransactions = [];
 
-          eventLog.forEach((log) => {
+          eventLog.map((log) => {
             // Get user address
             const userAddress = log.args.user;
             allTransactions.push(
@@ -68,12 +68,11 @@ export default class CompoundLiquidationChannel {
             })
             
             // resolve all transactions
-          Promise.all(allTransactions)
-          .then(async (results) => {
-            logger.debug("All Transactions Loaded: %o", results);
-
-            for (const object of results) {
-              if (object.success) {
+          const results = await Promise.all(allTransactions);
+          logger.debug("All Transactions Loaded: %o", results);
+          for (let index = 0; index < results.length; index++) {
+            const object = results[index];
+            if (object.success) {
               // Send notification
               const wallet = object.wallet;
               const ipfshash = object.ipfshash;
@@ -81,13 +80,14 @@ export default class CompoundLiquidationChannel {
 
               logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
               try {
-                const nonce = await epnsContractWithSigner.signer.getTransactionCount('pending');
-                console.log("signerAddress: %o | nonce: %o ", null, nonce)
+                const signerAddress = await epnsContractWithSigner.signer.getAddress();
+                const nonce = await provider.getTransactionCount(signerAddress, 'pending')
+                console.log("signerAddress: %o | nonce: %o ", signerAddress, nonce)
                 const options = {
-                  nonce
+                  nonce,
                 }
                 let tx = await epnsContractWithSigner.sendMessage(wallet, payloadType, ipfshash, 1, options);
-                await timeout(3000);
+                await timeout(2000);
                 
                 logger.info("Transaction sent: %o", tx);
               }
@@ -97,7 +97,7 @@ export default class CompoundLiquidationChannel {
             }
           }
           logger.debug("Compound Liquidation Alert! logic completed!");
-          })
+          // })
           resolve("Processing Compound Liquidation Alert! logic completed!");
         })
         .catch(err => {
