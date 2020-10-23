@@ -87,7 +87,7 @@ export default class CompoundLiquidationChannel {
                   nonce,
                 }
                 let tx = await epnsContractWithSigner.sendMessage(wallet, payloadType, ipfshash, 1, options);
-                await timeout(2000);
+                await timeout(8000);
                 
                 logger.info("Transaction sent: %o", tx);
               }
