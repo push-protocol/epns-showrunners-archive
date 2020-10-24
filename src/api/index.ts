@@ -3,6 +3,7 @@ import { Router } from 'express';
 import btcTicker from './routes/showrunners_btcticker';
 import ethTicker from './routes/showrunners_ethticker';
 import ensDomain from './routes/showrunners_ensdomain';
+import compoundTicker from './routes/showrunners_compoundLiquidation';
 import gasPrice from './routes/showrunners_gasprice';
 
 
@@ -14,6 +15,7 @@ export default () => {
 	btcTicker(app);
 	ethTicker(app);
 	ensDomain(app);
+	compoundTicker(app);
 	gasPrice(app);
 
 	// Finally return app

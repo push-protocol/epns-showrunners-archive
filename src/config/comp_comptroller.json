@@ -1,0 +1,88 @@
+[
+
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "getAccountLiquidity",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "getAssetsIn",
+        "outputs": [
+            {
+                "internalType": "contract CToken[]",
+                "name": "",
+                "type": "address[]"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xabfceffc"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "markets",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "isListed",
+                "type": "bool"
+            },
+            {
+                "internalType": "uint256",
+                "name": "collateralFactorMantissa",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bool",
+                "name": "isComped",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x8e8f294b"
+    }
+]

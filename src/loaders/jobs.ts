@@ -74,7 +74,23 @@ export default ({ logger }) => {
     }
   });
 
-  // 1.4.1 GAS CHANNEL
+  // 1.4 COMPOUND LIQUIDATION CHANNEL
+  logger.info('-- 🛵 Scheduling Showrunner - Compound Liquidation Channel [on 24 Hours]');
+  schedule.scheduleJob('0 0 */24 * * *', async function(){
+    const compoundTicker = Container.get(CompoundLiquidationChannel);
+    const taskName = 'Compound Liquidation and sendMessageToContract()';
+
+    try {
+      await compoundTicker.sendMessageToContract();
+      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+    }
+    catch (err) {
+      logger.error(`❌ Cron Task Failed -- ${taskName}`);
+      logger.error(`Error Object: %o`, err);
+    }
+  });
+
+  // 1.5.1 GAS CHANNEL
   // logger.info('-- 🛵 Scheduling Showrunner - Gas Channel [on 10 minutes]');
   // schedule.scheduleJob('0 */10 * * * *', async function(){
   //   const gasTicker = Container.get(EthGasStationChannel);
@@ -90,7 +106,7 @@ export default ({ logger }) => {
   //   }
   // });
 
-  // // 1.4.2 GAS CHANNEL
+  // // 1.5.2 GAS CHANNEL
   // logger.info('-- 🛵 Scheduling Showrunner - Gas Channel [on 24 minutes]');
   // schedule.scheduleJob('0 0 */24 * * *', async function(){
   //   const gasDbTicker = Container.get(EthGasStationChannel);

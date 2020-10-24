@@ -80,23 +80,44 @@ export default {
   ensDeployedContract: process.env.ENS_DEPLOYED_CONTRACT,
   ensDeployedContractABI: require('./ens_contract.json'),
 
-   /**
+    /**
    * COMPOUND Related
    */
-  // compComptrollerDeployedContract: process.env.COMPOUND_COMPTROLLER_DEPLOYED_CONTRACT,
-  // compComptrollerDeployedContractABI: require('./comp_comptroller.json'),
+  compComptrollerDeployedContract: process.env.COMPOUND_COMPTROLLER_DEPLOYED_CONTRACT,
+  compComptrollerDeployedContractABI: require('./comp_comptroller.json'),
 
-  // cDaiDeployedContract:process.env.CDAI,
-  // cDaiDeployedContractABI: require('./cDai.json'),
+  cDaiDeployedContract:process.env.CDAI,
+  cDaiDeployedContractABI: require('./cDai.json'),
 
-  // cBatDeployedContract:process.env.CBAT,
-  // cBatDeployedContractABI: require('./cBat.json'),
+  cBatDeployedContract:process.env.CBAT,
+  cBatDeployedContractABI: require('./cBat.json'),
 
-  // cEthDeployedContract:process.env.CETH,
-  // cEthDeployedContractABI: require('./cEth.json'),
+  cEthDeployedContract:process.env.CETH,
+  cEthDeployedContractABI: require('./cEth.json'),
 
-  // priceOracleDeployedContract:process.env.PRICE,
-  // priceOracleDeployedContractABI: require('./priceOracle.json'),
+  cRepDeployedContract:process.env.CREP,
+  cRepDeployedContractABI: require('./cRep.json'),
+
+  cSaiDeployedContract:process.env.CSAI,
+  cSaiDeployedContractABI: require('./cSai.json'),
+
+  cUniDeployedContract:process.env.CUNI,
+  cUniDeployedContractABI: require('./cUni.json'),
+
+  cUsdcDeployedContract:process.env.CUSDC,
+  cUsdcDeployedContractABI: require('./cUsdc.json'),
+
+  cUsdtDeployedContract:process.env.CUSDT,
+  cUsdtDeployedContractABI: require('./cUsdt.json'),
+
+  cWbtcDeployedContract:process.env.CWBTC,
+  cWbtcDeployedContractABI: require('./cWbtc.json'),
+
+  cZrxDeployedContract:process.env.CZRX,
+  cZrxDeployedContractABI: require('./cZrx.json'),
+
+  priceOracleDeployedContract:process.env.PRICE,
+  priceOracleDeployedContractABI: require('./priceOracle.json'),
 
   /**
    * IPFS related
