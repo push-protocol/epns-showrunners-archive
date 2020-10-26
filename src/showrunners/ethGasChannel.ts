@@ -194,10 +194,15 @@ export default class GasStationChannel {
 
     logger.debug('updating mongodb');
 
-    const gasPricee = await cache.getCache(GAS_PRICE_FOR_THE_DAY)
-    logger.info('todays average gas price before revert: %o', gasPricee)
+    let gasPriceEstimate = await cache.getCache(GAS_PRICE_FOR_THE_DAY);
+    if (!gasPriceEstimate) {
+      await this.getGasPrice();
+      gasPriceEstimate = await cache.getCache(GAS_PRICE_FOR_THE_DAY);
+    }
 
-    const todaysAverageGasPrice = (gasPricee) / 144;
+    logger.info('todays average gas price before revert: %o', gasPriceEstimate)
+
+    const todaysAverageGasPrice = (gasPriceEstimate) / 144;
     logger.info('todays average gas price: %o', todaysAverageGasPrice);
 
     await cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
