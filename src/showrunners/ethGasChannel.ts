@@ -35,71 +35,74 @@ export default class GasStationChannel {
 
     return await new Promise((resolve, reject) => {
       this.getGasPrice()
-      .then(message =>{
-        if(message == 'flag has not changed'){
+      .then(info =>{
+        if(!info.changed){
+          const message = "Gas price status not changed";
+
           resolve({
-            success: "flag has not changed "
+            success: message
           });
-          logger.info('flag has not changed')
+
+          logger.info(message);
         }
         else{
-        this.getNewPrice(message)
-        .then(payload => {
-          const jsonisedPayload = JSON.stringify(payload);
+          this.getNewPrice(info)
+            .then(payload => {
+              const jsonisedPayload = JSON.stringify(payload);
 
-          // handle payloads, etc
-          const ipfs = require('nano-ipfs-store').at('https://ipfs.infura.io:5001');
-          ipfs
-            .add(jsonisedPayload)
-            .then(ipfshash => {
-              // Sign the transaction and send it to chain
-              const walletAddress = ethers.utils.computeAddress(config.ethGasStationPrivateKey);
+              // handle payloads, etc
+              const ipfs = require('nano-ipfs-store').at('https://ipfs.infura.io:5001');
+              ipfs
+                .add(jsonisedPayload)
+                .then(ipfshash => {
+                  // Sign the transaction and send it to chain
+                  const walletAddress = ethers.utils.computeAddress(config.ethGasStationPrivateKey);
 
-              logger.info(
-                'Payload prepared: %o, ipfs hash generated: %o, sending data to on chain from address %s...',
-                payload,
-                ipfshash,
-                walletAddress,
-              );
+                  logger.info(
+                    'Payload prepared: %o, ipfs hash generated: %o, sending data to on chain from address %s...',
+                    payload,
+                    ipfshash,
+                    walletAddress,
+                  );
 
-              let provider = new ethers.providers.InfuraProvider('ropsten');
-              let wallet = new ethers.Wallet(config.ethGasStationPrivateKey, provider);
+                  let provider = new ethers.providers.InfuraProvider('ropsten');
+                  let wallet = new ethers.Wallet(config.ethGasStationPrivateKey, provider);
 
-              // define contract
-              let contract = new ethers.Contract(config.deployedContract, config.deployedContractABI, provider);
-              // logger.info("Contract defined at address: %s with object: %o", ethers.utils.computeAddress(config.btcTickerPrivateKey), contract);
+                  // define contract
+                  let contract = new ethers.Contract(config.deployedContract, config.deployedContractABI, provider);
+                  // logger.info("Contract defined at address: %s with object: %o", ethers.utils.computeAddress(config.btcTickerPrivateKey), contract);
 
-              // connect as a signer of the non-constant methode
-              let contractWithSigner = contract.connect(wallet);
+                  // connect as a signer of the non-constant methode
+                  let contractWithSigner = contract.connect(wallet);
 
-              let txPromise = contractWithSigner.sendMessage(
-                ethers.utils.computeAddress(config.ethGasStationPrivateKey),
-                parseInt(payload.data.type),
-                ipfshash,
-                1,
-              );
+                  let txPromise = contractWithSigner.sendMessage(
+                    ethers.utils.computeAddress(config.ethGasStationPrivateKey),
+                    parseInt(payload.data.type),
+                    ipfshash,
+                    1,
+                  );
 
-              txPromise
-                .then(function(tx) {
-                  logger.info('Transaction sent: %o', tx);
-                  return resolve({ success: 1, data: tx });
+                  txPromise
+                    .then(function(tx) {
+                      logger.info('Transaction sent: %o', tx);
+                      return resolve({ success: 1, data: tx });
+                    })
+                    .catch(err => {
+                      reject('Unable to complete transaction, error: %o', err);
+                      throw err;
+                    });
                 })
                 .catch(err => {
-                  reject('Unable to complete transaction, error: %o', err);
+                  reject('Unable to obtain ipfshash, error: %o', err);
                   throw err;
                 });
             })
             .catch(err => {
-              reject('Unable to obtain ipfshash, error: %o', err);
+              logger.error(err);
+              reject('Unable to proceed with payload, error: %o', err);
               throw err;
             });
-        })
-        .catch(err => {
-          logger.error(err);
-          reject('Unable to proceed with payload, error: %o', err);
-          throw err;
-        });
-      }
+        }
       })
 
     });
@@ -136,20 +139,36 @@ export default class GasStationChannel {
 
         // checks if the result gotten every 10 minutes is higher than the movingAverageGasForTheLast90DaysFromMongoDB
         if (movingAverageGasForTheLast90DaysFromMongoDB.average < averageGas10Mins && flag == 'true') {
-          let message = 'has increased';
-          resolve(message);
+          const info = {
+            changed: true,
+            gasHigh: true,
+            currentPrice: averageGas10Mins,
+            averagePrice: movingAverageGasForTheLast90DaysFromMongoDB.average
+          }
+
+          resolve(info);
           cache.setCache(THRESHOLD_FLAG, false);
         }
 
         // checks if the result gotten every 10 minutes is less than the movingAverageGasForTheLast90DaysFromMongoDB
         else if (movingAverageGasForTheLast90DaysFromMongoDB.average > averageGas10Mins && flag == 'false') {
-          let message = 'has reduced';
-          resolve(message);
+          const info = {
+            changed: true,
+            gasHigh: false,
+            currentPrice: averageGas10Mins,
+            averagePrice: movingAverageGasForTheLast90DaysFromMongoDB.average
+          }
+
+          resolve(info);
+
           cache.setCache(THRESHOLD_FLAG, true);
         }
         else{
-          let message = 'flag has not changed';
-          resolve(message);
+          const info = {
+            changed: false
+          }
+
+          resolve(info);
         }
         const afterIfStatement = await cache.getCache(THRESHOLD_FLAG)
         logger.info('flag: %o', afterIfStatement)
@@ -158,15 +177,34 @@ export default class GasStationChannel {
   }
 
   // To get new gas price
-  public async getNewPrice(messages) {
+  public async getNewPrice(info) {
     const logger = this.logger;
 
     return await new Promise((resolve, reject) => {
-      const title = 'Gas Price';
-      const message = `Gas Price ${messages} `;
+      const gasPrice = Math.trunc(info.currentPrice);
 
-      const payloadTitle = `Gas Price Movement`;
-      const payloadMsg = `Dear subscriber gas price ${messages} `;
+      let title;
+      let payloadTitle;
+
+      let message;
+      let payloadMsg;
+
+      if (info.gasHigh) {
+        // Gas is high
+        title = 'Eth Gas Price Movement';
+        payloadTitle = `Eth Gas Price Movement ⬆`;
+
+        message = `Eth Gas Price is over the usual average, current cost: ${gasPrice} Gwei`;
+        payloadMsg = `[t:⬆] Gas Price are way above the normal rates. \n\n [d:Current] Price: [t: ${gasPrice} Gwei]\n[s:Usual] Price: [b: ${averagePrice} Gwei] [timestamp: ${Math.floor(new Date() / 1000)}]`;
+      }
+      else {
+        // Gas will be low
+        title = 'Eth Gas Price Movement';
+        payloadTitle = `Eth Gas Price Movement ⬇`;
+
+        message = `Eth Gas Price is back to normal, current cost: ${gasPrice} Gwei`;
+        payloadMsg = `[d:⬇] Hooray! Gas Price is back to normal rates. \n\n Current Price: [d: ${gasPrice} Gwei]\n[s:Usual] Price: [b: ${averagePrice} Gwei] [timestamp: ${Math.floor(new Date() / 1000)}]`;
+      }
 
       const payload = {
         notification: {
