@@ -39,7 +39,7 @@ export default (app: Router) => {
         const ethGasChannel = Container.get(EthGasStationChannel);
         const average = await ethGasChannel.updateGasPriceAverage();
 
-        return res.status(201).json(average );
+        return res.status(201).json(average);
       } catch (e) {
         Logger.error('🔥 error: %o', e);
         return next(e);

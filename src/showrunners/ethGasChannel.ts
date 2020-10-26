@@ -195,14 +195,14 @@ export default class GasStationChannel {
     logger.debug('updating mongodb');
 
     let gasPriceEstimate = await cache.getCache(GAS_PRICE_FOR_THE_DAY);
-    if (!gasPriceEstimate) {
+    if (!gasPriceEstimate || gasPriceEstimate == "0") {
       await this.getGasPrice();
       gasPriceEstimate = await cache.getCache(GAS_PRICE_FOR_THE_DAY);
     }
 
     logger.info('todays average gas price before revert: %o', gasPriceEstimate)
 
-    const todaysAverageGasPrice = (gasPriceEstimate) / 144;
+    const todaysAverageGasPrice = gasPriceEstimate;
     logger.info('todays average gas price: %o', todaysAverageGasPrice);
 
     await cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
@@ -210,13 +210,18 @@ export default class GasStationChannel {
     logger.info('todays average gas price after revert: %o', gasPriceAfterRever);
 
     let movingAverageForYesterdayFromMongoDB = await this.getAverageGasPrice();
-    logger.info('last 90 days moving average: %o',movingAverageForYesterdayFromMongoDB.average);
+    logger.info('last 90 days moving average: %o', movingAverageForYesterdayFromMongoDB.average);
 
-    const todaysMovingAverage =
+    let todaysMovingAverage = Number(todaysAverageGasPrice)
+    if (movingAverageForYesterdayFromMongoDB.average != 0) {
+      todaysMovingAverage =
       ((movingAverageForYesterdayFromMongoDB.average * 90) + (todaysAverageGasPrice * 1)) / (90 + 1);
-      logger.info('todays moving average: %o', todaysMovingAverage)
+    }
+    logger.info('todays moving average: %o', todaysMovingAverage)
 
     await this.setGasPrice(todaysMovingAverage);
+
+    return { average: todaysMovingAverage }
   }
 
   // GAS PRICE HELPER METHODS

@@ -26,7 +26,10 @@ class CacheInstance {
    */
   public async addCache(key: String, value: Number) {
     const prev = await this.getCache(key);
-    value = Number(prev) + Number(value);
+    if (prev != 0) {
+      value = Number(prev) + Number(value);
+      value = Number(value) / 2 
+    } 
     return this.ReddisInstance.set(key, value);
   };
 
