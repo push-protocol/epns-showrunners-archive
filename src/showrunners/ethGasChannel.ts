@@ -127,7 +127,7 @@ export default class GasStationChannel {
         logger.info('cache gotten from redis: %o', getPricee);
 
         // assigning the average gas price for 90 days to variable
-        let movingAverageGasForTheLast90DaysFromMongoDB = await this.getAverageGasPrice(90);
+        let movingAverageGasForTheLast90DaysFromMongoDB = await this.getAverageGasPrice();
         logger.info('moving average gas: %o', movingAverageGasForTheLast90DaysFromMongoDB.average);
 
         // assigning the threshold to a variable
@@ -209,7 +209,7 @@ export default class GasStationChannel {
     const gasPriceAfterRever = await cache.getCache(GAS_PRICE_FOR_THE_DAY)
     logger.info('todays average gas price after revert: %o', gasPriceAfterRever);
 
-    let movingAverageForYesterdayFromMongoDB = await this.getAverageGasPrice(90);
+    let movingAverageForYesterdayFromMongoDB = await this.getAverageGasPrice();
     logger.info('last 90 days moving average: %o',movingAverageForYesterdayFromMongoDB.average);
 
     const todaysMovingAverage =
@@ -229,39 +229,42 @@ export default class GasStationChannel {
    */
   public async setGasPrice(price: Number): Promise<{ gasPrice: IGas }> {
     this.GasPriceModel = Container.get('GasPriceModel');
-    let gasPrice = await this.GasPriceModel.create({
-      price,
-    });
-    if (!gasPrice) {
-      throw new Error('User cannot be created');
+    const gasPrice = await this.GasPriceModel.find()
+        .sort({ _id: -1 })
+      .limit(1);
+    let new_price = price
+    if (gasPrice.length > 0) {
+      new_price = Number(gasPrice[0].price) + Number(price)
+      new_price = Number(new_price) / 2
     }
-    gasPrice = gasPrice.toObject();
-    return { gasPrice };
+    this.logger.info('gas price set: %o, price: %o', new_price, price);
+    let latestGasPrice = await this.GasPriceModel.create({
+      price: new_price,
+    });
+    if (!latestGasPrice) {
+      throw new Error('Gas Price cannot be created');
+    }
+    latestGasPrice = latestGasPrice.toObject();
+    return { gasPrice: latestGasPrice };
   }
 
   /**
    * Get average gas price
    * @description returns average gas price for a number of days from mongodb
-   * @param {Number} days
    * @return {Promise<{ average: Number }>}
    */
-  public async getAverageGasPrice(days: Number): Promise<{ average: Number }> {
+  public async getAverageGasPrice(): Promise<{ average: Number }> {
     // this.logger.silly('Get gas price');
     this.GasPriceModel = Container.get('GasPriceModel');
     try {
-      if (days < 1) throw new Error('days must be less than 1');
-
       const gasPrices = await this.GasPriceModel.find()
         .sort({ _id: -1 })
-        .limit(Number(days));
-
-      // console.log(gasPrices);
-
-      // this.logger.silly('calculaste average');
-      const totalGas = gasPrices.reduce((initial, value) => initial + value.price, 0);
-      let average = totalGas / Number(days);
-      average = Math.round((average + Number.EPSILON) * 100) / 100;
-      return { average };
+        .limit(1);
+      let price = 0;
+      if (gasPrices.length > 0) {
+        price = gasPrices[0].price
+      }
+      return { average: price };
     } catch (error) {
       console.log(error);
     }
