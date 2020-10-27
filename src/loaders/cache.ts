@@ -2,9 +2,9 @@ const redis = require('async-redis');
 import config from '../config';
 
 class CacheInstance {
-  private ReddisInstance;
+  private RedisInstance;
   constructor() {
-    this.ReddisInstance = redis.createClient(config.redisURL);
+    this.RedisInstance = redis.createClient(config.redisURL);
   }
   /**
    * Set cache
@@ -14,7 +14,7 @@ class CacheInstance {
    * @return {Promise<{ null }>}
    */
   public async setCache(key: String, value: Number) {
-    return this.ReddisInstance.set(key, value);
+    return this.RedisInstance.set(key, value);
   };
 
   /**
@@ -30,7 +30,7 @@ class CacheInstance {
       value = Number(prev) + Number(value);
       value = Number(value) / 2 
     } 
-    return this.ReddisInstance.set(key, value);
+    return this.RedisInstance.set(key, value);
   };
 
   /**
@@ -40,7 +40,7 @@ class CacheInstance {
    * @return {Promise<{ null }>}
    */
   public async removeCache(key: String) {
-    return this.ReddisInstance.del(key);
+    return this.RedisInstance.del(key);
   };
 
   /**
@@ -50,7 +50,7 @@ class CacheInstance {
    * @return {Promise<{ String }>}
    */
   public async getCache(key: String) {
-    return this.ReddisInstance.get(key);
+    return this.RedisInstance.get(key);
   };
 
 }
