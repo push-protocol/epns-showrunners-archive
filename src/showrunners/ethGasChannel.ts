@@ -126,8 +126,8 @@ export default class GasStationChannel {
 
         //adding average gas every 10mins for 24 hrs to get the todaysAverageGasPrice
         cache.addCache(GAS_PRICE_FOR_THE_DAY, averageGas10Mins);
-        const getPricee = await cache.getCache(GAS_PRICE_FOR_THE_DAY);
-        logger.info('cache gotten from redis: %o', getPricee);
+        await cache.getCache(GAS_PRICE_FOR_THE_DAY);
+        // logger.info('cache gotten from redis: %o', getPricee);
 
         // assigning the average gas price for 90 days to variable
         let movingAverageGasForTheLast90DaysFromMongoDB = await this.getAverageGasPrice();
@@ -244,16 +244,14 @@ export default class GasStationChannel {
     logger.info('todays average gas price: %o', todaysAverageGasPrice);
 
     await cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
-    const gasPriceAfterRever = await cache.getCache(GAS_PRICE_FOR_THE_DAY)
-    logger.info('todays average gas price after revert: %o', gasPriceAfterRever);
 
-    let movingAverageForYesterdayFromMongoDB = await this.getAverageGasPrice();
-    logger.info('last 90 days moving average: %o', movingAverageForYesterdayFromMongoDB.average);
+    let movingAverageGasForTheLast90DaysFromMongoDB = await this.getAverageGasPrice();
+    logger.info('last 90 days moving average: %o', movingAverageGasForTheLast90DaysFromMongoDB.average);
 
     let todaysMovingAverage = Number(todaysAverageGasPrice)
-    if (movingAverageForYesterdayFromMongoDB.average != 0) {
+    if (movingAverageGasForTheLast90DaysFromMongoDB.average != 0) {
       todaysMovingAverage =
-      ((movingAverageForYesterdayFromMongoDB.average * 90) + (todaysAverageGasPrice * 1)) / (90 + 1);
+      ((movingAverageGasForTheLast90DaysFromMongoDB.average * 90) + (todaysAverageGasPrice * 1)) / (90 + 1);
     }
     logger.info('todays moving average: %o', todaysMovingAverage)
 
@@ -297,7 +295,6 @@ export default class GasStationChannel {
    * @return {Promise<{ average: Number }>}
    */
   public async getAverageGasPrice(): Promise<{ average: Number }> {
-    // this.logger.silly('Get gas price');
     this.GasPriceModel = Container.get('GasPriceModel');
     try {
       const gasPrices = await this.GasPriceModel.find()
@@ -324,7 +321,6 @@ export default class GasStationChannel {
   }
 
   public async clearGasPrices(): Promise<null> {
-    // this.logger.silly('Get gas price');
     this.GasPriceModel = Container.get('GasPriceModel');
     await this.GasPriceModel.deleteMany({});
     return null;
