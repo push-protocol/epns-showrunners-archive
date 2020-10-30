@@ -18,6 +18,18 @@ class CacheInstance {
   };
 
   /**
+   * Set hash cache
+   * @description adds a part
+   * @param {String} hash Hash Key
+   * @param {String} key Cache Key
+   * @param {String} value Cache Value
+   * @return {Promise<{ null }>}
+   */
+  public async sethashCache(hash: String, key: String, value: Number) {
+    return this.ReddisInstance.hset(hash, key, value);
+  };
+
+  /**
    * Add caches
    * @description adds to already existing value in cache
    * @param {String} key Cache Key
@@ -44,6 +56,17 @@ class CacheInstance {
   };
 
   /**
+   * Remove hash cache
+   * @description deletes a hash cache key and its associated values
+   * @param {String} hash Hash Key
+   * @param {String} key Cache Key
+   * @return {Promise<{ null }>}
+   */
+  public async removeHashCache(hash: String, key: String) {
+    return this.ReddisInstance.hdel(hash, key);
+  };
+
+  /**
    * Get cache
    * @description retrieves the value of a cache key
    * @param {String} key Cache Key
@@ -51,6 +74,17 @@ class CacheInstance {
    */
   public async getCache(key: String) {
     return this.ReddisInstance.get(key);
+  };
+
+  /**
+   * Get hash cache
+   * @description retrieves the value of a hash cache key
+   * @param {String} hash Hash Key
+   * @param {String} key Cache Key
+   * @return {Promise<{ String }>}
+   */
+  public async getHashCache(hash: String, key: String) {
+    return this.ReddisInstance.hget(hash, key);
   };
 
 }
