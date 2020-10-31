@@ -11,9 +11,9 @@ const onlyTrustedSource = async (req, res, next) => {
   try {
     // Check if ip is localhost and only continue
     var ip = req.connection.remoteAddress;
-    var host = req.get('host');
+    var origin = req.get('origin');
 
-    const result = !config.trusterURLs.indexOf(req.get('host') == -1);
+    const result = !config.trusterURLs.indexOf(origin == -1);
 
     if (!result) {
       return res.sendStatus(403).json({ info: 'Only meant for trusted urls' });
