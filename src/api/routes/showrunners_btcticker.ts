@@ -29,7 +29,7 @@ export default (app: Router) => {
     },
   );
 
-  // to add an incoming feed
+  // to get new price
   route.post(
     '/get_new_price',
     middlewares.onlyLocalhost,

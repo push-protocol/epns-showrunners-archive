@@ -8,6 +8,7 @@ import { truncateSync } from 'fs';
 
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
+const epnsNotify = require('../helpers/epnsNotifyHelper');
 
 // variables for mongoDb and redis
 const GAS_PRICE = 'gasprice';
@@ -48,53 +49,52 @@ export default class GasStationChannel {
         else{
           this.getNewPrice(info)
             .then(payload => {
-              const jsonisedPayload = JSON.stringify(payload);
-
               // handle payloads, etc
-              const ipfs = require('nano-ipfs-store').at('https://ipfs.infura.io:5001');
-              ipfs
-                .add(jsonisedPayload)
-                .then(ipfshash => {
+              epnsNotify.uploadToIPFS(payload, logger)
+                .then(async (ipfshash) => {
                   // Sign the transaction and send it to chain
                   const walletAddress = ethers.utils.computeAddress(config.ethGasStationPrivateKey);
 
-                  logger.info(
-                    'Payload prepared: %o, ipfs hash generated: %o, sending data to on chain from address %s...',
-                    payload,
-                    ipfshash,
-                    walletAddress,
+                  // Call Helper function to get interactableContracts
+                  const epns = epnsNotify.getInteractableContracts(
+                    config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
+                    {                                                                       // API Keys
+                      etherscanAPI: config.etherscanAPI,
+                      infuraAPI: config.infuraAPI,
+                      apchemyAPI: config.apchemyAPI
+                    },
+                    config.ethGasStationPrivateKey,                                         // Private Key of the Wallet sending Notification
+                    config.deployedContract,                                                // The contract address which is going to be used
+                    config.deployedContractABI                                              // The contract abi which is going to be useds
                   );
 
-                  let provider = new ethers.providers.InfuraProvider('ropsten');
-                  let wallet = new ethers.Wallet(config.ethGasStationPrivateKey, provider);
+                  logger.info('Payload prepared: %o, ipfs hash generated: %o, sending data to on chain from address %s...', payload, ipfshash, walletAddress);
 
-                  // define contract
-                  let contract = new ethers.Contract(config.deployedContract, config.deployedContractABI, provider);
-                  // logger.info("Contract defined at address: %s with object: %o", ethers.utils.computeAddress(config.btcTickerPrivateKey), contract);
+                  const storageType = 1; // IPFS Storage Type
+                  const txConfirmWait = 0; // Wait for 0 tx confirmation
 
-                  // connect as a signer of the non-constant methode
-                  let contractWithSigner = contract.connect(wallet);
-
-                  let txPromise = contractWithSigner.sendMessage(
-                    ethers.utils.computeAddress(config.ethGasStationPrivateKey),
-                    parseInt(payload.data.type),
-                    ipfshash,
-                    1,
-                  );
-
-                  txPromise
-                    .then(function(tx) {
-                      logger.info('Transaction sent: %o', tx);
-                      return resolve({ success: 1, data: tx });
-                    })
-                    .catch(err => {
-                      reject('Unable to complete transaction, error: %o', err);
-                      throw err;
-                    });
+                  // Send Notification
+                  await epnsNotify.sendNotification(
+                    epns.signingContract,                                           // Contract connected to signing wallet
+                    walletAddress,                                                  // Recipient to which the payload should be sent
+                    parseInt(payload.data.type),                                    // Notification Type
+                    storageType,                                                    // Notificattion Storage Type
+                    ipfshash,                                                       // Notification Storage Pointer
+                    txConfirmWait,                                                  // Should wait for transaction confirmation
+                    logger                                                          // Logger instance (or console.log) to pass
+                  ).then ((tx) => {
+                    logger.info("Transaction mined: %o | Notification Sent", tx.hash);
+                    logger.info("🙌 ETHGas Tracker Channel Logic Completed!");
+                    resolve(tx);
+                  })
+                  .catch (err => {
+                    logger.error("🔥Error --> sendNotification(): %o", err);
+                    reject(err);
+                  });
                 })
-                .catch(err => {
-                  reject('Unable to obtain ipfshash, error: %o', err);
-                  throw err;
+                .catch (err => {
+                  logger.error("🔥Error --> uploadToIPFS(%o, logger): %o", payload, userAddress, err)
+                  reject(err);
                 });
             })
             .catch(err => {
@@ -180,7 +180,7 @@ export default class GasStationChannel {
   public async getNewPrice(info) {
     const logger = this.logger;
 
-    return await new Promise((resolve, reject) => {
+    return await new Promise(async (resolve, reject) => {
       const gasPrice = Math.trunc(info.currentPrice);
 
       let title;
@@ -206,20 +206,16 @@ export default class GasStationChannel {
         payloadMsg = `[d:⬇] Hooray! Gas Price is back to normal rates. \n\n Current Price: [d: ${gasPrice} Gwei]\n[s:Usual] Price: [b: ${averagePrice} Gwei] [timestamp: ${Math.floor(new Date() / 1000)}]`;
       }
 
-      const payload = {
-        notification: {
-          title: title,
-          body: message,
-        },
-        data: {
-          type: '1', // Group Message
-          secret: '',
-          asub: payloadTitle,
-          amsg: payloadMsg,
-          acta: '',
-          aimg: '',
-        },
-      };
+      const payload = await epnsNotify.preparePayload(
+        null,                                                               // Recipient Address | Useful for encryption
+        1,                                                                  // Type of Notification
+        title,                                                              // Title of Notification
+        message,                                                            // Message of Notification
+        payloadTitle,                                                       // Internal Title
+        payloadMsg,                                                         // Internal Message
+        null,                                                               // Internal Call to Action Link
+        null,                                                               // internal img of youtube link
+      );
 
       resolve(payload);
     });

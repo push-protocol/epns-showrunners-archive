@@ -1,9 +1,11 @@
 const redis = require('async-redis');
 import config from '../config';
 
-export default ({ logger }) => {
-  const ReddisInstance = redis.createClient( config.redisURL );
-
+class CacheInstance {
+  private ReddisInstance;
+  constructor() {
+    this.ReddisInstance = redis.createClient(config.redisURL);
+  }
   /**
    * Set cache
    * @description adds a part
@@ -11,9 +13,8 @@ export default ({ logger }) => {
    * @param {String} value Cache Value
    * @return {Promise<{ null }>}
    */
-  async function setCache(key: String, value: Number) {
-    this.client = ReddisInstance;
-    return this.client.set(key, value);
+  public async setCache(key: String, value: Number) {
+    return this.ReddisInstance.set(key, value);
   };
 
   /**
@@ -23,11 +24,13 @@ export default ({ logger }) => {
    * @param {Number} value Value to be added
    * @return {Promise<{ null }>}
    */
-  async function addCache(key: String, value: Number) {
-    this.client = ReddisInstance;
+  public async addCache(key: String, value: Number) {
     const prev = await this.getCache(key);
-    value = Number(prev) + Number(value);
-    return this.client.set(key, value);
+    if (prev != 0) {
+      value = Number(prev) + Number(value);
+      value = Number(value) / 2
+    }
+    return this.ReddisInstance.set(key, value);
   };
 
   /**
@@ -36,9 +39,8 @@ export default ({ logger }) => {
    * @param {String} key Cache Key
    * @return {Promise<{ null }>}
    */
-  async function removeCache(key: String) {
-    this.client = ReddisInstance;
-    return this.client.del(key);
+  public async removeCache(key: String) {
+    return this.ReddisInstance.del(key);
   };
 
   /**
@@ -47,8 +49,11 @@ export default ({ logger }) => {
    * @param {String} key Cache Key
    * @return {Promise<{ String }>}
    */
-  async function getCache(key: String) {
-    this.client = ReddisInstance;
-    return this.client.get(key);
+  public async getCache(key: String) {
+    return this.ReddisInstance.get(key);
   };
+
 }
+
+
+export default new CacheInstance();
