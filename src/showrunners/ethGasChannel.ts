@@ -138,7 +138,7 @@ export default class GasStationChannel {
 
 
         // checks if the result gotten every 10 minutes is higher than the movingAverageGasForTheLast90DaysFromMongoDB
-        if (movingAverageGasForTheLast90DaysFromMongoDB.average < averageGas10Mins && flag == 'true') {
+        if (movingAverageGasForTheLast90DaysFromMongoDB.average !== 0 && movingAverageGasForTheLast90DaysFromMongoDB.average < averageGas10Mins && flag == 'true') {
           const info = {
             changed: true,
             gasHigh: true,
@@ -151,7 +151,7 @@ export default class GasStationChannel {
         }
 
         // checks if the result gotten every 10 minutes is less than the movingAverageGasForTheLast90DaysFromMongoDB
-        else if (movingAverageGasForTheLast90DaysFromMongoDB.average > averageGas10Mins && flag == 'false') {
+        else if (movingAverageGasForTheLast90DaysFromMongoDB.average !== 0 && movingAverageGasForTheLast90DaysFromMongoDB.average > averageGas10Mins && flag == 'false') {
           const info = {
             changed: true,
             gasHigh: false,
