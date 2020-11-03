@@ -56,12 +56,10 @@ module.exports = {
 
     return new Promise((resolve, reject) => {
       // Create Transaction
-      const txPromise = signingContract.sendMessage(
-        recipientAddr,
-        notificationType,
-        notificationStoragePointer,
-        1
-      );
+      const identity = notificationType + "+" + notificationStoragePointer;
+      const identityBytes = ethers.utils.toUtf8Bytes(identity);
+
+      const txPromise = signingContract.sendNotification(recipientAddr, identityBytes);
 
       txPromise
         .then(async function(tx) {
