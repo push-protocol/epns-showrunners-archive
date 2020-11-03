@@ -5,6 +5,7 @@ import ethTicker from './routes/showrunners_ethticker';
 import ensDomain from './routes/showrunners_ensdomain';
 import compoundTicker from './routes/showrunners_compoundLiquidation';
 import gasPrice from './routes/showrunners_gasprice';
+import wallet_tracker from './routes/showrunners_wallet_tracker';
 
 
 // guaranteed to get dependencies
@@ -17,6 +18,7 @@ export default () => {
 	ensDomain(app);
 	compoundTicker(app);
 	gasPrice(app);
+	wallet_tracker(app);
 
 	// Finally return app
 	return app;

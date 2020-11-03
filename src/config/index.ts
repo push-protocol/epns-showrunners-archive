@@ -86,8 +86,7 @@ export default {
   compComptrollerDeployedContract: process.env.COMPOUND_COMPTROLLER_DEPLOYED_CONTRACT,
   compComptrollerDeployedContractABI: require('./comp_comptroller.json'),
 
-  ethDeployedContract:process.env.ETH,
-  ethDeployedContractABI: require('./eth.json'),
+  erc20DeployedContractABI: require('./erc20.json'),
   
   cDaiDeployedContract: process.env.CDAI,
   cDaiDeployedContractABI: require('./cDai.json'),
