@@ -1,6 +1,6 @@
 {
-  "name": "epns-showrunners-server",
-  "version": "0.1.0",
+  "name": "epns-showrunners-staging",
+  "version": "0.3.0",
   "description": "Server to listen and perform services for EPNS",
   "main": "src/app.ts",
   "scripts": {
