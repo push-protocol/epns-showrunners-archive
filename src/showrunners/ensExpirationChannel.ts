@@ -34,7 +34,7 @@ export default class EnsExpirationChannel {
         {                                                                       // API Keys
           etherscanAPI: config.etherscanAPI,
           infuraAPI: config.infuraAPI,
-          apchemyAPI: config.apchemyAPI
+          alchemyAPI: config.alchemyAPI
         },
         config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
         config.deployedContract,                                                // The contract address which is going to be used
@@ -46,7 +46,7 @@ export default class EnsExpirationChannel {
         {                                                                       // API Keys
           etherscanAPI: config.etherscanAPI,
           infuraAPI: config.infuraAPI,
-          apchemyAPI: config.apchemyAPI
+          alchemyAPI: config.alchemyAPI
         },
         config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
         config.ensDeployedContract,                                             // The contract address which is going to be used
