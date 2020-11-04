@@ -64,9 +64,22 @@ export default {
   /**
    * Web3 Related
    */
-  web3provider: process.env.NODE_ENV == 'development' ? process.env.DEV_WEB3_PROVIDER : process.env.PROD_WEB3_PROVIDER,
-  web3network: process.env.NODE_ENV == 'development' ? process.env.DEV_WEB3_NETWORK : process.env.PROD_WEB3_NETWORK,
-  web3socket: process.env.NODE_ENV == 'development' ? process.env.DEV_WEB3_SOCKET : process.env.PROD_WEB3_SOCKET,
+  etherscanAPI: process.env.ETHERSCAN_API,
+
+  infuraAPI: {
+    projectID: process.env.INFURA_PROJECT_ID,
+    projectSecret: process.env.INFURA_PROJECT_SECRET,
+  },
+
+  alchemyAPI: process.env.ALCHEMY_API,
+
+  web3MainnetProvider: process.env.MAINNET_WEB3_PROVIDER,
+  web3MainnetNetwork: process.env.MAINNET_WEB3_NETWORK,
+  web3MainnetSocket: process.env.MAINNET_WEB3_SOCKET,
+
+  web3RopstenProvider: process.env.ROPSTEN_WEB3_PROVIDER,
+  web3RopstenNetwork: process.env.ROPSTEN_WEB3_NETWORK,
+  web3RopstenSocket: process.env.ROPSTEN_WEB3_SOCKET,
 
   /**
    * EPNS Related
@@ -151,6 +164,4 @@ export default {
   ensDomainExpiryPrivateKey: process.env.ENS_DOMAIN_EXPIRY_PRIVATE_KEY,
   compComptrollerPrivateKey: process.env.COMP_COMPTROLLER_PRIVATE_KEY,
   ethGasStationPrivateKey: process.env.ETH_GAS_STATION_PRIVATE_KEY,
-
-  infuraId: process.env.ID,
 };

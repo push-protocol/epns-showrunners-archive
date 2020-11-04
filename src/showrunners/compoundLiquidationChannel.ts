@@ -33,7 +33,7 @@ export default class CompoundLiquidationChannel {
       const network = "ropsten";
       const provider = ethers.getDefaultProvider(network, {
         infura: config.infuraId
-    });
+      });
 
 
       let wallet = new ethers.Wallet(config.compComptrollerPrivateKey, provider);
@@ -46,13 +46,13 @@ export default class CompoundLiquidationChannel {
       const filter = epnsContract.filters.Subscribe(wallet.address)
 
       let fromBlock = 0;
-       
+
       //Function to get all the addresses in the channel
       epnsContract.queryFilter(filter, fromBlock)
         .then(async (eventLog) => {
           // Log the event
           logger.debug("Event log returned %o", eventLog);
-           
+
           // Loop through all addresses in the channel and decide who to send notification
           let allTransactions = [];
 
@@ -66,7 +66,7 @@ export default class CompoundLiquidationChannel {
                 })
               );
             })
-            
+
             // resolve all transactions
           const results = await Promise.all(allTransactions);
           logger.debug("All Transactions Loaded: %o", results);
@@ -106,11 +106,11 @@ export default class CompoundLiquidationChannel {
         .catch(err => {
           logger.error("Error occurred while looking at event log: %o", err);
           reject(err);
-        }) 
+        })
     })
   }
-    
-  // To Check Account for Amount Left to Liquidation 
+
+  // To Check Account for Amount Left to Liquidation
   public async checkCompoundLiquidation(compComptrollerContract, provider, userAddress) {
     const logger = this.logger;
     return new Promise((resolve, reject) => {
@@ -136,10 +136,10 @@ export default class CompoundLiquidationChannel {
           let cZrx = new ethers.Contract(config.cZrxDeployedContract,config.cZrxDeployedContractABI,  provider);
           let price = new ethers.Contract(config.priceOracleDeployedContract,config.priceOracleDeployedContractABI,  provider);
           let allLiquidity =[];
-          
+
           compComptrollerContract.getAssetsIn(userAddress)
             .then(marketAddress => {
-              logger.info("Market Address is in: %o | Address: :%o ", marketAddress, addressName); 
+              logger.info("Market Address is in: %o | Address: :%o ", marketAddress, addressName);
 
               for (let i = 0; i < marketAddress.length; i++) {
                 let cAddresses = [0xdb5ed4605c11822811a39f94314fdb8f0fb59a2c, 0x9e95c0b2412ce50c37a121622308e7a6177f819d,0xbe839b6d93e3ea47effcca1f27841c917a8794f3,
@@ -150,11 +150,11 @@ export default class CompoundLiquidationChannel {
                 if(marketAddress[i] == marketAddress[i])  {
                     let contract = this.assignContract(marketAddress[i], cAddresses,contracts);
                     let address = marketAddress[i];
-                    
+
                     allLiquidity.push(
                       this.getUserTotalLiquidityFromAllAssetEntered(contract,address,compComptrollerContract,price,userAddress)
                       .then(result =>{
-                        return result                  
+                        return result
                       })
                     )
                 }
@@ -164,13 +164,13 @@ export default class CompoundLiquidationChannel {
               .then(result =>{
                 let sumAllLiquidityOfAsset = 0;
                 for (let i = 0; i < result.length; i++) {
-                  
+
                   sumAllLiquidityOfAsset += result[i]
                 }
                 logger.info("Entire Liquidity Address has: %o | Address: %o ", sumAllLiquidityOfAsset, addressName);
-                // get 10% of user liquidity 
-                let liquidityAlert = 10*sumAllLiquidityOfAsset/100;        
-          
+                // get 10% of user liquidity
+                let liquidityAlert = 10*sumAllLiquidityOfAsset/100;
+
                 // checking if liquidity amount left is below 10%
                 if(liquidityAlert > 0 &&  liquidity < liquidityAlert){
                   this.getCompoundLiquidityPayload(addressName, liquidity, sumAllLiquidityOfAsset)
@@ -181,9 +181,9 @@ export default class CompoundLiquidationChannel {
                       const ipfs = require("nano-ipfs-store").at("https://ipfs.infura.io:5001");
                       ipfs.add(jsonisedPayload)
                         .then(ipfshash => {
-                          resolve({ 
+                          resolve({
                             success: true,
-                            wallet: userAddress, 
+                            wallet: userAddress,
                             ipfshash: ipfshash,
                             payloadType: parseInt(payload.data.type)
                           });
@@ -210,7 +210,7 @@ export default class CompoundLiquidationChannel {
                     err: "Date Expiry condition unmet for wallet: " + userAddress
                   });
                 }
-              })     
+              })
             })
             .catch(err => {
               logger.error("Error occurred in getAssetsIn: %s: %o", userAddress, err);
@@ -238,7 +238,7 @@ export default class CompoundLiquidationChannel {
     });
   }
 
-  public assignContract(result,cAddresses, contracts){    
+  public assignContract(result,cAddresses, contracts){
     for (let p = 0; p < cAddresses.length; p++) {
       if (result == cAddresses[p]){
         return contracts[p]
@@ -254,26 +254,26 @@ export default class CompoundLiquidationChannel {
       let exchangeRateStored;
       let oraclePrice;
       let collateralFactor;
-      
+
       contract.getAccountSnapshot(userAddress)
        .then(result => {
         let {1:result1, 3:result2} = result;
         result2 = (result2/1e18)
         result1 = result1/1e8
         cTokenBalance = result1;
-        exchangeRateStored = result2    
-  
+        exchangeRateStored = result2
+
       price.getUnderlyingPrice(address)
        .then(result => {
         let result3 = (result / 1e18)
-        oraclePrice = result3   
-  
+        oraclePrice = result3
+
       compComptrollerContract.markets(address)
         .then(result => {
           let {1:result4} = result;
           result4 = (result4 / 1e18) * 100;
           collateralFactor = result4;
-  
+
        sumCollateral = (cTokenBalance*exchangeRateStored*oraclePrice*collateralFactor)/1e12;
         resolve(sumCollateral)
       })
@@ -325,5 +325,5 @@ export default class CompoundLiquidationChannel {
 
       resolve(payload);
     });
-  }  
+  }
 }

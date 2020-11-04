@@ -40,8 +40,8 @@ class CacheInstance {
     const prev = await this.getCache(key);
     if (prev != 0) {
       value = Number(prev) + Number(value);
-      value = Number(value) / 2 
-    } 
+      value = Number(value) / 2
+    }
     return this.ReddisInstance.set(key, value);
   };
 

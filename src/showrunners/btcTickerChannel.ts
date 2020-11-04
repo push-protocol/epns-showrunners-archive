@@ -10,6 +10,7 @@ const moment = require('moment'); // time library
 
 const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
+const epnsNotify = require('../helpers/epnsNotifyHelper');
 
 @Service()
 export default class BtcTickerChannel {
@@ -25,48 +26,55 @@ export default class BtcTickerChannel {
 
     return await new Promise((resolve, reject) => {
       this.getNewPrice()
-        .then(payload => {
-          const jsonisedPayload = JSON.stringify(payload);
+        .then(async (payload) => {
+          epnsNotify.uploadToIPFS(payload, logger)
+            .then(async (ipfshash) => {
+              logger.info("Success --> uploadToIPFS(): %o", ipfshash);
 
-          // handle payloads, etc
-          const ipfs = require("nano-ipfs-store").at("https://ipfs.infura.io:5001");
-          ipfs.add(jsonisedPayload)
-            .then(ipfshash => {
-              // Sign the transaction and send it to chain
-              const walletAddress = ethers.utils.computeAddress(config.btcTickerPrivateKey);
+              // Call Helper function to get interactableContracts
+              const epns = epnsNotify.getInteractableContracts(
+                config.web3RopstenNetwork,                                      // Network for which the interactable contract is req
+                {                                                               // API Keys
+                  etherscanAPI: config.etherscanAPI,
+                  infuraAPI: config.infuraAPI,
+                  apchemyAPI: config.apchemyAPI
+                },
+                config.btcTickerPrivateKey,                                     // Private Key of the Wallet sending Notification
+                config.deployedContract,                                        // The contract address which is going to be used
+                config.deployedContractABI                                      // The contract abi which is going to be useds
+              );
 
-              logger.info("Payload prepared: %o, ipfs hash generated: %o, sending data to on chain from address %s...", payload, ipfshash, walletAddress);
+              const storageType = 1; // IPFS Storage Type
+              const txConfirmWait = 0; // Wait for 0 tx confirmation
 
-              let provider = new ethers.providers.InfuraProvider('ropsten');
-              let wallet = new ethers.Wallet(config.btcTickerPrivateKey, provider);
+              // Send Notification
+              await epnsNotify.sendNotification(
+                epns.signingContract,                                           // Contract connected to signing wallet
+                ethers.utils.computeAddress(config.btcTickerPrivateKey),        // Recipient to which the payload should be sent
+                parseInt(payload.data.type),                                    // Notification Type
+                storageType,                                                    // Notificattion Storage Type
+                ipfshash,                                                       // Notification Storage Pointer
+                txConfirmWait,                                                  // Should wait for transaction confirmation
+                logger                                                          // Logger instance (or console.log) to pass
+              ).then ((tx) => {
+                logger.info("Transaction mined: %o | Notification Sent", tx.hash);
+                logger.info("🙌 BTC Ticker Channel Logic Completed!");
+                resolve(tx);
+              })
+              .catch (err => {
+                logger.error("🔥Error --> sendNotification(): %o", err);
+                reject(err);
+              });
 
-              // define contract
-              let contract = new ethers.Contract(config.deployedContract, config.deployedContractABI, provider);
-              // logger.info("Contract defined at address: %s with object: %o", ethers.utils.computeAddress(config.btcTickerPrivateKey), contract);
-
-              // connect as a signer of the non-constant methode
-              let contractWithSigner = contract.connect(wallet);
-              let txPromise = contractWithSigner.sendMessage(ethers.utils.computeAddress(config.btcTickerPrivateKey), parseInt(payload.data.type), ipfshash, 1);
-
-              txPromise
-                .then(function(tx) {
-                  logger.info("Transaction sent: %o", tx);
-                  return resolve({ success: 1, data: tx });
-                })
-                .catch(err => {
-                  reject("Unable to complete transaction, error: %o", err)
-                  throw err;
-                });
             })
-            .catch(err => {
-              reject("Unable to obtain ipfshash, error: %o", err)
-              throw err;
+            .catch (err => {
+              logger.error("🔥Error --> uploadToIPFS(): %o", err);
+              reject(err);
             });
         })
         .catch(err => {
           logger.error(err);
-          reject("Unable to proceed with cmc, error: %o", err);
-          throw err;
+          reject("🔥Error --> Unable to obtain ipfshash, error: %o", err);
         });
     });
   }
@@ -82,7 +90,7 @@ export default class BtcTickerChannel {
       const pollURL = `${config.cmcEndpoint}${cmcroute}?symbol=BTC&CMC_PRO_API_KEY=${config.cmcAPIKey}`;
 
       getJSON(pollURL)
-        .then(response => {
+        .then(async (response) => {
           if (response.status.error_code) {
             reject("CMC Error: %o", response.status);
           }
@@ -106,20 +114,16 @@ export default class BtcTickerChannel {
           const payloadTitle = `BTC Price Movement`;
           const payloadMsg = `BTC at [d:$${formattedPrice}]\n\nHourly Movement: ${hourChange >= 0 ? "[s:" + hourChange + "%]" : "[t:" + hourChange + "%]"}\nDaily Movement: ${dayChange >= 0 ? "[s:" + dayChange + "%]" : "[t:" + dayChange + "%]"}\nWeekly Movement: ${weekChange >= 0 ? "[s:" + weekChange + "%]" : "[t:" + weekChange + "%]"}[timestamp: ${Math.floor(new Date() / 1000)}]`;
 
-          const payload = {
-            "notification": {
-              "title": title,
-              "body": message
-            },
-            "data": {
-              "type": "1", // Group Message
-              "secret": "",
-              "asub": payloadTitle,
-              "amsg": payloadMsg,
-              "acta": "",
-              "aimg": ""
-            }
-          };
+          const payload = await epnsNotify.preparePayload(
+            null,                                                               // Recipient Address | Useful for encryption
+            1,                                                                  // Type of Notification
+            title,                                                              // Title of Notification
+            message,                                                            // Message of Notification
+            payloadTitle,                                                       // Internal Title
+            payloadMsg,                                                         // Internal Message
+            null,                                                               // Internal Call to Action Link
+            null,                                                               // internal img of youtube link
+          );
 
           resolve(payload);
         })

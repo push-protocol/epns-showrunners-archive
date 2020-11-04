@@ -7,6 +7,7 @@ import compoundTicker from './routes/showrunners_compoundLiquidation';
 import gasPrice from './routes/showrunners_gasprice';
 import wallet_tracker from './routes/showrunners_wallet_tracker';
 
+import mailing from './routes/mailing';
 
 // guaranteed to get dependencies
 export default () => {
@@ -19,6 +20,10 @@ export default () => {
 	compoundTicker(app);
 	gasPrice(app);
 	wallet_tracker(app);
+
+	// -- HELPERS
+	// For mailing route
+	mailing(app);
 
 	// Finally return app
 	return app;
