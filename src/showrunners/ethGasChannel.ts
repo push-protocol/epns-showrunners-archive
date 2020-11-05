@@ -93,7 +93,7 @@ export default class GasStationChannel {
                   });
                 })
                 .catch (err => {
-                  logger.error("🔥Error --> uploadToIPFS(%o, logger): %o", payload, userAddress, err)
+                  logger.error("🔥Error --> uploadToIPFS(%o, logger): %o", payload, err)
                   reject(err);
                 });
             })
