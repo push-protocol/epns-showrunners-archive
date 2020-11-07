@@ -32,10 +32,15 @@ module.exports = {
       alchemy: (apiKeys.alchemyAPI ? apiKeys.alchemyAPI : null),
     });
 
-    const wallet = new ethers.Wallet(walletPK, provider);
     const contract = new ethers.Contract(deployedContract, deployedContractABI, provider);
-    const contractWithSigner = contract.connect(wallet);
 
+    let contractWithSigner = null;
+
+    if (walletPK) {
+      const wallet = new ethers.Wallet(walletPK, provider);
+      contractWithSigner = contract.connect(wallet);
+    }
+    
     return({
       provider: provider,
       contract: contract,

@@ -195,7 +195,7 @@ export default class GasStationChannel {
         payloadTitle = `Eth Gas Price Movement ⬆`;
 
         message = `Eth Gas Price is over the usual average, current cost: ${gasPrice} Gwei`;
-        payloadMsg = `[t:⬆] Gas Price are way above the normal rates. \n\n [d:Current] Price: [t: ${gasPrice} Gwei]\n[s:Usual] Price: [b: ${info.averagePrice} Gwei] [timestamp: ${Math.floor(new Date() / 1000)}]`;
+        payloadMsg = `[t:⬆] Gas Price are way above the normal rates. \n\n[d:Current] Price: [t: ${gasPrice} Gwei]\n[s:Usual] Price: [b: ${averagePrice} Gwei] [timestamp: ${Math.floor(new Date() / 1000)}]`;
       }
       else {
         // Gas will be low
@@ -203,7 +203,7 @@ export default class GasStationChannel {
         payloadTitle = `Eth Gas Price Movement ⬇`;
 
         message = `Eth Gas Price is back to normal, current cost: ${gasPrice} Gwei`;
-        payloadMsg = `[d:⬇] Hooray! Gas Price is back to normal rates. \n\n Current Price: [d: ${gasPrice} Gwei]\n[s:Usual] Price: [b: ${info.averagePrice} Gwei] [timestamp: ${Math.floor(new Date() / 1000)}]`;
+        payloadMsg = `[d:⬇] Hooray! Gas Price is back to normal rates. \n\n[d:Current] Price: [d: ${gasPrice} Gwei]\n[s:Usual] Price: [b: ${averagePrice} Gwei] [timestamp: ${Math.floor(new Date() / 1000)}]`;
       }
 
       const payload = await epnsNotify.preparePayload(
