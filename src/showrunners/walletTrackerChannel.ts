@@ -1,5 +1,6 @@
 import { Service, Inject, Container } from 'typedi';
 import config from '../config';
+import mongoose from 'mongoose';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import events from '../subscribers/events';
 
@@ -325,11 +326,48 @@ public async onSubscription(userAddress){
 
 
 
+  public async getTokenBalanceFromDB(userAddress: string): Promise<{}> {
+    // this.logger.silly('Get gas price');
+    this.UserTokenModel = Container.get('UserTokenModel');
+    try {
+      const userTokenData = await this.UserTokenModel.find({ user: userAddress }).populate("tokens")
+      const userTokenBalance = {}
+      userTokenData.map(usertokens => {
+        return userTokenBalance[usertokens.token.address] = usertokens.balance
+      })
+      return userTokenBalance;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
 
-  
+  public async addTokenToDB(symbol: string, address: string, decimals: number): Promise<{}> {
+    // this.logger.silly('Get gas price');
+    this.TokenModel = Container.get('TokenModel');
+    try {
+      const token = await this.TokenModel.create({ 
+        symbol,
+        address,
+        decimals
+       })
+      return token;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
-  
-
-
+  public async addUserTokenToDB(user: string, token: mongoose.Types.ObjectId): Promise<{}> {
+    // this.logger.silly('Get gas price');
+    this.UserTokenModel = Container.get('UserTokenModel');
+    try {
+      const userToken = await this.UserTokenModel.create({ 
+        user,
+        token,
+       })
+      return userToken;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
