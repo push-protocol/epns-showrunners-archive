@@ -164,4 +164,5 @@ export default {
   ensDomainExpiryPrivateKey: process.env.ENS_DOMAIN_EXPIRY_PRIVATE_KEY,
   compComptrollerPrivateKey: process.env.COMP_COMPTROLLER_PRIVATE_KEY,
   ethGasStationPrivateKey: process.env.ETH_GAS_STATION_PRIVATE_KEY,
+  walletTrackerPrivateKey: process.env.WALLET_TRACKER_PRIVATE_KEY
 };

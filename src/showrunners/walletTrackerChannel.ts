@@ -9,6 +9,10 @@ import { truncateSync } from 'fs';
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
 
+const db = require('../helpers/dbHelper');
+const utils = require('../helpers/utilsHelper');
+const epnsNotify = require('../helpers/epnsNotifyHelper');
+
 @Service()
 export default class WalletTrackerChannel {
   constructor(
@@ -18,34 +22,271 @@ export default class WalletTrackerChannel {
   ) {
   }
 
-  public async onSubscription(userAddress){
+  public async sendMessageToContract(){
 
     const cache = this.cached;
     const logger = this.logger;
 
-    logger.debug('Getting ethBalance');
-
     return await new Promise((resolve, reject) => {
-        const mainnetProvider = new ethers.providers.InfuraProvider();
-        const provider = new ethers.providers.InfuraProvider('ropsten', );
-  
-        // let wallet = new ethers.Wallet(config.ensDomainExpiryPrivateKey, provider);
-  
-        let epnsContract = new ethers.Contract(config.deployedContract, config.deployedContractABI, provider);
-        // let epnsContractWithSigner = epnsContract.connect(wallet);
 
-        provider.getBalance(userAddress).then(balance => {
+        const walletTrackerChannelAddress = ethers.utils.computeAddress(config.walletTrackerPrivateKey);
+
+        // Call Helper function to get interactableContracts
+        const epns = epnsNotify.getInteractableContracts(
+        config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
+        {                                                                       // API Keys
+            etherscanAPI: config.etherscanAPI,
+            infuraAPI: config.infuraAPI,
+            alchemyAPI: config.alchemyAPI
+        },
+        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
+        config.deployedContract,                                                // The contract address which is going to be used
+        config.deployedContractABI                                              // The contract abi which is going to be useds
+        );
+
+        epns.contract.channels(walletTrackerChannelAddress)
+        .then(async (channelInfo) => {
+
+            // Get Filter
+            const filter = epns.contract.filters.Subscribe(walletTrackerChannelAddress)
+            const startBlock = channelInfo.channelStartBlock.toNumber();
+
+            epns.contract.queryFilter(filter, startBlock)
+            .then(eventLog => {
+
+            // Log the event
+            logger.debug("Subscribed Address Found: %o", eventLog.length);
+
+            let allPayloads = []
+
+            // Loop through all addresses in the channel and decide who to send notification
+            eventLog.forEach(log => {
+
+                // Get user address
+                const user = log.args.user;
+                allPayloads.push(
+                    this.checkTokenMovement(user, epns.provider)
+                      .then((result) => {
+                        return result;
+                      })
+                );
+
+            });
+        })
+        .catch(err => {
+            logger.error("Error retreiving channel start block: %o", err);
+            reject(err);
+        });
+
+        })
+        .catch(err => {
+            logger.error("Error retreiving channel start block: %o", err);
+            reject(err);
+        });
+    })
+  }
+
+  public async checkTokenMovement(user, provider){
+    const logger = this.logger;
+
+    const tokens =[
+        { 
+            address: '',
+            ticker: 'ETH',
+        },
+        { 
+            address: '',
+            ticker: 'DAI',
+        },
+        { 
+            address: '',
+            ticker: 'BTC',
+        },
+    ]
+
+    let changedTokens = [];
+
+    tokens.forEach(token => {
+
+        this.getTokenBalance(user, token, provider)
+        .then(userToken => {
+
+            this.getUserTokenFromDB(user, token)
+            .then(userTokenFromDB => {
+
+                this.compareTokenBalance(userToken, userTokenFromDB)
+                .then(res => {
+                    if(res.changed){
+                        changedTokens.push(userToken)
+                    }
+                    else{
+                        const message = `${user} has no movement in ${token.symbol} token`;
+                        logger.info(message)
+                    }
+                })
+            })
+
+        })
+    })
+
+    Promise.all(changedTokens)
+    .then(async (results) => {
+        logger.debug("All Changed Tokens Loaded: %o", results);
+
+        this.getWalletTrackerPayload(user, results)
+    })
+
+  }
+
+  public async getTokenBalance(user, token, provider){
+    const logger = this.logger;
+
+    if (token.symbol === 'ETH' )
+        provider.getBalance(user).then(balance => {
 
             // balance is a BigNumber (in wei); format is as a sting (in ether)
-            var etherString = ethers.utils.formatEther(balance);
+            var etherBalance = ethers.utils.formatEther(balance);
         
-            console.log("Balance: " + etherString);
-            cache.sethashCache(userAddress, "ETH", balance);
-            resolve({
-                success: true,
-                data: etherString
-            })
+            logger.info("Ether Balance: " + etherBalance);
+            return {
+                token,
+                balance: etherBalance
+            }
         });
+    else{
+        const tokenContract = new ethers.Contract(token.address, config.erc20DeployedContractABI, provider);
+        let tokenBalance = tokenContract.balanceOf(token.address)
+        return {
+            token,
+            balance: tokenBalance
+        }
+    }
+  }
+
+  //MONGODB
+  public async setUserTokenToDB(user, userToken){
+      
+
+  }
+
+  //MONGODB
+  public async getUserTokenFromDB(user, token){
+
+  }
+
+  public async compareTokenBalance(userToken, userTokenFromDB){
+      if(userToken.balance !== userTokenFromDB.balance)
+      return {changed : true}
+      else 
+      return {changed : false}
+  }
+
+  public async getWalletTrackerPayload(user, changedTokens) {
+    const logger = this.logger;
+
+    logger.debug('Preparing payload...');
+
+    return await new Promise(async (resolve) => {
+    const title = "Wallet Tracker Alert!";
+    const message = "";
+
+    const payloadTitle = "Wallet Tracker Alert!";
+    const payloadMsg = "";
+
+    const payload = await epnsNotify.preparePayload(
+    null,                                                               // Recipient Address | Useful for encryption
+    3,                                                                  // Type of Notification
+    title,                                                              // Title of Notification
+    message,                                                            // Message of Notification
+    payloadTitle,                                                       // Internal Title
+    payloadMsg,                                                         // Internal Message
+    null,                                                               // Internal Call to Action Link
+    null,                                                               // internal img of youtube link
+    );
+
+    logger.debug('Payload Prepared: %o', payload);
+
+    resolve(payload);
+    });
+}
+
+
+
+
+
+   // setHashCache("ETH", "harsh", 20)
+
+                // setHashCache("tokens", "harsh", {})
+
+                // setHashCache("tokens", "harsh", {"0xy": 10, "0zy": 20})
+
+                // getHashCache(hash: String, key: String)
+ 
+
+
+
+
+// setting token balance for each user
+
+
+// UserToken.find({user: user)).populate("token")
+
+                // this.tokenMovement(user)
+                // .then(res => {
+                //     if(res.changed){
+                //         changedTokensInfo = res.changedTokensInfo
+                //     }
+                //     else{
+                //         const message = `${user} has no movement in ${token.symbol} token`;
+                //         logger.info(message)
+                //         resolve({
+                //             success: message
+                //           });
+                //     }
+
+                // })
+                // .catch(err => {
+                //     logger.error("Error retreiving channel start block: %o", err);
+                //     reject(err);
+                // });
+
+
+
+public async onSubscription(userAddress){
+
+    const cache = this.cached;
+    const logger = this.logger;
+
+    logger.info('Getting ethBalance');
+
+    return await new Promise((resolve, reject) => {
+
+        // Call Helper function to get interactableContracts
+        const epns = epnsNotify.getInteractableContracts(
+        config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
+        {                                                                       // API Keys
+            etherscanAPI: config.etherscanAPI,
+            infuraAPI: config.infuraAPI,
+            apchemyAPI: config.apchemyAPI
+        },
+        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
+        config.deployedContract,                                                // The contract address which is going to be used
+        config.deployedContractABI                                              // The contract abi which is going to be useds
+        );
+        
+       this.getEthBalance(userAddress, epns.provider)
+       .then(result => {
+           this.setUserTokenInfo(userAddress, result)
+
+
+
+           //store the result in MONGODB
+//            {token, user, balance}
+//             setHashCache("ETH", "harsh", 20)
+
+       })
+
+        
   
         // let tokenAddresses = [];
 
@@ -79,61 +320,11 @@ export default class WalletTrackerChannel {
 
   }
 
-  public async tokenMovement(){
-
-    const cache = this.cached;
-    const logger = this.logger;
-
-    const mainnetProvider = new ethers.providers.InfuraProvider();
-    const provider = new ethers.providers.InfuraProvider('ropsten', );
-
-    // let wallet = new ethers.Wallet(config.walletTrackerPrivateKey, provider);
-
-    let epnsContract = new ethers.Contract(config.deployedContract, config.deployedContractABI, provider);
-    
-    // let epnsContractWithSigner = epnsContract.connect(wallet);
-
-    const filter = epnsContract.filters.Subscribe("0x4F3BDE9380AEDA90C8A6724AF908bb5a2fac7f54")
-
-     //get all subscribers of the wallet tracker channel
-
-      let fromBlock = 0
-
-    // Function to get all the addresses in the channel
-    epnsContract.queryFilter(filter, fromBlock)
-    .then(eventLog => {
-      // Log the event
-      logger.debug("Event log returned %o", eventLog);
-
-      // Loop through all addresses in the channel and decide who to send notification
-      let allTransactions = [];
-      eventLog.forEach((log) => {
-        // Get user address
-        const userAddress = log.args.user;
-
-        // let prevTokenBalance = await this.getTokenBalanceFromDB();
-
-      })
-    })
-  }
 
 
-//   public async getTokenBalanceFromDB(userAddress, tokenAddress): Promise<{ average: Number }> {
-//     // this.logger.silly('Get gas price');
-//     this.GasPriceModel = Container.get('GasPriceModel');
-//     try {
-//       const gasPrices = await this.GasPriceModel.find()
-//         .sort({ _id: -1 })
-//         .limit(1);
-//       let price = 0;
-//       if (gasPrices.length > 0) {
-//         price = gasPrices[0].price
-//       }
-//       return { average: price };
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   }
+
+
+
 
 
   
