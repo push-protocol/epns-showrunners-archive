@@ -5,6 +5,7 @@ const Token = new Schema(
     address: {
       type: String,
       required: true,
+      unique: true
     },
     symbol: {
         type: String,
@@ -14,7 +15,6 @@ const Token = new Schema(
         type: Number,
         required: true,
     },
-    
   },
   { timestamps: true },
 );
