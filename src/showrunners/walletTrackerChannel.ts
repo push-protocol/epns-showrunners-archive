@@ -234,63 +234,78 @@ export default class WalletTrackerChannel {
     });
 }
 
-//MONGODB
-public async getTokenBalanceFromDB(userAddress: string): Promise<{}> {
-  this.UserTokenModel = Container.get('UserTokenModel');
-  try {
-    const userTokenData = await this.UserTokenModel.find({ user: '0x276B820E8382f17ECB9FA77B0952ca4E67287601' }).
-    // const userTokenData = await this.UserTokenModel.find({ user: '0x276B820E8382f17ECB9FA77B0952ca4E67287601' }).populate("tokens")
-    logger.info('userTokenData: %o', userTokenData)
-    console.log('userTokenData: %o', userTokenData)
-    // const userTokenData = await this.UserTokenModel.find({ user: userAddress }).populate("tokens")
-    // const userTokenBalance = {}
-    // userTokenData.map(usertokens => {
-    //   return userTokenBalance[usertokens.token.address] = usertokens.balance
-    // })
-    // return userTokenBalance;
-  } catch (error) {
-    console.log(error);
+  //MONGODB
+  public async getTokenBalanceFromDB(userAddress: string, tokenAddress: string): Promise<{}> {
+    // this.logger.silly('Get gas price');
+    this.UserTokenModel = Container.get('UserTokenModel');
+    try {
+      let userTokenData  
+      if (tokenAddress) {
+        userTokenData = await this.UserTokenModel.find({ user: userAddress, token: tokenAddress }).populate("token")
+      } else {
+        userTokenData = await this.UserTokenModel.find({ user: userAddress }).populate("token")
+      }
+       
+      logger.info('userTokenData: %o', userTokenData)
+      const userTokenBalance = {}
+      userTokenData.map(usertokens => {
+        return userTokenBalance[usertokens.token.address] = usertokens.balance
+      })
+      return userTokenBalance;
+    } catch (error) {
+      console.log(error);
+    }
   }
-}
 
-//MONGODB
-public async addTokenToDB(symbol: string, address: string, decimals: number): Promise<{}> {
-  // this.logger.silly('Get gas price');
-  this.TokenModel = Container.get('TokenModel');
-  try {
-    const token = await this.TokenModel.create({ 
-      symbol,
-      address,
-      decimals
-     })
-    return token;
-  } catch (error) {
-    console.log(error);
+  //MONGODB
+  public async addTokenToDB(symbol: string, address: string, decimals: number): Promise<{}> {
+    // this.logger.silly('Get gas price');
+    this.TokenModel = Container.get('TokenModel');
+    try {
+      const token = await this.TokenModel.create({ 
+        symbol,
+        address,
+        decimals
+      })
+      return token;
+    } catch (error) {
+      console.log(error);
+    }
   }
-}
 
-//MONGODB
-public async addUserTokenToDB(user: string, token: mongoose.Types.ObjectId): Promise<{}> {
-  // this.logger.silly('Get gas price');
-  this.UserTokenModel = Container.get('UserTokenModel');
-  try {
-    const userToken = await this.UserTokenModel.create({ 
-      user,
-      token,
-     })
-    return userToken;
-  } catch (error) {
-    console.log(error);
+  //MONGODB
+  public async addUserTokenToDB(user: string, token: mongoose.Types.ObjectId): Promise<{}> {
+    // this.logger.silly('Get gas price');
+    this.UserTokenModel = Container.get('UserTokenModel');
+    try {
+      const userToken = await this.UserTokenModel.create({ 
+        user,
+        token,
+      })
+      return userToken;
+    } catch (error) {
+      console.log(error);
+    }
   }
-}
 
-public async addTokens() {
-  const tokenPromises = tokens.map(token => {
-    return this.addTokenToDB(token.ticker, token.address, token.decimals)
-   })
-   const results = await Promise.all(tokenPromises)
-   return {success: "success", data: results}
-}
+  public async addTokens() {
+    const tokenPromises = tokens.map(token => {
+      return this.addTokenToDB(token.ticker, token.address, token.decimals)
+    })
+    const results = await Promise.all(tokenPromises)
+    return {success: "success", data: results}
+  }
+  
+  public async getTokenByAddress(tokenAddress: string): Promise<{}> {
+    // this.logger.silly('Get gas price');
+    this.TokenModel = Container.get('TokenModel');
+    try {
+      const token = await this.TokenModel.findOne({token: tokenAddress})
+      return token;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
 
 
