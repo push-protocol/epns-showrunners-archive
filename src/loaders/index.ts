@@ -26,6 +26,26 @@ export default async ({ expressApp }) => {
   await dependencyInjectorLoader({ models: [GasPriceModel] });
   logger.info('✌️   Dependency Injector loaded');
 
+  const UserTokenModel = {
+    name: 'UserTokenModel',
+    // Notice the require syntax and the '.default'
+    model: require('../models/userTokenModel').default,
+  };
+
+  // It returns the agenda instance because it's needed in the subsequent loaders
+  await dependencyInjectorLoader({ models: [UserTokenModel] });
+  logger.info('✌️   Dependency Injector loaded');
+
+  const TokenModel = {
+    name: 'TokenModel',
+    // Notice the require syntax and the '.default'
+    model: require('../models/tokenModel').default,
+  };
+
+  // It returns the agenda instance because it's needed in the subsequent loaders
+  await dependencyInjectorLoader({ models: [TokenModel] });
+  logger.info('✌️   Dependency Injector loaded');
+
   const mongoConnection = await mongooseLoader();
   logger.info('✌️   Mongoose Loaded and connected!');
 

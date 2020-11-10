@@ -133,6 +133,11 @@ export default {
   priceOracleDeployedContractABI: require('./priceOracle.json'),
 
   /**
+   * WALLET TRACKER related
+   */
+  erc20DeployedContractABI: require('./erc20.json'),
+
+  /**
    * IPFS related
    */
   ipfsMaxAttempts: process.env.IPFS_MAX_ATTEMPTS,
@@ -162,4 +167,5 @@ export default {
   ensDomainExpiryPrivateKey: process.env.ENS_DOMAIN_EXPIRY_PRIVATE_KEY,
   compComptrollerPrivateKey: process.env.COMP_COMPTROLLER_PRIVATE_KEY,
   ethGasStationPrivateKey: process.env.ETH_GAS_STATION_PRIVATE_KEY,
+  walletTrackerPrivateKey: process.env.WALLET_TRACKER_PRIVATE_KEY,
 };
