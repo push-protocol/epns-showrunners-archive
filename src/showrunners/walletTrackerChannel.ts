@@ -326,11 +326,17 @@ public async onSubscription(userAddress){
 
 
 
-  public async getTokenBalanceFromDB(userAddress: string): Promise<{}> {
+  public async getTokenBalanceFromDB(userAddress: string, tokenAddress: string): Promise<{}> {
     // this.logger.silly('Get gas price');
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
-      const userTokenData = await this.UserTokenModel.find({ user: userAddress }).populate("tokens")
+      let userTokenData  
+      if (tokenAddress) {
+        userTokenData = await this.UserTokenModel.find({ user: userAddress, token: tokenAddress }).populate("token")
+      } else {
+        userTokenData = await this.UserTokenModel.find({ user: userAddress }).populate("token")
+      }
+       
       const userTokenBalance = {}
       userTokenData.map(usertokens => {
         return userTokenBalance[usertokens.token.address] = usertokens.balance
@@ -366,6 +372,17 @@ public async onSubscription(userAddress){
         token,
        })
       return userToken;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  public async getTokenByAddress(tokenAddress: string): Promise<{}> {
+    // this.logger.silly('Get gas price');
+    this.TokenModel = Container.get('TokenModel');
+    try {
+      const token = await this.TokenModel.findOne({token: tokenAddress})
+      return token;
     } catch (error) {
       console.log(error);
     }

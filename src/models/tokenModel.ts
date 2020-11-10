@@ -5,6 +5,7 @@ const Token = new Schema(
     address: {
       type: String,
       required: true,
+      unique: true,
     },
     symbol: {
         type: String,
