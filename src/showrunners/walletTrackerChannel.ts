@@ -252,13 +252,13 @@ export default class WalletTrackerChannel {
 }
 
   //MONGODB
-  public async getTokenBalanceFromDB(userAddress: string, tokenAddress: string): Promise<{}> {
+  public async getTokenBalanceFromDB(userAddress: string, tokenID: string): Promise<{}> {
     // this.logger.silly('Get gas price');
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       let userTokenData  
       if (tokenAddress) {
-        userTokenData = await this.UserTokenModel.find({ user: userAddress, token: tokenAddress }).populate("token")
+        userTokenData = await this.UserTokenModel.find({ user: userAddress, token: tokenID }).populate("token")
       } else {
         userTokenData = await this.UserTokenModel.find({ user: userAddress }).populate("token")
       }
