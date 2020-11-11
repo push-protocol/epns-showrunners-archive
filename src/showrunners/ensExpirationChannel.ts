@@ -33,7 +33,7 @@ export default class EnsExpirationChannel {
         config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
         {                                                                       // API Keys
           etherscanAPI: config.etherscanAPI,
-          infuraAPI: config.infuraAPI,
+          infuraAPI: null,
           alchemyAPI: config.alchemyAPI
         },
         config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
@@ -42,10 +42,10 @@ export default class EnsExpirationChannel {
       );
 
       const ens = epnsNotify.getInteractableContracts(
-        config.web3MainnetNetwork,                                              // Network for which the interactable contract is req
+        config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
         {                                                                       // API Keys
           etherscanAPI: config.etherscanAPI,
-          infuraAPI: config.infuraAPI,
+          infuraAPI: null,
           alchemyAPI: config.alchemyAPI
         },
         config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
@@ -101,7 +101,7 @@ export default class EnsExpirationChannel {
                       await epnsNotify.sendNotification(
                         epns.signingContract,                                           // Contract connected to signing wallet
                         ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey),        // Recipient to which the payload should be sent
-                        parseInt(payload.data.type),                                    // Notification Type
+                        payloadType,                                    // Notification Type
                         storageType,                                                              // Notificattion Storage Type
                         ipfshash,                                                       // Notification Storage Pointer
                         txConfirmWait,                                                              // Should wait for transaction confirmation

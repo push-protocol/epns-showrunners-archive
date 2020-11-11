@@ -10,6 +10,7 @@ const moment = require('moment'); // time library
 
 const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
+const epnsNotify = require('../helpers/epnsNotifyHelper');
 
 function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -30,69 +31,107 @@ export default class CompoundLiquidationChannel {
       // Preparing to get all subscribers of the channel
       // const mainnetProvider = new ethers.providers.InfuraProvider();
       // const provider = new ethers.providers.InfuraProvider('ropsten');
-      const network = "ropsten";
-      const provider = ethers.getDefaultProvider(network, {
-        infura: config.infuraId
-      });
+      
+      // Preparing to get all subscribers of the channel
+      const compoundChannelAddress = ethers.utils.computeAddress(config.compComptrollerPrivateKey);
+      
 
+       // Call Helper function to get interactableContracts
+       const epns = epnsNotify.getInteractableContracts(
+        config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
+        {                                                                       // API Keys
+          etherscanAPI: config.etherscanAPI,
+          infuraAPI: config.infuraAPI,
+          alchemyAPI: config.alchemyAPI
+        },
+        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
+        config.deployedContract,                                                // The contract address which is going to be used
+        config.deployedContractABI                                              // The contract abi which is going to be useds
+      );
 
-      let wallet = new ethers.Wallet(config.compComptrollerPrivateKey, provider);
+      const compound = epnsNotify.getInteractableContracts(
+        config.web3RopstenProvider,                                              // Network for which the interactable contract is req
+        {                                                                       // API Keys
+          etherscanAPI: config.etherscanAPI,
+          infuraAPI: config.infuraAPI,
+          alchemyAPI: config.alchemyAPI
+        },
+        config.compComptrollerPrivateKey,                                       // Private Key of the Wallet sending Notification
+        config.compComptrollerDeployedContract,                                             // The contract address which is going to be used
+        config.compComptrollerDeployedContractABI                                           // The contract abi which is going to be useds
+      );
 
-      let epnsContract = new ethers.Contract(config.deployedContract, config.deployedContractABI, provider);
-      let epnsContractWithSigner = epnsContract.connect(wallet);
+      epns.contract.channels(compoundChannelAddress)
+      .then(async (channelInfo) => {
 
-      let compComptrollerContract = new ethers.Contract(config.compComptrollerDeployedContract, config.compComptrollerDeployedContractABI, provider);
+    //  let g = await  new ethers.providers.EtherscanProvider('homestead' )
+     
+    //   console.log('m',await g.getEtherPrice())
+    
+        
+      const filter = epns.contract.filters.Subscribe(compoundChannelAddress)
 
-      const filter = epnsContract.filters.Subscribe(wallet.address)
-
-      let fromBlock = 0;
+      let startBlock = channelInfo.channelStartBlock.toNumber();
 
       //Function to get all the addresses in the channel
-      epnsContract.queryFilter(filter, fromBlock)
-        .then(async (eventLog) => {
-          // Log the event
-          logger.debug("Event log returned %o", eventLog);
+      epns.contract.queryFilter(filter, startBlock)
+      .then(async (eventLog) => {
+        // Log the event
+        logger.debug("Event log returned %o", eventLog);
 
-          // Loop through all addresses in the channel and decide who to send notification
-          let allTransactions = [];
+        // Loop through all addresses in the channel and decide who to send notification
+        let allTransactions = [];
 
-          eventLog.map((log) => {
-            // Get user address
-            const userAddress = log.args.user;
-            allTransactions.push(
-              this.checkCompoundLiquidation(compComptrollerContract, provider, userAddress)
-                .then( (results) => {
-                  return results;
-                })
-              );
-            })
+        eventLog.map((log) => {
+          // Get user address
+          const userAddress = log.args.user;
+          allTransactions.push(
+            this.checkCompoundLiquidation(compound,userAddress)
+              .then( (results) => {
+                return results;
+              })
+            );
+          })
 
-            // resolve all transactions
-          const results = await Promise.all(allTransactions);
-          logger.debug("All Transactions Loaded: %o", results);
-          let nonce = 0;
-          for (let index = 0; index < results.length; index++) {
-            const object = results[index];
-            if (object.success) {
-              // Send notification
-              const wallet = object.wallet;
-              const ipfshash = object.ipfshash;
-              const payloadType = object.payloadType;
+          // resolve all transactions
+          Promise.all(allTransactions)
+          .then(async (results) => {
+            logger.debug("All Transactions Loaded: %o", results);
+
+            for (const object of results) {
+              if (object.success) {
+                // Send notification
+                const wallet = object.wallet;
+                const ipfshash = object.ipfshash;
+                const payloadType = object.payloadType;
 
               logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
+              
+              const storageType = 1; // IPFS Storage Type
+                      const txConfirmWait = 1; // Wait for 0 tx confirmation
+
+                      // Send Notification
+                      await epnsNotify.sendNotification(
+                        epns.signingContract,                                           // Contract connected to signing wallet
+                        wallet,        // Recipient to which the payload should be sent
+                        payloadType,                                    // Notification Type
+                        storageType,                                                              // Notificattion Storage Type
+                        ipfshash,                                                       // Notification Storage Pointer
+                        txConfirmWait,                                                              // Should wait for transaction confirmation
+                        logger                                                          // Logger instance (or console.log) to pass
+                      ).then ((tx) => {
+                        logger.info("Transaction mined: %o | Notification Sent", tx.hash);
+                        logger.info("🙌 ETH Ticker Channel Logic Completed!");
+                        resolve(tx);
+                      })
+                      .catch (err => {
+                        logger.error("🔥Error --> sendNotification(): %o", err);
+                        reject(err);
+                      });
+              
               try {
-                const options = {
-                  nonce,
-                }
-                let tx;
-                if(nonce == 0){
-                 tx = await epnsContractWithSigner.sendMessage(wallet, payloadType, ipfshash, 1);
-                }
-                else{
-                  tx = await epnsContractWithSigner.sendMessage(wallet, payloadType, ipfshash, 1, options);
-                }
-                nonce = tx.nonce + 1;
-                 logger.info("Transaction sent: %o", tx);
+                let tx = await epns.signingContract.sendMessage(wallet, payloadType, ipfshash, 1);
+                logger.info("Transaction sent: %o", tx);
               }
               catch (err) {
                 logger.error("Unable to complete transaction, error: %o", err);
@@ -101,43 +140,53 @@ export default class CompoundLiquidationChannel {
           }
           logger.debug("Compound Liquidation Alert! logic completed!");
           // })
+        })
+        .catch(err => {
+          logger.error("Error occurred sending transactions: %o", err);
+          reject(err);
+        });
           resolve("Processing Compound Liquidation Alert! logic completed!");
         })
         .catch(err => {
           logger.error("Error occurred while looking at event log: %o", err);
           reject(err);
         })
+      })
+      .catch(err => {
+        logger.error("Error retreiving channel start block: %o", err);
+        reject(err);
+      });
     })
   }
 
   // To Check Account for Amount Left to Liquidation
-  public async checkCompoundLiquidation(compComptrollerContract, provider, userAddress) {
+  public async checkCompoundLiquidation(compound, userAddress) {
     const logger = this.logger;
     return new Promise((resolve, reject) => {
 
-      compComptrollerContract.getAccountLiquidity(userAddress)
+      compound.contract.getAccountLiquidity(userAddress)
       .then(result => {
         let {1:liquidity} = result;
         liquidity = ethers.utils.formatEther(liquidity).toString();
 
         // Lookup the address
-        provider.lookupAddress(userAddress)
+        compound.provider.lookupAddress(userAddress)
         .then(ensAddressName => {
           let addressName = ensAddressName;
-          let cDai = new ethers.Contract(config.cDaiDeployedContract,config.cDaiDeployedContractABI,  provider);
-          let cBat = new ethers.Contract(config.cBatDeployedContract,config.cBatDeployedContractABI,  provider);
-          let cEth = new ethers.Contract(config.cEthDeployedContract,config.cEthDeployedContractABI,  provider);
-          let cRep = new ethers.Contract(config.cRepDeployedContract,config.cRepDeployedContractABI,  provider);
-          let cSai = new ethers.Contract(config.cSaiDeployedContract,config.cSaiDeployedContractABI,  provider);
-          let cUni = new ethers.Contract(config.cUniDeployedContract,config.cUniDeployedContractABI,  provider);
-          let cUsdc = new ethers.Contract(config.cUsdcDeployedContract,config.cUsdcDeployedContractABI,  provider);
-          let cUsdt = new ethers.Contract(config.cUsdtDeployedContract,config.cUsdtDeployedContractABI,  provider);
-          let cWbtc = new ethers.Contract(config.cWbtcDeployedContract,config.cWbtcDeployedContractABI,  provider);
-          let cZrx = new ethers.Contract(config.cZrxDeployedContract,config.cZrxDeployedContractABI,  provider);
-          let price = new ethers.Contract(config.priceOracleDeployedContract,config.priceOracleDeployedContractABI,  provider);
+          let cDai = new ethers.Contract(config.cDaiDeployedContract,config.cDaiDeployedContractABI,  compound.provider);
+          let cBat = new ethers.Contract(config.cBatDeployedContract,config.cBatDeployedContractABI,  compound.provider);
+          let cEth = new ethers.Contract(config.cEthDeployedContract,config.cEthDeployedContractABI,  compound.provider);
+          let cRep = new ethers.Contract(config.cRepDeployedContract,config.cRepDeployedContractABI,  compound.provider);
+          let cSai = new ethers.Contract(config.cSaiDeployedContract,config.cSaiDeployedContractABI,  compound.provider);
+          let cUni = new ethers.Contract(config.cUniDeployedContract,config.cUniDeployedContractABI,  compound.provider);
+          let cUsdc = new ethers.Contract(config.cUsdcDeployedContract,config.cUsdcDeployedContractABI,  compound.provider);
+          let cUsdt = new ethers.Contract(config.cUsdtDeployedContract,config.cUsdtDeployedContractABI,  compound.provider);
+          let cWbtc = new ethers.Contract(config.cWbtcDeployedContract,config.cWbtcDeployedContractABI,  compound.provider);
+          let cZrx = new ethers.Contract(config.cZrxDeployedContract,config.cZrxDeployedContractABI,  compound.provider);
+          let price = new ethers.Contract(config.priceOracleDeployedContract,config.priceOracleDeployedContractABI,  compound.provider);
           let allLiquidity =[];
 
-          compComptrollerContract.getAssetsIn(userAddress)
+          compound.contract.getAssetsIn(userAddress)
             .then(marketAddress => {
               logger.info("Market Address is in: %o | Address: :%o ", marketAddress, addressName);
 
@@ -152,7 +201,7 @@ export default class CompoundLiquidationChannel {
                     let address = marketAddress[i];
 
                     allLiquidity.push(
-                      this.getUserTotalLiquidityFromAllAssetEntered(contract,address,compComptrollerContract,price,userAddress)
+                      this.getUserTotalLiquidityFromAllAssetEntered(contract,address,compound,price,userAddress)
                       .then(result =>{
                         return result
                       })
@@ -175,12 +224,9 @@ export default class CompoundLiquidationChannel {
                 if(liquidityAlert > 0 &&  liquidity < liquidityAlert){
                   this.getCompoundLiquidityPayload(addressName, liquidity, sumAllLiquidityOfAsset)
                     .then(payload => {
-                      const jsonisedPayload = JSON.stringify(payload);
+                      epnsNotify.uploadToIPFS(payload, logger)
+                      .then(async (ipfshash) => {
 
-                      // handle payloads, etc
-                      const ipfs = require("nano-ipfs-store").at("https://ipfs.infura.io:5001");
-                      ipfs.add(jsonisedPayload)
-                        .then(ipfshash => {
                           resolve({
                             success: true,
                             wallet: userAddress,
@@ -245,7 +291,7 @@ export default class CompoundLiquidationChannel {
       }
     }
   }
-  public async getUserTotalLiquidityFromAllAssetEntered(contract,address,compComptrollerContract,price,userAddress) {
+  public async getUserTotalLiquidityFromAllAssetEntered(contract,address,compound,price,userAddress) {
     const logger = this.logger;
     logger.debug('Preparing user liquidity info...');
     return await new Promise((resolve, reject) => {
@@ -268,7 +314,7 @@ export default class CompoundLiquidationChannel {
         let result3 = (result / 1e18)
         oraclePrice = result3
 
-      compComptrollerContract.markets(address)
+        compound.contract.markets(address)
         .then(result => {
           let {1:result4} = result;
           result4 = (result4 / 1e18) * 100;
@@ -297,7 +343,7 @@ export default class CompoundLiquidationChannel {
   public async getCompoundLiquidityPayload(addressName, liquidity, sumAllLiquidityOfAsset) {
     const logger = this.logger;
     logger.debug('Preparing payload...');
-    return await new Promise((resolve, reject) => {
+    return await new Promise(async(resolve, reject) => {
 
       const percentage = Math.floor((liquidity*100) /sumAllLiquidityOfAsset);
       const title = "Compound Liquidity Alert!";
@@ -306,20 +352,16 @@ export default class CompoundLiquidationChannel {
       const payloadTitle = "Compound Liquidity Alert!";
       const payloadMsg = "Dear [d:" + addressName + "] your account has %"+ percentage + " left before it gets liquidated";
 
-      const payload = {
-        "notification": {
-          "title": title,
-          "body": message
-        },
-        "data": {
-          "type": "3",
-          "secret": "",
-          "asub": payloadTitle,
-          "amsg": payloadMsg,
-          "acta": "",
-          "aimg": ""
-        }
-      };
+      const payload = await epnsNotify.preparePayload(
+        null,                                                               // Recipient Address | Useful for encryption
+        3,                                                                  // Type of Notification
+        title,                                                              // Title of Notification
+        message,                                                            // Message of Notification
+        payloadTitle,                                                       // Internal Title
+        payloadMsg,                                                         // Internal Message
+        null,                                                               // Internal Call to Action Link
+        null,                                                               // internal img of youtube link
+      );
 
       logger.debug('Payload Prepared: %o', payload);
 
