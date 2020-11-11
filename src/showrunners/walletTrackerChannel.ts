@@ -106,6 +106,15 @@ export default class WalletTrackerChannel {
     })
   }
 
+  //To add all the tokens we support to MongoDB
+  public async addTokens() {
+    const tokenPromises = tokens.map(token => {
+      return this.addTokenToDB(token.ticker, token.address, token.decimals)
+    })
+    const results = await Promise.all(tokenPromises)
+    return {success: "success", data: results}
+  }
+
   public async checkTokenMovement(user, provider){
 
     const logger = this.logger;
@@ -118,9 +127,17 @@ export default class WalletTrackerChannel {
 
           // logger.info(userToken)
           // console.log(userToken);
+          
           logger.info('userToken: %o', userToken)
 
-          this.getTokenBalanceFromDB(user)
+          this.getTokenBalanceFromDB(user, token.address)
+          // .then(userTokenBalanceFromDB =>{
+          //   logger.info('userTokenBalanceFromDB: %o', userTokenBalanceFromDB)
+
+          // })
+
+          
+
 
             // this.getUserTokenFromDB(user, token)
             // .then(userTokenFromDB => {
@@ -247,11 +264,11 @@ export default class WalletTrackerChannel {
       }
        
       logger.info('userTokenData: %o', userTokenData)
-      const userTokenBalance = {}
-      userTokenData.map(usertokens => {
-        return userTokenBalance[usertokens.token.address] = usertokens.balance
-      })
-      return userTokenBalance;
+      // const userTokenBalance = {}
+      // userTokenData.map(usertokens => {
+      //   return userTokenBalance[usertokens.token.address] = usertokens.balance
+      // })
+      // return userTokenBalance;
     } catch (error) {
       console.log(error);
     }
@@ -312,13 +329,7 @@ export default class WalletTrackerChannel {
     }
   }
 
-  public async addTokens() {
-    const tokenPromises = tokens.map(token => {
-      return this.addTokenToDB(token.ticker, token.address, token.decimals)
-    })
-    const results = await Promise.all(tokenPromises)
-    return {success: "success", data: results}
-  }
+  
   
   public async getTokenByAddress(tokenAddress: string): Promise<{}> {
     // this.logger.silly('Get gas price');
