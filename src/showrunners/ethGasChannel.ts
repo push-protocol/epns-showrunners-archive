@@ -121,7 +121,7 @@ export default class GasStationChannel {
       const pollURL = `${config.gasEndpoint}${gasroute}?api-key=${config.gasAPIKey}`;
 
       getJSON(pollURL).then(async result => {
-        let averageGas10Mins = result.fast / 10;
+        let averageGas10Mins = result.average / 10;
         logger.info("average: %o", averageGas10Mins);
 
         //adding average gas every 10mins for 24 hrs to get the todaysAverageGasPrice
