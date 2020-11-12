@@ -38,10 +38,10 @@ export default class EverestChannel {
     
             // Call Helper function to get interactableContracts
             const epns = epnsNotify.getInteractableContracts(
-            config.web3MainnetNetwork,                                              // Network for which the interactable contract is req
+            config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
             {                                                                       // API Keys
                 etherscanAPI: config.etherscanAPI,
-                infuraAPI: null,
+                infuraAPI: config.infuraAPI,
                 alchemyAPI: config.alchemyAPI
             },
             config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
@@ -53,7 +53,7 @@ export default class EverestChannel {
             config.web3MainnetNetwork,                                              // Network for which the interactable contract is req
             {                                                                       // API Keys
                 etherscanAPI: config.etherscanAPI,
-                infuraAPI: null,
+                infuraAPI: config.infuraAPI,
                 alchemyAPI: config.alchemyAPI
             },
             config.everestPrivateKey,                                                // Private Key of the Wallet sending Notification
@@ -78,7 +78,7 @@ export default class EverestChannel {
                 else{
                     if(info.lastBlock > info.blockChecker){
                         cache.setCache(BLOCK_NUMBER, info.lastBlock);
-                        for(let i = 1; i < info.eventCount; i++) {
+                         for(let i = 1; i < info.eventCount; i++) {
                             let userAddress = info.log[i].args.member
 
                             allTransactions.push(
@@ -186,7 +186,7 @@ export default class EverestChannel {
                       }
                     resolve(info);
                     logger.info('EventLog, eventCount, and blocks sent')
-                }
+               }
             })
         })
     }
