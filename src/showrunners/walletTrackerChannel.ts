@@ -439,7 +439,32 @@ export default class WalletTrackerChannel {
   }
 
   //MONGODB
-  public async addUserTokenToDB(user: string, token: mongoose.Types.ObjectId, balance: String): Promise<{}> {
+  public async clearTokenDB(): Promise<boolean> {
+    // this.logger.silly('Get gas price');
+    this.TokenModel = Container.get('TokenModel');
+    try {
+      await this.TokenModel.deleteMany({})
+      return true;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  //MONGODB
+  public async clearUserTokenDB(): Promise<boolean> {
+    // this.logger.silly('Get gas price');
+    this.UserTokenModel = Container.get('UserTokenModel');
+    try {
+      await this.UserTokenModel.deleteMany({})
+      return true;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  //MONGODB
+  public async addUserTokenToDB(user: string, token: mongoose.Types.ObjectId): Promise<{}> {
+    // this.logger.silly('Get gas price');
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       const userToken = await this.UserTokenModel.create({ 
