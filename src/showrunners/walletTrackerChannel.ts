@@ -385,7 +385,6 @@ export default class WalletTrackerChannel {
 
   //MONGODB
   public async getTokenBalanceFromDB(userAddress: string, tokenID: string): Promise<{}> {
-    // this.logger.silly('Get gas price');
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       let userTokenData  
@@ -440,7 +439,6 @@ export default class WalletTrackerChannel {
 
   //MONGODB
   public async clearTokenDB(): Promise<boolean> {
-    // this.logger.silly('Get gas price');
     this.TokenModel = Container.get('TokenModel');
     try {
       await this.TokenModel.deleteMany({})
@@ -452,7 +450,6 @@ export default class WalletTrackerChannel {
 
   //MONGODB
   public async clearUserTokenDB(): Promise<boolean> {
-    // this.logger.silly('Get gas price');
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       await this.UserTokenModel.deleteMany({})
@@ -463,8 +460,7 @@ export default class WalletTrackerChannel {
   }
 
   //MONGODB
-  public async addUserTokenToDB(user: string, token: mongoose.Types.ObjectId): Promise<{}> {
-    // this.logger.silly('Get gas price');
+  public async addUserTokenToDB(user: string, token: mongoose.Types.ObjectId, balance: String): Promise<{}> {
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       const userToken = await this.UserTokenModel.create({ 
@@ -472,8 +468,8 @@ export default class WalletTrackerChannel {
         token,
         balance
       })
-      logger.info('userTokenSetToDB: %o', userToken)
-      // return userToken;
+      // logger.info('userTokenSetToDB: %o', userToken)
+      return userToken;
     } catch (error) {
       console.log(error);
     }
