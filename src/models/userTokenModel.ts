@@ -11,12 +11,9 @@ const UserToken = new Schema(
         ref: "Token" 
     },
     balance:{
-        type: Number
+      type: String,
+      required: true,
     },
-    initialised:{
-      type: Boolean,
-      default: false
-    }
   },
   { timestamps: true },
 );

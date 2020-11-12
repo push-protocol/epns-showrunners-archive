@@ -6,6 +6,7 @@ import events from '../subscribers/events';
 
 import { ethers, logger } from 'ethers';
 import { truncateSync } from 'fs';
+import { reject } from 'lodash';
 
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
@@ -48,121 +49,206 @@ export default class WalletTrackerChannel {
 
     return await new Promise((resolve, reject) => {
 
-        const walletTrackerChannelAddress = ethers.utils.computeAddress(config.walletTrackerPrivateKey);
+      const walletTrackerChannel = ethers.utils.computeAddress(config.walletTrackerPrivateKey);
 
-        // Call Helper function to get interactableContracts
-        const epns = epnsNotify.getInteractableContracts(
-        config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
-        {                                                                       // API Keys
-            etherscanAPI: config.etherscanAPI,
-            infuraAPI: config.infuraAPI,
-            alchemyAPI: config.alchemyAPI
-        },
-        config.walletTrackerPrivateKey,                                       // Private Key of the Wallet sending Notification
-        config.deployedContract,                                                // The contract address which is going to be used
-        config.deployedContractABI                                              // The contract abi which is going to be useds
-        );
+      // Call Helper function to get interactableContracts
+      const epns = epnsNotify.getInteractableContracts(
+      config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
+      {                                                                       // API Keys
+          etherscanAPI: config.etherscanAPI,
+          infuraAPI: null,
+          // infuraAPI: config.infuraAPI,
+          alchemyAPI: config.alchemyAPI
+      },
+      config.walletTrackerPrivateKey,                                       // Private Key of the Wallet sending Notification
+      config.deployedContract,                                                // The contract address which is going to be used
+      config.deployedContractABI                                              // The contract abi which is going to be useds
+      );
 
-        epns.contract.channels(walletTrackerChannelAddress)
-        .then(async (channelInfo) => {
+      epns.contract.channels(walletTrackerChannel)
+      .then(async (channelInfo) => {
 
-            // Get Filter
-            const filter = epns.contract.filters.Subscribe(walletTrackerChannelAddress)
-            const startBlock = channelInfo.channelStartBlock.toNumber();
+        // Get Filter
+        const filter = epns.contract.filters.Subscribe(walletTrackerChannel)
+        const startBlock = channelInfo.channelStartBlock.toNumber();
 
-            epns.contract.queryFilter(filter, startBlock)
-            .then(eventLog => {
+        epns.contract.queryFilter(filter, startBlock)
+        .then(eventLog => {
 
-            // Log the event
-            logger.debug("Subscribed Address Found: %o", eventLog.length);
+        // Log the event
+        logger.debug("Subscribed Address Found: %o", eventLog.length);
 
-            let allPayloads = []
+        let allPayloads = []
 
-            // Loop through all addresses in the channel and decide who to send notification
-            eventLog.forEach(log => {
+        // Loop through all addresses in the channel and decide who to send notification
+        let promises = eventLog.map(log => {
 
-                // Get user address
-                const user = log.args.user;
-                logger.info("user: %o", user)
+          return new Promise((resolve) => {
 
-                allPayloads.push(
-                    this.checkTokenMovement(user, epns.provider)
-                    .then((result) => {
-                      return result;
-                    })
-                );
-            });
+            // Get user address
+            const user = log.args.user;
+            logger.info("user: %o", user)
+
+            this.checkTokenMovement(user, epns.provider)
+            .then((result) => {
+              logger.info(" For User: %o | checkTokenMovement result: :%o ", user, result)
+
+              resolve(result)
+            })
+          })
+        })
+
+        Promise.all(promises)
+        .then(async (results) => {
+          logger.debug("All Transactions Loaded: %o", results);
+
+          for (const object of results) {
+            if (object.success) {
+              // Send notification
+              const ipfshash = object.ipfshash;
+              const payloadType = object.payloadType;
+              const user = object.user
+
+              logger.info("Wallet: %o | Hash: :%o | Sending Data...", user, ipfshash);
+
+              const storageType = 1; // IPFS Storage Type
+              const txConfirmWait = 1; // Wait for 0 tx confirmation
+
+              // Send Notification
+              await epnsNotify.sendNotification(
+                epns.signingContract,                                           // Contract connected to signing wallet
+                user,                                           // Recipient to which the payload should be sent
+                payloadType,                                                    // Notification Type
+                storageType,                                                    // Notificattion Storage Type
+                ipfshash,                                                       // Notification Storage Pointer
+                txConfirmWait,                                                  // Should wait for transaction confirmation
+                logger                                                          // Logger instance (or console.log) to pass
+              ).then ((tx) => {
+                logger.info("Transaction successful: %o | Notification Sent", tx.hash);
+                logger.info("🙌 Wallet Tracker Channel Logic Completed!");
+                resolve(tx);
+              })
+              .catch (err => {
+                logger.error("🔥Error --> sendNotification(): %o", err);
+                reject(err);
+              });
+
+              try {
+                let tx = await epns.signingContract.sendMessage(walletTrackerChannel, payloadType, ipfshash, 1);
+                logger.info("Transaction sent: %o", tx);
+              }
+              catch (err) {
+                logger.error("Unable to complete transaction, error: %o", err);
+              }
+            }
+          }
+
+          // logger.debug("🙌 ENS Domain Expiry logic completed!");
+        })
+
+
         })
         .catch(err => {
-            logger.error("Error retreiving Subscriber event log: %o", err);
-            reject(err);
+          logger.error("Error retreiving Subscriber event log: %o", err);
+          reject(err);
         });
-
-        })
-        .catch(err => {
-            logger.error("Error retreiving channel info: %o", err);
-            reject(err);
-        });
+      })
+      .catch(err => {
+          logger.error("Error retreiving channel info: %o", err);
+          reject(err);
+      });
     })
-  }
-
-  //To add all the tokens we support to MongoDB
-  public async addTokens() {
-    const tokenPromises = tokens.map(token => {
-      return this.addTokenToDB(token.ticker, token.address, token.decimals)
-    })
-    const results = await Promise.all(tokenPromises)
-    return {success: "success", data: results}
   }
 
   public async checkTokenMovement(user, provider){
 
     const logger = this.logger;
-    let changedTokens = [];
 
-    tokens.forEach(token => {
+    return new Promise((resolve) => {
+
+      let changedTokens = [];
+
+      let promises = tokens.map(token => {
+        return new Promise((resolve) => {
 
         this.getTokenBalance(user, token, provider)
         .then(userToken => {
 
-          // logger.info(userToken)
-          // console.log(userToken);
-          
-          logger.info('userToken: %o', userToken)
+          // logger.info('userToken: %o', userToken)
+          this.getTokenByAddress(token.address)
+          .then(tokenDataFromDB=>{
+            // logger.info('tokenDataFromDB: %o', tokenDataFromDB)
 
-          this.getTokenBalanceFromDB(user, token.address)
-          // .then(userTokenBalanceFromDB =>{
-          //   logger.info('userTokenBalanceFromDB: %o', userTokenBalanceFromDB)
+            this.getTokenBalanceFromDB(user, tokenDataFromDB._id)
+            .then(userTokenArrayFromDB =>{
+              // logger.info('userTokenArrayFromDB: %o', userTokenArrayFromDB)
+              // logger.info('userTokenArrayFromDB.length: %o', userTokenArrayFromDB.length)
+              if(userTokenArrayFromDB.length == 0){
+                this.addUserTokenToDB(user, tokenDataFromDB._id, userToken.balance)
+              }
+              else{
+                let userTokenFromDB
+                userTokenArrayFromDB.map(usertoken => {
+                  return userTokenFromDB = usertoken
+                })
 
-          // })
+                // logger.info('userTokenFromDB: %o', userTokenFromDB)
 
-          
-
-
-            // this.getUserTokenFromDB(user, token)
-            // .then(userTokenFromDB => {
-
-            //     this.compareTokenBalance(userToken, userTokenFromDB)
-            //     .then(res => {
-            //         if(res.changed){
-            //             changedTokens.push(userToken)
-            //         }
-            //         else{
-            //             const message = `${user} has no movement in ${token.symbol} token`;
-            //             logger.info(message)
-            //         }
-            //     })
-            // })
-
+                this.compareTokenBalance(userToken, userTokenFromDB)
+                .then(resultToken => {
+                  // logger.info('resultToken: %o', resultToken)
+                  if(resultToken.changed){
+                    // this.addUserTokenToDB(user, tokenDataFromDB._id, resultToken.tokenBalance)
+                  }
+                  resolve(resultToken)
+                })
+              }
+            })
+          })
         })
+      })
+
+      })
+
+      Promise.all(promises)
+      .then(results=> {
+        // logger.info('results: %o', results)
+        changedTokens = results.filter(token => token.changed ===true)
+        // logger.info('changedTokens: %o', changedTokens)
+        if(changedTokens.length>0){
+          this.getWalletTrackerPayload(changedTokens)
+          .then(payload =>{
+            epnsNotify.uploadToIPFS(payload, logger)
+            .then(async (ipfshash) => {
+              // Sign the transaction and send it to chain
+              // const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
+              logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, user);
+
+              resolve({
+                success: true,
+                user,
+                ipfshash,
+                payloadType: parseInt(payload.data.type)
+              });
+            })
+            .catch (err => {
+              logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", user, err)
+              resolve({
+                success: false,
+                data: "Unable to obtain ipfshash for wallet: " + user + " | error: " + err
+              });
+            });
+          })
+        }
+        else{
+          resolve({
+            success: false,
+            data: "No token movement for wallet: " + user 
+          })
+        }
+
+      })
     })
-
-    // Promise.all(changedTokens)
-    // .then(async (results) => {
-    //     logger.debug("All Changed Tokens Loaded: %o", results);
-
-    //     this.getWalletTrackerPayload(user, results)
-    // })
 
   }
 
@@ -181,7 +267,7 @@ export default class WalletTrackerChannel {
       
           // logger.info("Ether Balance: " + etherBalance);
           let tokenInfo = {
-            address: user,
+            user,
             ticker: token.ticker,
             balance: etherBalance
           }
@@ -203,7 +289,7 @@ export default class WalletTrackerChannel {
           tokenBalance = Number(rawBalance/Math.pow(10, decimals)).toLocaleString()
           // logger.info("tokenBalance: " + tokenBalance);
           let tokenInfo = {
-            address: user,
+            user,
             ticker: token.ticker,
             balance: tokenBalance
           }
@@ -216,23 +302,69 @@ export default class WalletTrackerChannel {
   }
 
   public async compareTokenBalance(userToken, userTokenFromDB){
-      if(userToken.balance !== userTokenFromDB.balance)
-      return {changed : true}
-      else 
-      return {changed : false}
+    let tokenBalanceStr= userToken.balance
+    let tokenBalance= Number(tokenBalanceStr.replace(/,/g, ''))
+    let tokenBalanceFromDBStr= userTokenFromDB.balance
+    let tokenBalanceFromDB= Number(tokenBalanceFromDBStr.replace(/,/g, ''))
+    let tokenDifference = tokenBalance-tokenBalanceFromDB
+    // let absTokenDifference = Math.abs(tokenDifference)
+
+    // logger.info('userTokenBalance: %o', tokenBalance)
+    // logger.info('userTokenBalanceFromDB: %o', tokenBalanceFromDB)
+    // logger.info('tokenDifference: %o', tokenDifference)
+
+    let resultToken
+
+    if(tokenDifference === 0){
+      resultToken = {
+        changed: false,
+        ticker: userToken.ticker,
+        increased: false,
+        tokenDifference: tokenDifference,
+        tokenBalance,
+        user: userToken.user,
+      }
+      return resultToken
+    }
+    else if (tokenDifference>0){
+      resultToken = {
+        changed: true,
+        ticker: userToken.ticker,
+        increased: true,
+        tokenDifference: tokenDifference,
+        tokenBalance,
+        user: userToken.user,
+      }
+      return resultToken
+    }
+    else if(tokenDifference<0){
+      resultToken = {
+        changed: true,
+        ticker: userToken.ticker,
+        increased: false,
+        tokenDifference: tokenDifference,
+        tokenBalance,
+        user: userToken.user,
+      }
+      return resultToken
+    }
   }
 
-  public async getWalletTrackerPayload(user, changedTokens) {
+  public async getWalletTrackerPayload(changedTokens) {
     const logger = this.logger;
 
     logger.debug('Preparing payload...');
 
+    let changedTokensJSON = JSON.stringify(changedTokens)
+    // logger.info('changedTokensJSON: %o', changedTokensJSON)
+
+
     return await new Promise(async (resolve) => {
     const title = "Wallet Tracker Alert!";
-    const message = "";
+    const message = "Token Movement in the last one hour!";
 
     const payloadTitle = "Wallet Tracker Alert!";
-    const payloadMsg = "";
+    const payloadMsg = changedTokensJSON;
 
     const payload = await epnsNotify.preparePayload(
     null,                                                               // Recipient Address | Useful for encryption
@@ -257,18 +389,35 @@ export default class WalletTrackerChannel {
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       let userTokenData  
-      if (tokenAddress) {
+      if (tokenID) {
         userTokenData = await this.UserTokenModel.find({ user: userAddress, token: tokenID }).populate("token")
       } else {
         userTokenData = await this.UserTokenModel.find({ user: userAddress }).populate("token")
       }
        
-      logger.info('userTokenData: %o', userTokenData)
+      // logger.info('userTokenDataDB: %o', userTokenData)
+      return userTokenData
+
       // const userTokenBalance = {}
       // userTokenData.map(usertokens => {
       //   return userTokenBalance[usertokens.token.address] = usertokens.balance
       // })
+      // logger.info('userTokenBalance: %o', userTokenBalance)
       // return userTokenBalance;
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  //MONGODB
+  public async getTokenByAddress(tokenAddress: string): Promise<{}> {
+    this.TokenModel = Container.get('TokenModel');
+    try {
+      const token = await this.TokenModel.findOne({address: tokenAddress})
+      // const token = await this.TokenModel.findOne({token: tokenAddress})
+      
+      return token;
     } catch (error) {
       console.log(error);
     }
@@ -276,7 +425,6 @@ export default class WalletTrackerChannel {
 
   //MONGODB
   public async addTokenToDB(symbol: string, address: string, decimals: number): Promise<{}> {
-    // this.logger.silly('Get gas price');
     this.TokenModel = Container.get('TokenModel');
     try {
       const token = await this.TokenModel.create({ 
@@ -291,143 +439,30 @@ export default class WalletTrackerChannel {
   }
 
   //MONGODB
-  public async addUserTokenToDB(user: string, token: mongoose.Types.ObjectId): Promise<{}> {
-    // this.logger.silly('Get gas price');
+  public async addUserTokenToDB(user: string, token: mongoose.Types.ObjectId, balance: String): Promise<{}> {
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       const userToken = await this.UserTokenModel.create({ 
         user,
         token,
+        balance
       })
-      return userToken;
+      logger.info('userTokenSetToDB: %o', userToken)
+      // return userToken;
     } catch (error) {
       console.log(error);
     }
   }
 
-  
-  
-  public async getTokenByAddress(tokenAddress: string): Promise<{}> {
-    // this.logger.silly('Get gas price');
-    this.TokenModel = Container.get('TokenModel');
-    try {
-      const token = await this.TokenModel.findOne({token: tokenAddress})
-      return token;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-
-
-
-
-
-
-   // setHashCache("ETH", "harsh", 20)
-
-                // setHashCache("tokens", "harsh", {})
-
-                // setHashCache("tokens", "harsh", {"0xy": 10, "0zy": 20})
-
-                // getHashCache(hash: String, key: String)
- 
-
-
-
-
-// setting token balance for each user
-
-
-// UserToken.find({user: user)).populate("token")
-
-                // this.tokenMovement(user)
-                // .then(res => {
-                //     if(res.changed){
-                //         changedTokensInfo = res.changedTokensInfo
-                //     }
-                //     else{
-                //         const message = `${user} has no movement in ${token.symbol} token`;
-                //         logger.info(message)
-                //         resolve({
-                //             success: message
-                //           });
-                //     }
-
-                // })
-                // .catch(err => {
-                //     logger.error("Error retreiving channel start block: %o", err);
-                //     reject(err);
-                // });
-
-
-  
-  public async onSubscription(userAddress){
-
-    const cache = this.cached;
-    const logger = this.logger;
-
-    logger.info('Getting ethBalance');
-
-    return await new Promise((resolve, reject) => {
-
-        // Call Helper function to get interactableContracts
-        const epns = epnsNotify.getInteractableContracts(
-        config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
-        {                                                                       // API Keys
-            etherscanAPI: config.etherscanAPI,
-            infuraAPI: config.infuraAPI,
-            apchemyAPI: config.apchemyAPI
-        },
-        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
-        config.deployedContract,                                                // The contract address which is going to be used
-        config.deployedContractABI                                              // The contract abi which is going to be useds
-        );
-        
-       this.getEthBalance(userAddress, epns.provider)
-       .then(result => {
-           this.setUserTokenInfo(userAddress, result)
-
-
-
-           //store the result in MONGODB
-//            {token, user, balance}
-//             setHashCache("ETH", "harsh", 20)
-
-       })
-
-        
-  
-        // let tokenAddresses = [];
-
-        // for(let i=0; i<tokenAddresses.length; i++){
-
-        //     let tokenAddress = tokenAddresses[i]
-
-        //     let tokenContract = new ethers.Contract(tokenAddress, config.erc20DeployedContractABI, provider);
-    
-        //     let fromBlock = 0
-        //     let totalSent= 0;
-        //     let totalReceived = 0;
-        //     let fromTx, toTx;
-
-        //     // tokenContract.queryFilter(startBlock, latestBlock)
-
-                // List all token transfers *from* userAddress
-        //     fromTx = tokenContract.filters.Transfer(userAddress)
-
-        //     // List all token transfers *to* userAddress
-        //     toTx = tokenContract.filters.Transfer(null, userAddress)
-
-        //     console.log(fromTx)
-        //     console.log(toTx)
-
-        // }
-
-       
+  //To add all the tokens we support, to MONGODB
+  public async addTokens() {
+    const tokenPromises = tokens.map(token => {
+      return this.addTokenToDB(token.ticker, token.address, token.decimals)
     })
-
-
+    const results = await Promise.all(tokenPromises)
+    return {success: "success", data: results}
   }
+
+
   
 }
