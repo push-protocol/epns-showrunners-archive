@@ -385,6 +385,7 @@ export default class WalletTrackerChannel {
 
   //MONGODB
   public async getTokenBalanceFromDB(userAddress: string, tokenID: string): Promise<{}> {
+    const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       let userTokenData  
@@ -405,12 +406,13 @@ export default class WalletTrackerChannel {
       // return userTokenBalance;
 
     } catch (error) {
-      console.log(error);
+      logger.debug('getTokenBalanceFromDB Error: %o', error);
     }
   }
 
   //MONGODB
   public async getTokenByAddress(tokenAddress: string): Promise<{}> {
+    const logger = this.logger;
     this.TokenModel = Container.get('TokenModel');
     try {
       const token = await this.TokenModel.findOne({address: tokenAddress})
@@ -418,12 +420,13 @@ export default class WalletTrackerChannel {
       
       return token;
     } catch (error) {
-      console.log(error);
+      logger.debug('getTokenByAddress Error: %o', error);
     }
   }
 
   //MONGODB
   public async addTokenToDB(symbol: string, address: string, decimals: number): Promise<{}> {
+    const logger = this.logger;
     this.TokenModel = Container.get('TokenModel');
     try {
       const token = await this.TokenModel.create({ 
@@ -433,34 +436,37 @@ export default class WalletTrackerChannel {
       })
       return token;
     } catch (error) {
-      console.log(error);
+      logger.debug('addTokenToDB Error: %o', error);
     }
   }
 
   //MONGODB
   public async clearTokenDB(): Promise<boolean> {
+    const logger = this.logger;
     this.TokenModel = Container.get('TokenModel');
     try {
       await this.TokenModel.deleteMany({})
       return true;
     } catch (error) {
-      console.log(error);
+      logger.debug('clearTokenDB Error: %o', error);
     }
   }
 
   //MONGODB
   public async clearUserTokenDB(): Promise<boolean> {
+    const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       await this.UserTokenModel.deleteMany({})
       return true;
     } catch (error) {
-      console.log(error);
+      logger.debug('clearUserTokenDB Error: %o', error);
     }
   }
 
   //MONGODB
   public async addUserTokenToDB(user: string, token: mongoose.Types.ObjectId, balance: String): Promise<{}> {
+    const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       const userToken = await this.UserTokenModel.create({ 
@@ -471,7 +477,23 @@ export default class WalletTrackerChannel {
       // logger.info('userTokenSetToDB: %o', userToken)
       return userToken;
     } catch (error) {
-      console.log(error);
+      logger.debug('addUserTokenToDB Error: %o', error);
+    }
+  }
+
+  //MONGODB
+  public async updateUserTokenBalance(user: string, token: mongoose.Types.ObjectId, balance: String): Promise<{}> {
+    const logger = this.logger;
+    this.UserTokenModel = Container.get('UserTokenModel');
+    try {
+      const userToken = await this.UserTokenModel.findOneAndUpdate(
+        { user, token },
+        { balance },
+        { safe: true, new: true }
+      );
+      return userToken;
+    } catch (error) {
+      logger.debug('updateUserTokenBalance Error: %o', error);
     }
   }
 
