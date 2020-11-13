@@ -248,6 +248,8 @@ export default class EverestChannel {
                 null,                                                               // internal img of youtube link
             );
 
+            logger.debug('Payload Prepared: %o', payload);
+
             resolve(payload);
         }) 
     }
