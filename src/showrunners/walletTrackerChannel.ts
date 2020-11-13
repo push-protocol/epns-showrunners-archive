@@ -91,7 +91,7 @@ export default class WalletTrackerChannel {
 
             this.checkTokenMovement(user, epns.provider)
             .then((result) => {
-              logger.info(" For User: %o | checkTokenMovement result: :%o ", user, result)
+              // logger.info(" For User: %o | checkTokenMovement result: :%o ", user, result)
 
               resolve(result)
             })
@@ -198,7 +198,7 @@ export default class WalletTrackerChannel {
                 .then(resultToken => {
                   // logger.info('resultToken: %o', resultToken)
                   if(resultToken.changed){
-                    // this.addUserTokenToDB(user, tokenDataFromDB._id, resultToken.tokenBalance)
+                    this.updateUserTokenBalance(user, tokenDataFromDB._id, resultToken.tokenBalance)
                   }
                   resolve(resultToken)
                 })
@@ -491,6 +491,7 @@ export default class WalletTrackerChannel {
         { balance },
         { safe: true, new: true }
       );
+      logger.info('updatedUserToken: %o', userToken)
       return userToken;
     } catch (error) {
       logger.debug('updateUserTokenBalance Error: %o', error);
