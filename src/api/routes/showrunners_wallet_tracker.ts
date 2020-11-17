@@ -29,6 +29,12 @@ export default (app: Router) => {
 
   route.post(
     '/checkTokenMovement',
+    celebrate({
+      body: Joi.object({
+        user: Joi.string().required(),
+        provider: Joi.string().required(),
+      }),
+    }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
