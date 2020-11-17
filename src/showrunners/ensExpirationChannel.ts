@@ -46,7 +46,7 @@ export default class EnsExpirationChannel {
       );
 
       const ens = epnsNotify.getInteractableContracts(
-        config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
+        config.web3MainnetNetwork,                                              // Network for which the interactable contract is req
         {                                                                       // API Keys
           etherscanAPI: config.etherscanAPI,
           infuraAPI: config.infuraAPI,
