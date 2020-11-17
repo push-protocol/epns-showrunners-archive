@@ -148,7 +148,7 @@ export default class GasStationChannel {
             averagePrice: movingAverageGasForTheLast90DaysFromMongoDB.average
           }
 
-          highPriceFlag = !highPriceFlag;
+          highPriceFlag = true;
           cache.setCache(HIGH_PRICE_FLAG, highPriceFlag);
 
           resolve(info);
@@ -163,7 +163,7 @@ export default class GasStationChannel {
             averagePrice: movingAverageGasForTheLast90DaysFromMongoDB.average
           }
 
-          highPriceFlag = !highPriceFlag;
+          highPriceFlag = false;
           cache.setCache(HIGH_PRICE_FLAG, highPriceFlag);
 
           resolve(info);
