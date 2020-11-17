@@ -1,3 +1,7 @@
+// @name: ETH Tracker Channel
+// @version: 1.0
+// @recent_changes: ETH Price Tracker
+
 import { Service, Inject } from 'typedi';
 import config from '../config';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';

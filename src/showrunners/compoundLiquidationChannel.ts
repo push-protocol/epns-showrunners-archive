@@ -1,3 +1,7 @@
+// @name: Compound Liquidation Channel
+// @version: 1.0
+// @recent_changes: Compound Liquidation Tracker
+
 import { Service, Inject } from 'typedi';
 import config from '../config';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
@@ -29,7 +33,7 @@ export default class CompoundLiquidationChannel {
     logger.debug('Checking for liquidated address... ');
     return await new Promise((resolve, reject) => {
       const compoundChannelAddress = ethers.utils.computeAddress(config.compComptrollerPrivateKey);
-      
+
 
        // Call Helper function to get interactableContracts
        const epns = epnsNotify.getInteractableContracts(
@@ -58,7 +62,7 @@ export default class CompoundLiquidationChannel {
 
       epns.contract.channels(compoundChannelAddress)
       .then(async (channelInfo) => {
-        
+
       const filter = epns.contract.filters.Subscribe(compoundChannelAddress)
 
       let startBlock = channelInfo.channelStartBlock.toNumber();
@@ -96,7 +100,7 @@ export default class CompoundLiquidationChannel {
                 const payloadType = object.payloadType;
 
               logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
-              
+
               const storageType = 1; // IPFS Storage Type
                       const txConfirmWait = 1; // Wait for 0 tx confirmation
 
@@ -117,7 +121,7 @@ export default class CompoundLiquidationChannel {
                         logger.error("🔥Error --> sendNotification(): %o", err);
                         reject(err);
                       });
-              
+
               try {
                 let tx = await epns.signingContract.sendMessage(wallet, payloadType, ipfshash, 1);
                 logger.info("Transaction sent: %o", tx);
@@ -196,8 +200,8 @@ export default class CompoundLiquidationChannel {
           success: false,
           err: err
         });
-      })  
-    })       
+      })
+    })
   }
 
   // To Check Account for Amount Left to Liquidation
@@ -252,7 +256,7 @@ export default class CompoundLiquidationChannel {
             liquidity:liquidity,
             addressName:addressName
           });
-          
+
         })
         .catch(err => {
           logger.error("Error occurred in checkLiquidity: %o", userAddress, err);
@@ -260,7 +264,7 @@ export default class CompoundLiquidationChannel {
             success: false,
             err: err
           });
-        }) 
+        })
       })
       .catch(err => {
         logger.error("Error occurred in getAssetsIn: %o", userAddress, err);
@@ -268,7 +272,7 @@ export default class CompoundLiquidationChannel {
           success: false,
           err: err
         });
-      }) 
+      })
     });
   }
 

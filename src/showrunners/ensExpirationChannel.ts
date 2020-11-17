@@ -1,3 +1,7 @@
+// @name: ENS Expiry Channel
+// @version: 1.0
+// @recent_changes: ENS Expiry
+
 import { Service, Inject } from 'typedi';
 import config from '../config';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
