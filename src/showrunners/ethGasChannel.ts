@@ -1,6 +1,6 @@
 // @name: ETH GAS Cnannel
-// @version: 1.1
-// @recent_changes: Cleanup, Price Threshold
+// @version: 1.1.1
+// @recent_changes: Changed Price Threshold logic
 
 import { Service, Inject, Container } from 'typedi';
 import config from '../config';
@@ -140,7 +140,7 @@ export default class GasStationChannel {
         let highPriceFlag = await cache.getCache(HIGH_PRICE_FLAG);
 
         // checks if the result gotten every 10 minutes is higher than the movingAverageGasForTheLast90DaysFromMongoDB
-        if (movingAverageGasForTheLast90DaysFromMongoDB.average < (averageGas10Mins * PRICE_THRESHOLD_MULTIPLIER) && highPriceFlag == "false") {
+        if ((movingAverageGasForTheLast90DaysFromMongoDB.average * PRICE_THRESHOLD_MULTIPLIER) < averageGas10Mins && highPriceFlag == "false") {
           const info = {
             changed: true,
             gasHigh: true,
