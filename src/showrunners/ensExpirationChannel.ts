@@ -1,3 +1,7 @@
+// @name: ENS Expiry Channel
+// @version: 1.0.1
+// @recent_changes: ENS Expiry Payload Fix
+
 import { Service, Inject } from 'typedi';
 import config from '../config';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
@@ -101,7 +105,7 @@ export default class EnsExpirationChannel {
                       await epnsNotify.sendNotification(
                         epns.signingContract,                                           // Contract connected to signing wallet
                         ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey),        // Recipient to which the payload should be sent
-                        parseInt(payload.data.type),                                    // Notification Type
+                        parseInt(payloadType),                                    // Notification Type
                         storageType,                                                              // Notificattion Storage Type
                         ipfshash,                                                       // Notification Storage Pointer
                         txConfirmWait,                                                              // Should wait for transaction confirmation

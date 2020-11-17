@@ -1,15 +1,13 @@
+// @name: ETH Tracker Channel
+// @version: 1.0
+// @recent_changes: ETH Price Tracker
+
 import { Service, Inject } from 'typedi';
 import config from '../config';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
-import events from '../subscribers/events';
-
 import { ethers } from 'ethers';
 
 const bent = require('bent'); // Download library
-const moment = require('moment'); // time library
-
-const db = require('../helpers/dbHelper');
-const utils = require('../helpers/utilsHelper');
 const epnsNotify = require('../helpers/epnsNotifyHelper');
 
 @Service()
