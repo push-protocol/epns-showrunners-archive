@@ -1,3 +1,7 @@
+// @name: ETH GAS Cnannel
+// @version: 1.1.1
+// @recent_changes: Changed Price Threshold logic
+
 import { Service, Inject, Container } from 'typedi';
 import config from '../config';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
@@ -11,10 +15,9 @@ const moment = require('moment'); // time library
 const epnsNotify = require('../helpers/epnsNotifyHelper');
 
 // variables for mongoDb and redis
-const GAS_PRICE = 'gasprice';
-const THRESHOLD_FLAG = 'threshold_flag';
 const GAS_PRICE_FOR_THE_DAY = 'gas_price_for_the_day';
-
+const HIGH_PRICE_FLAG = 'ethgas_high_price';
+const PRICE_THRESHOLD_MULTIPLIER = 1.3; // multiply by 1.3x for checking high price
 
 @Service()
 export default class GasStationChannel {
@@ -24,7 +27,7 @@ export default class GasStationChannel {
     @EventDispatcher() private eventDispatcher: EventDispatcherInterface,
   ) {
     //initializing cache
-    this.cached.setCache(THRESHOLD_FLAG, true);
+    this.cached.setCache(HIGH_PRICE_FLAG, false);
     this.cached.setCache(GAS_PRICE_FOR_THE_DAY, 0);
   }
 
@@ -134,11 +137,10 @@ export default class GasStationChannel {
         logger.info('moving average gas: %o', movingAverageGasForTheLast90DaysFromMongoDB.average);
 
         // assigning the threshold to a variable
-        let flag = await cache.getCache(THRESHOLD_FLAG);
-
+        let highPriceFlag = await cache.getCache(HIGH_PRICE_FLAG);
 
         // checks if the result gotten every 10 minutes is higher than the movingAverageGasForTheLast90DaysFromMongoDB
-        if (movingAverageGasForTheLast90DaysFromMongoDB.average < averageGas10Mins && flag == 'true') {
+        if ((movingAverageGasForTheLast90DaysFromMongoDB.average * PRICE_THRESHOLD_MULTIPLIER) < averageGas10Mins && highPriceFlag == "false") {
           const info = {
             changed: true,
             gasHigh: true,
@@ -146,12 +148,14 @@ export default class GasStationChannel {
             averagePrice: movingAverageGasForTheLast90DaysFromMongoDB.average
           }
 
+          highPriceFlag = true;
+          cache.setCache(HIGH_PRICE_FLAG, highPriceFlag);
+
           resolve(info);
-          cache.setCache(THRESHOLD_FLAG, false);
         }
 
         // checks if the result gotten every 10 minutes is less than the movingAverageGasForTheLast90DaysFromMongoDB
-        else if (movingAverageGasForTheLast90DaysFromMongoDB.average > averageGas10Mins && flag == 'false') {
+        else if (movingAverageGasForTheLast90DaysFromMongoDB.average > averageGas10Mins && highPriceFlag == "true") {
           const info = {
             changed: true,
             gasHigh: false,
@@ -159,9 +163,10 @@ export default class GasStationChannel {
             averagePrice: movingAverageGasForTheLast90DaysFromMongoDB.average
           }
 
-          resolve(info);
+          highPriceFlag = false;
+          cache.setCache(HIGH_PRICE_FLAG, highPriceFlag);
 
-          cache.setCache(THRESHOLD_FLAG, true);
+          resolve(info);
         }
         else{
           const info = {
@@ -170,8 +175,8 @@ export default class GasStationChannel {
 
           resolve(info);
         }
-        const afterIfStatement = await cache.getCache(THRESHOLD_FLAG)
-        logger.info('flag: %o', afterIfStatement)
+
+        logger.info('Checking Logic is now: %s', (highPriceFlag ? "High Price coming down" : "Normal Price going up"));
       });
     });
   }
@@ -182,6 +187,7 @@ export default class GasStationChannel {
 
     return await new Promise(async (resolve, reject) => {
       const gasPrice = Math.trunc(info.currentPrice);
+      const avgPrice = Math.trunc(info.averagePrice);
 
       let title;
       let payloadTitle;
@@ -195,7 +201,7 @@ export default class GasStationChannel {
         payloadTitle = `Eth Gas Price Movement ⬆`;
 
         message = `Eth Gas Price is over the usual average, current cost: ${gasPrice} Gwei`;
-        payloadMsg = `[t:⬆] Gas Price are way above the normal rates.\n\n[d:Current] Price: [t: ${gasPrice} Gwei]\n[s:Usual] Price: [b: ${info.averagePrice} Gwei] [timestamp: ${Math.floor(new Date() / 1000)}]`;
+        payloadMsg = `[t:⬆] Gas Price are way above the normal rates.\n\n[d:Current] Price: [t: ${gasPrice} Gwei]\n[s:Usual] Price: [b: ${avgPrice} Gwei] [timestamp: ${Math.floor(new Date() / 1000)}]`;
       }
       else {
         // Gas will be low
@@ -203,7 +209,7 @@ export default class GasStationChannel {
         payloadTitle = `Eth Gas Price Movement ⬇`;
 
         message = `Eth Gas Price is back to normal, current cost: ${gasPrice} Gwei`;
-        payloadMsg = `[d:⬇] Hooray! Gas Price is back to normal rates.\n\n[d:Current] Price: [d: ${gasPrice} Gwei]\n[s:Usual] Price: [b: ${info.averagePrice} Gwei] [timestamp: ${Math.floor(new Date() / 1000)}]`;
+        payloadMsg = `[d:⬇] Hooray! Gas Price is back to normal rates.\n\n[d:Current] Price: [d: ${gasPrice} Gwei]\n[s:Usual] Price: [b: ${avgPrice} Gwei] [timestamp: ${Math.floor(new Date() / 1000)}]`;
       }
 
       const payload = await epnsNotify.preparePayload(
