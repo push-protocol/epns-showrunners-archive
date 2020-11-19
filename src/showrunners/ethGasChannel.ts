@@ -32,7 +32,7 @@ export default class GasStationChannel {
   }
 
   //To form and write to smart contract
-  public async sendMessageToContract() {
+  public async sendMessageToContract(simulate) {
     const logger = this.logger;
 
     logger.debug('Getting gas price, forming and uploading payload and interacting with smart contract...');
@@ -53,7 +53,7 @@ export default class GasStationChannel {
           this.getNewPrice(info)
             .then(payload => {
               // handle payloads, etc
-              epnsNotify.uploadToIPFS(payload, logger)
+              epnsNotify.uploadToIPFS(payload, logger, simulate)
                 .then(async (ipfshash) => {
                   // Sign the transaction and send it to chain
                   const walletAddress = ethers.utils.computeAddress(config.ethGasStationPrivateKey);
@@ -84,7 +84,8 @@ export default class GasStationChannel {
                     storageType,                                                    // Notificattion Storage Type
                     ipfshash,                                                       // Notification Storage Pointer
                     txConfirmWait,                                                  // Should wait for transaction confirmation
-                    logger                                                          // Logger instance (or console.log) to pass
+                    logger,                                                         // Logger instance (or console.log) to pass
+                    simulate                                                        // Passing true will not allow sending actual notification
                   ).then ((tx) => {
                     logger.info("Transaction mined: %o | Notification Sent", tx.hash);
                     logger.info("🙌 ETHGas Tracker Channel Logic Completed!");
