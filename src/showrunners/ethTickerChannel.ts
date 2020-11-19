@@ -48,7 +48,7 @@ export default class EthTickerChannel {
               // Send Notification
               await epnsNotify.sendNotification(
                 epns.signingContract,                                           // Contract connected to signing wallet
-                ethers.utils.computeAddress(config.btcTickerPrivateKey),        // Recipient to which the payload should be sent
+                ethers.utils.computeAddress(config.ethTickerPrivateKey),        // Recipient to which the payload should be sent
                 parseInt(payload.data.type),                                    // Notification Type
                 storageType,                                                    // Notificattion Storage Type
                 ipfshash,                                                       // Notification Storage Pointer
