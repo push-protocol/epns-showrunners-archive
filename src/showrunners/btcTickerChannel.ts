@@ -24,14 +24,14 @@ export default class BtcTickerChannel {
   ) {}
 
   // To form and write to smart contract
-  public async sendMessageToContract() {
+  public async sendMessageToContract(simulate) {
     const logger = this.logger;
     logger.debug('Getting btc price, forming and uploading payload and interacting with smart contract...');
 
     return await new Promise((resolve, reject) => {
       this.getNewPrice()
         .then(async (payload) => {
-          epnsNotify.uploadToIPFS(payload, logger)
+          epnsNotify.uploadToIPFS(payload, logger, simulate)
             .then(async (ipfshash) => {
               logger.info("Success --> uploadToIPFS(): %o", ipfshash);
 
@@ -59,7 +59,8 @@ export default class BtcTickerChannel {
                 storageType,                                                    // Notificattion Storage Type
                 ipfshash,                                                       // Notification Storage Pointer
                 txConfirmWait,                                                  // Should wait for transaction confirmation
-                logger                                                          // Logger instance (or console.log) to pass
+                logger,                                                         // Logger instance (or console.log) to pass
+                simulate                                                        // Passing true will not allow sending actual notification
               ).then ((tx) => {
                 logger.info("Transaction mined: %o | Notification Sent", tx.hash);
                 logger.info("🙌 BTC Ticker Channel Logic Completed!");
