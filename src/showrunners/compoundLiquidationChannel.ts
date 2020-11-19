@@ -80,7 +80,7 @@ export default class CompoundLiquidationChannel {
           // Get user address
           const userAddress = log.args.user;
           allTransactions.push(
-            this.getUsersTotal(compound,userAddress)
+            this.getUsersTotal(compound, userAddress)
               .then( (results) => {
                 return results;
               })
@@ -169,7 +169,7 @@ export default class CompoundLiquidationChannel {
     })
   }
 
-  public async checkLiquidity(compound,userAddress){
+  public async checkLiquidity(compound, userAddress){
     const logger = this.logger;
     return new Promise((resolve, reject) => {
       compound.contract.getAccountLiquidity(userAddress)
@@ -181,8 +181,8 @@ export default class CompoundLiquidationChannel {
           let addressName = ensAddressName;
 
           resolve({
-            liquidity:liq,
-            name:addressName
+            liquidity: liq,
+            name: addressName
           })
 
         })
@@ -226,7 +226,7 @@ export default class CompoundLiquidationChannel {
         let cZrx = await this.getContracts(config.cZrxDeployedContract,config.cZrxDeployedContractABI);
         let price = await this.getContracts(config.priceOracleDeployedContract,config.priceOracleDeployedContractABI);
 
-        this.checkLiquidity(compound,userAddress)
+        this.checkLiquidity(compound, userAddress)
         .then(results =>{
           logger.info("Market Address is in: %o | Address: :%o ", marketAddress, results.name);
           for (let i = 0; i < marketAddress.length; i++) {
@@ -240,7 +240,7 @@ export default class CompoundLiquidationChannel {
                 let address = marketAddress[i];
 
                 allLiquidity.push(
-                  this.getUserTotalLiquidityFromAllAssetEntered(contract,address,compound,price,userAddress)
+                  this.getUserTotalLiquidityFromAllAssetEntered(contract, address, compound, price, userAddress)
                   .then(result =>{
                     return result
                   })
@@ -276,7 +276,7 @@ export default class CompoundLiquidationChannel {
     });
   }
 
-  public async getUsersTotal(compound,userAddress){
+  public async getUsersTotal(compound, userAddress){
     const logger = this.logger;
     return new Promise((resolve, reject) => {
 
@@ -342,7 +342,7 @@ export default class CompoundLiquidationChannel {
     }
   }
 
-  public async getUserTotalLiquidityFromAllAssetEntered(contract,address,compound,price,userAddress) {
+  public async getUserTotalLiquidityFromAllAssetEntered(contract, address, compound, price, userAddress) {
     const logger = this.logger;
     logger.debug('Preparing user liquidity info...');
     return await new Promise((resolve, reject) => {

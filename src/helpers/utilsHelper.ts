@@ -1,7 +1,11 @@
 import { Container } from 'typedi';
 import config from '../config';
 
-module.exports = {
+import { Response } from 'express';
+export = {
+  handleResponse: (res: Response, code: number, success: Boolean, message: String, data: Object) => {
+    return res.status(code).json({ status: success == true ? "success" : "failed", message,  data });
+  },
   // To Generate Random Password
   generateRandomWord: (length, includeSpecial) => {
      var result           = '';

@@ -3,30 +3,126 @@ import { Container } from 'typedi';
 import CompoundLiquidationChannel from '../../showrunners/compoundLiquidationChannel';
 import middlewares from '../middlewares';
 import { celebrate, Joi } from 'celebrate';
+import {handleResponse} from '../../helpers/utilsHelper';
+const epnsNotify = require('../../helpers/epnsNotifyHelper');
+import config from '../../config';
 
 const route = Router();
 
 export default (app: Router) => {
   app.use('/showrunners/compound', route);
+  const compound = epnsNotify.getInteractableContracts(
+    config.web3RopstenProvider,                                              // Network for which the interactable contract is req
+    {                                                                       // API Keys
+      etherscanAPI: config.etherscanAPI,
+      infuraAPI: config.infuraAPI,
+      alchemyAPI: config.alchemyAPI
+    },
+    config.compComptrollerPrivateKey,                                       // Private Key of the Wallet sending Notification
+    config.compComptrollerDeployedContract,                                             // The contract address which is going to be used
+    config.compComptrollerDeployedContractABI                                           // The contract abi which is going to be useds
+  );
 
-  // to add an incoming feed
+  /**
+   * Send message
+   */
   route.post(
     '/send_message',
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/compoundliquidation endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners/compoundliquidation/send_message endpoint with body: %o', req.body )
       try {
         const compoundLiquidation = Container.get(CompoundLiquidationChannel);
         const { success,  data } = await compoundLiquidation.sendMessageToContract();
 
-        return res.status(201).json({ success,  data });
+        return handleResponse(res, 201, true, success, data);
       } catch (e) {
         Logger.error('🔥 error: %o', e);
-        return next(e);
+        return handleResponse(res, 500, false, 'error', JSON.stringify(e));
       }
     },
   );
 
+  /**
+   * Check Liquidity
+   * @param {String} address User Address
+   */
+  route.post(
+    '/check_liquidity',
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { address } = req.body;
+      if (!address) return handleResponse(res, 401, false, "no user address available, pass an `address`body parameter ", null);
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/compoundliquidation/check_liquidity endpoint with body: %o', req.body )
+      try {
+        const compoundLiquidation = Container.get(CompoundLiquidationChannel);
+        const data = await compoundLiquidation.checkLiquidity(compound, address);
+        console.log(data)
+        if (data.success && data.success == false) {
+          return handleResponse(res, 500, false, "liquidity data", JSON.stringify(data.err));
+        } else {
+          return handleResponse(res, 200, true, "liquidity data", data);
+        }
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return handleResponse(res, 500, false, 'error', JSON.stringify(e));
+      }
+    },
+  );
 
+  /**
+   * Check Assets
+   * @param {String} address User Address
+   */
+  route.post(
+    '/check_assets',
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { address } = req.body;
+      if (!address) return handleResponse(res, 401, false, "no user address available, pass an `address`body parameter ", null);
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/compoundliquidation/check_assets endpoint with body: %o', req.body )
+      try {
+        const compoundLiquidation = Container.get(CompoundLiquidationChannel);
+        const data = await compoundLiquidation.checkAssets(compound, address);
+        if (data.success && data.success != false) {
+          return handleResponse(res, 500, false, "assets data", JSON.stringify(data.err));
+        } else {
+          return handleResponse(res, 200, true, "assets data", data);
+        }
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return handleResponse(res, 500, false, 'error', JSON.stringify(e));
+      }
+    },
+  );
+
+  /**
+   * Check Assets
+   * @param {String} address User Address
+   */
+  route.post(
+    '/total_users',
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { address } = req.body;
+      if (!address) return handleResponse(res, 401, false, "no user address available, pass an `address`body parameter ", null);
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/compoundliquidation/total_users endpoint with body: %o', req.body )
+      try {
+        const compoundLiquidation = Container.get(CompoundLiquidationChannel);
+        const data = await compoundLiquidation.getUsersTotal(compound, address);
+        if (data.success && data.success != false) {
+          return handleResponse(res, 500, false, "total users", JSON.stringify(data.err));
+        } else {
+          return handleResponse(res, 200, true, "total users", data);
+        }
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return handleResponse(res, 500, false, 'error', JSON.stringify(e));
+      }
+    },
+  );
 };
