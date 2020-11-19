@@ -24,7 +24,7 @@ export default class EnsExpirationChannel {
   ) {}
 
   // To form and write to smart contract
-  public async sendMessageToContract() {
+  public async sendMessageToContract(simulate) {
     const logger = this.logger;
     logger.debug('Checking for expired address... ');
 
@@ -77,7 +77,7 @@ export default class EnsExpirationChannel {
                 // Get user address
                 const userAddress = log.args.user;
                 allTransactions.push(
-                  this.checkENSDomainExpiry(userAddress, ens)
+                  this.checkENSDomainExpiry(userAddress, ens, simulate)
                     .then((result) => {
                       return result;
                     })
@@ -109,7 +109,8 @@ export default class EnsExpirationChannel {
                         storageType,                                                              // Notificattion Storage Type
                         ipfshash,                                                       // Notification Storage Pointer
                         txConfirmWait,                                                              // Should wait for transaction confirmation
-                        logger                                                          // Logger instance (or console.log) to pass
+                        logger,                                                         // Logger instance (or console.log) to pass
+                        simulate                                                        // Passing true will not allow sending actual notification
                       ).then ((tx) => {
                         logger.info("Transaction mined: %o | Notification Sent", tx.hash);
                         logger.info("🙌 ETH Ticker Channel Logic Completed!");
@@ -153,7 +154,7 @@ export default class EnsExpirationChannel {
   }
 
   // To Check for domain expiry
-  public async checkENSDomainExpiry(userAddress, ens) {
+  public async checkENSDomainExpiry(userAddress, ens, simulate) {
     const logger = this.logger;
 
     return new Promise((resolve) => {
@@ -202,7 +203,7 @@ export default class EnsExpirationChannel {
                     // logic loop, it has 7 days or less to expire but not expired
                     this.getENSDomainExpiryPayload(ensAddressName, dateDiff)
                       .then(payload => {
-                        epnsNotify.uploadToIPFS(payload, logger)
+                        epnsNotify.uploadToIPFS(payload, logger, simulate)
                           .then(async (ipfshash) => {
                             // Sign the transaction and send it to chain
                             const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);

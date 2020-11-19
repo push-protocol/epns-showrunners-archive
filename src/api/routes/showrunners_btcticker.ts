@@ -12,6 +12,11 @@ export default (app: Router) => {
   // to add an incoming feed
   route.post(
     '/send_message',
+    celebrate({
+      body: Joi.object({
+        simulate: Joi.bool(),
+      }),
+    }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
@@ -19,7 +24,7 @@ export default (app: Router) => {
 
       try {
         const btcTicker = Container.get(BtcTickerChannel);
-        const { success, data } = await btcTicker.sendMessageToContract();
+        const { success, data } = await btcTicker.sendMessageToContract(req.body.simulate);
 
         return res.status(201).json({ success, data });
       } catch (e) {
