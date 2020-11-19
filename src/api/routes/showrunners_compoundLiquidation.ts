@@ -28,13 +28,18 @@ export default (app: Router) => {
    */
   route.post(
     '/send_message',
+    celebrate({
+      body: Joi.object({
+        simulate: Joi.bool(),
+      }),
+    }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
       Logger.debug('Calling /showrunners/compoundliquidation/send_message endpoint with body: %o', req.body )
       try {
         const compoundLiquidation = Container.get(CompoundLiquidationChannel);
-        const { success,  data } = await compoundLiquidation.sendMessageToContract();
+        const { success,  data } = await compoundLiquidation.sendMessageToContract(req.body.simulate);
 
         return handleResponse(res, 201, true, success, data);
       } catch (e) {
@@ -105,15 +110,20 @@ export default (app: Router) => {
    */
   route.post(
     '/total_users',
+    celebrate({
+      body: Joi.object({
+        simulate: Joi.bool(),
+      }),
+    }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
-      const { address } = req.body;
+      const { address, simulate } = req.body;
       if (!address) return handleResponse(res, 401, false, "no user address available, pass an `address`body parameter ", null);
       const Logger = Container.get('logger');
       Logger.debug('Calling /showrunners/compoundliquidation/total_users endpoint with body: %o', req.body )
       try {
         const compoundLiquidation = Container.get(CompoundLiquidationChannel);
-        const data = await compoundLiquidation.getUsersTotal(compound, address);
+        const data = await compoundLiquidation.getUsersTotal(compound, address, simulate);
         if (data.success && data.success != false) {
           return handleResponse(res, 500, false, "total users", JSON.stringify(data.err));
         } else {
@@ -126,3 +136,4 @@ export default (app: Router) => {
     },
   );
 };
+
