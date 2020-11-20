@@ -7,8 +7,8 @@ const UserToken = new Schema(
         required: true,
     },
     token: { 
-        type: Schema.Types.ObjectId, 
-        ref: "Token" 
+        type: String,
+        required: true, 
     },
     balance:{
       type: String,

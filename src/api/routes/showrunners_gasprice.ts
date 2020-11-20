@@ -12,13 +12,18 @@ export default (app: Router) => {
   // for checking and sending gas price alerts
   route.post(
     '/send_message',
+    celebrate({
+      body: Joi.object({
+        simulate: Joi.bool(),
+      }),
+    }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
       Logger.debug('Calling /showrunners/gasprice/send_message endpoint with body: %o', req.body )
       try {
         const ethGasChannel = Container.get(EthGasStationChannel);
-        const { success, data} = await ethGasChannel.sendMessageToContract();
+        const { success, data} = await ethGasChannel.sendMessageToContract(req.body.simulate);
 
         return res.status(201).json({ success, data });
       } catch (e) {
