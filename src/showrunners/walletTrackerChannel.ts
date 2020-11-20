@@ -15,7 +15,7 @@ const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
 const epnsNotify = require('../helpers/epnsNotifyHelper');
 
-const SUPPORTED_TOKENS ={
+const SUPPORTED_TOKENS = {
   'ETH':{
       address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
       ticker: 'ETH',
@@ -530,11 +530,7 @@ export default class WalletTrackerChannel {
   public async addTokens() {
     let tokenPromises = [];
     for (const ticker in SUPPORTED_TOKENS) {
-      let promise = ()=> {
-        return this.addTokenToDB(ticker, SUPPORTED_TOKENS[ticker].address, SUPPORTED_TOKENS[ticker].decimals)
-      }
-      console.log(promise)
-      tokenPromises.push(promise)
+      tokenPromises.push(this.addTokenToDB(ticker, SUPPORTED_TOKENS[ticker].address, SUPPORTED_TOKENS[ticker].decimals))
     }
     console.log(tokenPromises)
     const results = await Promise.all(tokenPromises)
