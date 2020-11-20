@@ -15,23 +15,23 @@ const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
 const epnsNotify = require('../helpers/epnsNotifyHelper');
 
-const SUPPORTED_TOKENS =[
-  {
+const SUPPORTED_TOKENS ={
+  'ETH':{
       address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
       ticker: 'ETH',
       decimals: 18
   },
-  {
+  'DAI':{
       address: '0xf80A32A835F79D7787E8a8ee5721D0fEaFd78108',
       ticker: 'DAI',
       decimals: 18
   },
-  {
+  'cUSDT':{
     address: '0x135669c2dcbd63f639582b313883f101a4497f76',
     ticker: 'cUSDT',
     decimals: 8
   },
-]
+}
 
 const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
 
@@ -61,6 +61,8 @@ export default class WalletTrackerChannel {
 
   public getERC20InteractableContract(web3network, tokenAddress) {
     // Get Contract
+    // let contract = [];
+    // contract["interact"] = 
     return epnsNotify.getInteractableContracts(
       web3network,                                                                // Network for which the interactable contract is req
       {                                                                       // API Keys
@@ -72,13 +74,16 @@ export default class WalletTrackerChannel {
       tokenAddress,                                                           // The contract address which is going to be used
       config.erc20DeployedContractABI                                        // The contract abi which is going to be useds
     );
+    // contract["address"]= tokenAddress
+    // return contract
   }
 
   public getSupportedERC20sArray(web3network) {
+    const logger = this.logger;
     let erc20s = [];
 
-    for (token in SUPPORTED_TOKENS) {
-      erc20s[`${token.ticker}`] = this.getERC20InteractableContract(web3network, token.address);
+    for (const ticker in SUPPORTED_TOKENS) {
+      erc20s[`${ticker}`] = this.getERC20InteractableContract(web3network, SUPPORTED_TOKENS[ticker].address);
     }
 
     return erc20s;
@@ -93,8 +98,9 @@ export default class WalletTrackerChannel {
       const walletTrackerChannel = ethers.utils.computeAddress(config.walletTrackerPrivateKey);
 
       // Call Helper function to get interactableContracts
-      const epns = this.getInteractableContract(config.web3RopstenNetwork);
+      const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
       const interactableERC20s = this.getSupportedERC20sArray(NETWORK_TO_MONITOR);
+      logger.info("interactableERC20s: %o", interactableERC20s)
 
       epns.contract.channels(walletTrackerChannel)
         .then(async (channelInfo) => {
@@ -116,7 +122,7 @@ export default class WalletTrackerChannel {
                   const user = log.args.user;
                   logger.info("user: %o", user)
 
-                  this.checkTokenMovement(user, interactableERC20s)
+                  this.checkWalletMovement(user, NETWORK_TO_MONITOR, interactableERC20s)
                   .then((result) => {
                     // logger.info(" For User: %o | checkTokenMovement result: :%o ", user, result)
 
@@ -188,60 +194,28 @@ export default class WalletTrackerChannel {
     })
   }
 
-  public async checkTokenMovement(user, interactableERC20s) {
+  public async checkWalletMovement(user, networkToMonitor, interactableERC20s) {
     const logger = this.logger;
 
     // check and recreate provider mostly for routes
     if (!interactableERC20s) {
       logger.info("Mostly coming from routes... rebuilding interactable erc20s");
-      interactableERC20s = this.getSupportedERC20sArray(NETWORK_TO_MONITOR);
+      //need token address
+      interactableERC20s = this.getSupportedERC20sArray(networkToMonitor);
       logger.info("Rebuilt interactable erc20s --> %o", interactableERC20s);
     }
 
     return new Promise((resolve) => {
       let changedTokens = [];
 
-      let promises = SUPPORTED_TOKENS.map(token => {
-        return new Promise((resolve) => {
-
-        this.getTokenBalance(user, token, provider)
-        .then(userToken => {
-
-          // logger.info('userToken: %o', userToken)
-          this.getTokenByAddress(token.address)
-          .then(tokenDataFromDB=>{
-            // logger.info('tokenDataFromDB: %o', tokenDataFromDB)
-
-            this.getTokenBalanceFromDB(user, tokenDataFromDB._id)
-            .then(userTokenArrayFromDB =>{
-              // logger.info('userTokenArrayFromDB: %o', userTokenArrayFromDB)
-              // logger.info('userTokenArrayFromDB.length: %o', userTokenArrayFromDB.length)
-              if(userTokenArrayFromDB.length == 0){
-                this.addUserTokenToDB(user, tokenDataFromDB._id, userToken.balance)
-              }
-              else{
-                let userTokenFromDB
-                userTokenArrayFromDB.map(usertoken => {
-                  return userTokenFromDB = usertoken
-                })
-
-                // logger.info('userTokenFromDB: %o', userTokenFromDB)
-
-                this.compareTokenBalance(userToken, userTokenFromDB)
-                .then(resultToken => {
-                  // logger.info('resultToken: %o', resultToken)
-                  if(resultToken.changed){
-                    this.updateUserTokenBalance(user, tokenDataFromDB._id, resultToken.tokenBalance)
-                  }
-                  resolve(resultToken)
-                })
-              }
-            })
-          })
-        })
-      })
-
-      })
+      // let promises = SUPPORTED_TOKENS.map(token => {
+      let promises = [];
+      for (const ticker in SUPPORTED_TOKENS) {
+        let promise = ()=> {
+          this.checkTokenMovement(user, networkToMonitor, ticker, interactableERC20s)
+        }
+        promises.push(promise)
+      }
 
       Promise.all(promises)
       .then(results=> {
@@ -285,48 +259,104 @@ export default class WalletTrackerChannel {
 
   }
 
-  public async getTokenBalance(user, token, provider){
+  public async checkTokenMovement(user, networkToMonitor, ticker, interactableERC20s) {
     const logger = this.logger;
+
+    // check and recreate provider mostly for routes
+    if (!interactableERC20s) {
+      logger.info("Mostly coming from routes... rebuilding interactable erc20s");
+      //need token address
+      interactableERC20s = this.getSupportedERC20sArray(networkToMonitor);
+      logger.info("Rebuilt interactable erc20s --> %o", interactableERC20s);
+    }
+
+    return new Promise((resolve) => {
+
+    this.getTokenBalance(user, networkToMonitor, ticker, interactableERC20s[ticker])
+    .then(userToken => {
+
+      // logger.info('userToken: %o', userToken)
+      this.getTokenByTicker(ticker)
+      .then(tokenDataFromDB=>{
+        // logger.info('tokenDataFromDB: %o', tokenDataFromDB)
+
+        this.getTokenBalanceFromDB(user, tokenDataFromDB._id)
+        .then(userTokenArrayFromDB =>{
+          // logger.info('userTokenArrayFromDB: %o', userTokenArrayFromDB)
+          // logger.info('userTokenArrayFromDB.length: %o', userTokenArrayFromDB.length)
+          if(userTokenArrayFromDB.length == 0){
+
+            this.addUserTokenToDB(user, tokenDataFromDB._id, userToken.balance)
+          }
+          else{
+            let userTokenFromDB
+            userTokenArrayFromDB.map(usertoken => {
+              return userTokenFromDB = usertoken
+            })
+
+            // logger.info('userTokenFromDB: %o', userTokenFromDB)
+
+            this.compareTokenBalance(userToken, userTokenFromDB)
+            .then(resultToken => {
+              // logger.info('resultToken: %o', resultToken)
+              if(resultToken.changed){
+                this.updateUserTokenBalance(user, tokenDataFromDB._id, resultToken.tokenBalance)
+              }
+              resolve(resultToken)
+            })
+          }
+        })
+      })
+    })
+  })
+  }
+
+  public async getTokenBalance(user, networkToMonitor, ticker, tokenContract){
+    const logger = this.logger;
+
+    if(!tokenContract){
+      tokenContract = this.getERC20InteractableContract(networkToMonitor, SUPPORTED_TOKENS[ticker].address)
+    }
 
     return await new Promise((resolve, reject) => {
 
-      if (token.ticker === 'ETH' ){
-        provider.getBalance(user).then(balance => {
+      if (ticker === 'ETH' ){
+        tokenContract.contract.provider.getBalance(user).then(balance => {
           // logger.info("wei balance" + balance);
           let etherBalance
 
-          // balance is a BigNumber (in wei); format is as a sting (in ether)
+          // balance is a BigNumber (in wei); format is as a string (in ether)
           etherBalance = ethers.utils.formatEther(balance);
 
           // logger.info("Ether Balance: " + etherBalance);
           let tokenInfo = {
             user,
-            ticker: token.ticker,
+            ticker,
             balance: etherBalance
           }
-          // console.log(tokenInfo);
-          // logger.info("tokenInfo: " + tokenInfo);
+          console.log(tokenInfo);
+          logger.info("tokenInfo: " + tokenInfo);
           resolve (tokenInfo)
         });
       }
 
       else{
-        let tokenAddress = token.address
-        const tokenContract = new ethers.Contract(tokenAddress, config.erc20DeployedContractABI, provider);
+        // let tokenAddress = token.address
+        // const tokenContract = new ethers.Contract(tokenAddress, config.erc20DeployedContractABI, provider);
         let tokenBalance
 
-        tokenContract.balanceOf(user)
+        tokenContract.contract.balanceOf(user)
         .then(res=> {
-          let decimals = token.decimals
+          let decimals = SUPPORTED_TOKENS[ticker].decimals
           let rawBalance = Number(Number(res));
           tokenBalance = Number(rawBalance/Math.pow(10, decimals)).toLocaleString()
           // logger.info("tokenBalance: " + tokenBalance);
           let tokenInfo = {
             user,
-            ticker: token.ticker,
+            ticker,
             balance: tokenBalance
           }
-          // console.log(tokenInfo);
+          console.log(tokenInfo);
           // logger.info("tokenInfo: " + tokenInfo);
           resolve (tokenInfo)
         })
@@ -430,70 +460,8 @@ export default class WalletTrackerChannel {
 
       // logger.info('userTokenDataDB: %o', userTokenData)
       return userTokenData
-
-      // const userTokenBalance = {}
-      // userTokenData.map(usertokens => {
-      //   return userTokenBalance[usertokens.token.address] = usertokens.balance
-      // })
-      // logger.info('userTokenBalance: %o', userTokenBalance)
-      // return userTokenBalance;
-
     } catch (error) {
       logger.debug('getTokenBalanceFromDB Error: %o', error);
-    }
-  }
-
-  //MONGODB
-  public async getTokenByAddress(tokenAddress: string): Promise<{}> {
-    const logger = this.logger;
-    this.TokenModel = Container.get('TokenModel');
-    try {
-      const token = await this.TokenModel.findOne({address: tokenAddress})
-      // const token = await this.TokenModel.findOne({token: tokenAddress})
-
-      return token;
-    } catch (error) {
-      logger.debug('getTokenByAddress Error: %o', error);
-    }
-  }
-
-  //MONGODB
-  public async addTokenToDB(symbol: string, address: string, decimals: number): Promise<{}> {
-    const logger = this.logger;
-    this.TokenModel = Container.get('TokenModel');
-    try {
-      const token = await this.TokenModel.create({
-        symbol,
-        address,
-        decimals
-      })
-      return token;
-    } catch (error) {
-      logger.debug('addTokenToDB Error: %o', error);
-    }
-  }
-
-  //MONGODB
-  public async clearTokenDB(): Promise<boolean> {
-    const logger = this.logger;
-    this.TokenModel = Container.get('TokenModel');
-    try {
-      await this.TokenModel.deleteMany({})
-      return true;
-    } catch (error) {
-      logger.debug('clearTokenDB Error: %o', error);
-    }
-  }
-
-  //MONGODB
-  public async clearUserTokenDB(): Promise<boolean> {
-    const logger = this.logger;
-    this.UserTokenModel = Container.get('UserTokenModel');
-    try {
-      await this.UserTokenModel.deleteMany({})
-      return true;
-    } catch (error) {
-      logger.debug('clearUserTokenDB Error: %o', error);
     }
   }
 
@@ -531,14 +499,80 @@ export default class WalletTrackerChannel {
     }
   }
 
+  //MONGODB
+  public async getTokenByTicker(ticker: string): Promise<{}> {
+    // public async getTokenByAddress(tokenAddress: string): Promise<{}> {
+    const logger = this.logger;
+    this.TokenModel = Container.get('TokenModel');
+    try {
+      const token = await this.TokenModel.findOne({ticker: ticker})
+      // const token = await this.TokenModel.findOne({address: tokenAddress})
+
+      return token;
+    } catch (error) {
+      logger.debug('getTokenByTicker Error: %o', error);
+    }
+  }
+
+  //MONGODB
+  public async addTokenToDB(ticker: string, address: string, decimals: number): Promise<{}> {
+    const logger = this.logger;
+    this.TokenModel = Container.get('TokenModel');
+    try {
+      const token = await this.TokenModel.create({
+        ticker,
+        address,
+        decimals
+      })
+      return token;
+    } catch (error) {
+      logger.debug('addTokenToDB Error: %o', error);
+    }
+  }
+
   //To add all the tokens we support, to MONGODB
   public async addTokens() {
-    const tokenPromises = SUPPORTED_TOKENS.map(token => {
-      return this.addTokenToDB(token.ticker, token.address, token.decimals)
-    })
+    let tokenPromises = [];
+    for (const ticker in SUPPORTED_TOKENS) {
+      let promise = ()=> {
+        this.addTokenToDB(ticker, SUPPORTED_TOKENS[ticker].address, SUPPORTED_TOKENS[ticker].decimals)
+      }
+      tokenPromises.push(promise)
+    }
+    // const tokenPromises = SUPPORTED_TOKENS.map(token => {
+    //   return this.addTokenToDB(token.ticker, token.address, token.decimals)
+    // })
     const results = await Promise.all(tokenPromises)
     return {success: "success", data: results}
   }
+
+  //MONGODB
+  public async clearTokenDB(): Promise<boolean> {
+    const logger = this.logger;
+    this.TokenModel = Container.get('TokenModel');
+    try {
+      await this.TokenModel.deleteMany({})
+      return true;
+    } catch (error) {
+      logger.debug('clearTokenDB Error: %o', error);
+    }
+  }
+
+  //MONGODB
+  public async clearUserTokenDB(): Promise<boolean> {
+    const logger = this.logger;
+    this.UserTokenModel = Container.get('UserTokenModel');
+    try {
+      await this.UserTokenModel.deleteMany({})
+      return true;
+    } catch (error) {
+      logger.debug('clearUserTokenDB Error: %o', error);
+    }
+  }
+
+  
+
+  
 
 
 
