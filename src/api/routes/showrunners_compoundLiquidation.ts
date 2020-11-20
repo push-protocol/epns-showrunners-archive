@@ -3,26 +3,13 @@ import { Container } from 'typedi';
 import CompoundLiquidationChannel from '../../showrunners/compoundLiquidationChannel';
 import middlewares from '../middlewares';
 import { celebrate, Joi } from 'celebrate';
-import {handleResponse} from '../../helpers/utilsHelper';
-const epnsNotify = require('../../helpers/epnsNotifyHelper');
+import { handleResponse } from '../../helpers/utilsHelper';
 import config from '../../config';
 
 const route = Router();
 
 export default (app: Router) => {
   app.use('/showrunners/compound', route);
-  const compound = epnsNotify.getInteractableContracts(
-    config.web3RopstenProvider,                                              // Network for which the interactable contract is req
-    {                                                                       // API Keys
-      etherscanAPI: config.etherscanAPI,
-      infuraAPI: config.infuraAPI,
-      alchemyAPI: config.alchemyAPI
-    },
-    config.compComptrollerPrivateKey,                                       // Private Key of the Wallet sending Notification
-    config.compComptrollerDeployedContract,                                             // The contract address which is going to be used
-    config.compComptrollerDeployedContractABI                                           // The contract abi which is going to be useds
-  );
-
   /**
    * Send message
    */
@@ -67,7 +54,7 @@ export default (app: Router) => {
       Logger.debug('Calling /showrunners/compoundliquidation/check_liquidity endpoint with body: %o', req.body )
       try {
         const compoundLiquidation = Container.get(CompoundLiquidationChannel);
-        const data = await compoundLiquidation.checkLiquidity(compound, address);
+        const data = await compoundLiquidation.checkLiquidity(null, address);
         console.log(data)
         if (data.success && data.success == false) {
           return handleResponse(res, 500, false, "liquidity data", JSON.stringify(data.err));
@@ -99,7 +86,7 @@ export default (app: Router) => {
       Logger.debug('Calling /showrunners/compoundliquidation/check_assets endpoint with body: %o', req.body )
       try {
         const compoundLiquidation = Container.get(CompoundLiquidationChannel);
-        const data = await compoundLiquidation.checkAssets(compound, address);
+        const data = await compoundLiquidation.checkAssets(null, address);
         if (data.success && data.success != false) {
           return handleResponse(res, 500, false, "assets data", JSON.stringify(data.err));
         } else {
@@ -131,7 +118,7 @@ export default (app: Router) => {
       Logger.debug('Calling /showrunners/compoundliquidation/total_users endpoint with body: %o', req.body )
       try {
         const compoundLiquidation = Container.get(CompoundLiquidationChannel);
-        const data = await compoundLiquidation.getUsersTotal(compound, address, simulate);
+        const data = await compoundLiquidation.getUsersTotal(null, address, simulate);
         if (data.success && data.success != false) {
           return handleResponse(res, 500, false, "total users", JSON.stringify(data.err));
         } else {

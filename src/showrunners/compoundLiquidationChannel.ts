@@ -48,17 +48,19 @@ export default class CompoundLiquidationChannel {
         config.deployedContractABI                                              // The contract abi which is going to be useds
       );
 
-      const compound = epnsNotify.getInteractableContracts(
-        config.web3RopstenProvider,                                              // Network for which the interactable contract is req
-        {                                                                       // API Keys
-          etherscanAPI: config.etherscanAPI,
-          infuraAPI: config.infuraAPI,
-          alchemyAPI: config.alchemyAPI
-        },
-        config.compComptrollerPrivateKey,                                       // Private Key of the Wallet sending Notification
-        config.compComptrollerDeployedContract,                                             // The contract address which is going to be used
-        config.compComptrollerDeployedContractABI                                           // The contract abi which is going to be useds
-      );
+      // const compound = epnsNotify.getInteractableContracts(
+      //   config.web3RopstenProvider,                                              // Network for which the interactable contract is req
+      //   {                                                                       // API Keys
+      //     etherscanAPI: config.etherscanAPI,
+      //     infuraAPI: config.infuraAPI,
+      //     alchemyAPI: config.alchemyAPI
+      //   },
+      //   config.compComptrollerPrivateKey,                                       // Private Key of the Wallet sending Notification
+      //   config.compComptrollerDeployedContract,                                             // The contract address which is going to be used
+      //   config.compComptrollerDeployedContractABI                                           // The contract abi which is going to be useds
+      // );
+
+      const compound = this.getCompoundInteractableContract();
 
       epns.contract.channels(compoundChannelAddress)
       .then(async (channelInfo) => {
@@ -154,6 +156,20 @@ export default class CompoundLiquidationChannel {
     })
   }
 
+  public getCompoundInteractableContract() {
+    return epnsNotify.getInteractableContracts(
+        config.web3RopstenProvider,                                              // Network for which the interactable contract is req
+        {                                                                       // API Keys
+          etherscanAPI: config.etherscanAPI,
+          infuraAPI: config.infuraAPI,
+          alchemyAPI: config.alchemyAPI
+        },
+        config.compComptrollerPrivateKey,                                       // Private Key of the Wallet sending Notification
+        config.compComptrollerDeployedContract,                                             // The contract address which is going to be used
+        config.compComptrollerDeployedContractABI                                           // The contract abi which is going to be useds
+      );
+  }
+
   public async getContracts(address, abi){
     return new Promise((resolve, reject) => {
     const setUp = epnsNotify.getInteractableContracts(
@@ -171,7 +187,10 @@ export default class CompoundLiquidationChannel {
     })
   }
 
-  public async checkLiquidity(compound, userAddress){
+  public async checkLiquidity(compound, userAddress) {
+    if(!compound){
+      compound = this.getCompoundInteractableContract()
+    }
     const logger = this.logger;
     return new Promise((resolve, reject) => {
       compound.contract.getAccountLiquidity(userAddress)
@@ -208,6 +227,9 @@ export default class CompoundLiquidationChannel {
 
   // To Check Account for Amount Left to Liquidation
   public async checkAssets(compound, userAddress) {
+    if(!compound){
+      compound = this.getCompoundInteractableContract()
+    }
     const logger = this.logger;
     return new Promise((resolve, reject) => {
 
@@ -278,7 +300,10 @@ export default class CompoundLiquidationChannel {
     });
   }
 
-  public async getUsersTotal(compound, userAddress, simulate){
+  public async getUsersTotal(compound, userAddress, simulate) {
+    if(!compound){
+      compound = this.getCompoundInteractableContract()
+    }
     const logger = this.logger;
     return new Promise((resolve, reject) => {
 
