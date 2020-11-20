@@ -127,16 +127,22 @@ export default (app: Router) => {
 
 
   route.post(
-    '/compareTokenBalance',
+    '/compare_token_balance',
+    celebrate({
+      body: Joi.object({
+        tokenBalance: Joi.number().required(),
+        tokenBalanceFromDB: Joi.number().required(),
+      }),
+    }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/wallet_tracker/send_message endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners/wallet_tracker/compare_token_balance endpoint with body: %o', req.body )
       try {
         const walletTracker = Container.get(WalletTrackerChannel);
-        const { success, data} = await walletTracker.compareTokenBalance(req.body.userToken, req.body.userTokenFromDB);
+        const result = await walletTracker.compareTokenBalance(req.body.tokenBalance, req.body.tokenBalanceFromDB);
 
-        return res.status(201).json({ success, data });
+        return res.status(201).json({result});
       } catch (e) {
         Logger.error('🔥 error: %o', e);
         return next(e);
@@ -181,16 +187,21 @@ export default (app: Router) => {
   );
 
   route.post(
-    '/getTokenByAddress',
+    '/get_token_by_ticker',
+    celebrate({
+      body: Joi.object({
+        ticker: Joi.string().required(),
+      }),
+    }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/wallet_tracker/send_message endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners/wallet_tracker/get_token_by_ticker endpoint with body: %o', req.body )
       try {
         const walletTracker = Container.get(WalletTrackerChannel);
-        const { success, data} = await walletTracker.getTokenByAddress(req.body.tokenAddress);
+        const result = await walletTracker.getTokenByTicker(req.body.ticker);
 
-        return res.status(201).json({ success, data });
+        return res.status(201).json({result});
       } catch (e) {
         Logger.error('🔥 error: %o', e);
         return next(e);

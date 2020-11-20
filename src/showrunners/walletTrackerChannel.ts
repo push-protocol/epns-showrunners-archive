@@ -295,8 +295,12 @@ export default class WalletTrackerChannel {
             })
 
             // logger.info('userTokenFromDB: %o', userTokenFromDB)
+            let tokenBalanceStr= userToken.balance
+            let tokenBalance= Number(tokenBalanceStr.replace(/,/g, ''))
+            let tokenBalanceFromDBStr= userTokenFromDB.balance
+            let tokenBalanceFromDB= Number(tokenBalanceFromDBStr.replace(/,/g, ''))
 
-            this.compareTokenBalance(userToken, userTokenFromDB)
+            this.compareTokenBalance(tokenBalance, tokenBalanceFromDB)
             .then(resultToken => {
               // logger.info('resultToken: %o', resultToken)
               if(resultToken.changed){
@@ -364,11 +368,8 @@ export default class WalletTrackerChannel {
     })
   }
 
-  public async compareTokenBalance(userToken, userTokenFromDB){
-    let tokenBalanceStr= userToken.balance
-    let tokenBalance= Number(tokenBalanceStr.replace(/,/g, ''))
-    let tokenBalanceFromDBStr= userTokenFromDB.balance
-    let tokenBalanceFromDB= Number(tokenBalanceFromDBStr.replace(/,/g, ''))
+  public async compareTokenBalance(tokenBalance, tokenBalanceFromDB){
+    
     let tokenDifference = tokenBalance-tokenBalanceFromDB
     // let absTokenDifference = Math.abs(tokenDifference)
 
@@ -381,33 +382,27 @@ export default class WalletTrackerChannel {
     if(tokenDifference === 0){
       resultToken = {
         changed: false,
-        ticker: userToken.ticker,
         increased: false,
         tokenDifference: tokenDifference,
         tokenBalance,
-        user: userToken.user,
       }
       return resultToken
     }
     else if (tokenDifference>0){
       resultToken = {
         changed: true,
-        ticker: userToken.ticker,
         increased: true,
         tokenDifference: tokenDifference,
         tokenBalance,
-        user: userToken.user,
       }
       return resultToken
     }
     else if(tokenDifference<0){
       resultToken = {
         changed: true,
-        ticker: userToken.ticker,
         increased: false,
         tokenDifference: tokenDifference,
         tokenBalance,
-        user: userToken.user,
       }
       return resultToken
     }
@@ -505,6 +500,7 @@ export default class WalletTrackerChannel {
     this.TokenModel = Container.get('TokenModel');
     try {
       const token = await this.TokenModel.findOne({ ticker: ticker });
+      console.log(token)
       return token;
     } catch (error) {
       logger.debug('getTokenByTicker Error: %o', error);
@@ -533,9 +529,16 @@ export default class WalletTrackerChannel {
     for (const ticker in SUPPORTED_TOKENS) {
       tokenPromises.push(this.addTokenToDB(ticker, SUPPORTED_TOKENS[ticker].address, SUPPORTED_TOKENS[ticker].decimals))
     }
+    console.log(tokenPromises)
     const results = await Promise.all(tokenPromises)
+    console.log(results)
     return {success: "success", data: results}
   }
+
+    // const tokenPromises = SUPPORTED_TOKENS.map(token => {
+    //   return this.addTokenToDB(token.ticker, token.address, token.decimals)
+    // })
+  
 
   //MONGODB
   public async clearTokenDB(): Promise<boolean> {
