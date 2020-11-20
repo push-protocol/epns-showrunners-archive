@@ -55,10 +55,14 @@ export default (app: Router) => {
    */
   route.post(
     '/check_liquidity',
+    celebrate({
+      body: Joi.object({
+        address: Joi.string().required(),
+      }),
+    }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const { address } = req.body;
-      if (!address) return handleResponse(res, 401, false, "no user address available, pass an `address`body parameter ", null);
       const Logger = Container.get('logger');
       Logger.debug('Calling /showrunners/compoundliquidation/check_liquidity endpoint with body: %o', req.body )
       try {
@@ -83,10 +87,14 @@ export default (app: Router) => {
    */
   route.post(
     '/check_assets',
+    celebrate({
+      body: Joi.object({
+        address: Joi.string().required(),
+      }),
+    }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const { address } = req.body;
-      if (!address) return handleResponse(res, 401, false, "no user address available, pass an `address`body parameter ", null);
       const Logger = Container.get('logger');
       Logger.debug('Calling /showrunners/compoundliquidation/check_assets endpoint with body: %o', req.body )
       try {
@@ -113,12 +121,12 @@ export default (app: Router) => {
     celebrate({
       body: Joi.object({
         simulate: Joi.bool(),
+        address: Joi.string().required(),
       }),
     }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const { address, simulate } = req.body;
-      if (!address) return handleResponse(res, 401, false, "no user address available, pass an `address`body parameter ", null);
       const Logger = Container.get('logger');
       Logger.debug('Calling /showrunners/compoundliquidation/total_users endpoint with body: %o', req.body )
       try {
