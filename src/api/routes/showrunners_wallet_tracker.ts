@@ -115,9 +115,9 @@ export default (app: Router) => {
       Logger.debug('Calling /showrunners/wallet_tracker/get_token_balance endpoint with body: %o', req.body )
       try {
         const walletTracker = Container.get(WalletTrackerChannel);
-        const { success, data} = await walletTracker.getTokenBalance(req.body.user, req.body.provider, req.body.ticker, null);
+        const result = await walletTracker.getTokenBalance(req.body.user, req.body.provider, req.body.ticker, null);
 
-        return res.status(201).json({ success, data });
+        return res.status(201).json({result});
       } catch (e) {
         Logger.error('🔥 error: %o', e);
         return next(e);

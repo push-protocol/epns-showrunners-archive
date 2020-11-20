@@ -339,16 +339,12 @@ export default class WalletTrackerChannel {
             balance: etherBalance
           }
           console.log(tokenInfo);
-          logger.info("tokenInfo: " + tokenInfo);
           resolve (tokenInfo)
         });
       }
 
       else{
-        // let tokenAddress = token.address
-        // const tokenContract = new ethers.Contract(tokenAddress, config.erc20DeployedContractABI, provider);
         let tokenBalance
-
         tokenContract.contract.balanceOf(user)
         .then(res=> {
           let decimals = SUPPORTED_TOKENS[ticker].decimals
@@ -361,7 +357,6 @@ export default class WalletTrackerChannel {
             balance: tokenBalance
           }
           console.log(tokenInfo);
-          // logger.info("tokenInfo: " + tokenInfo);
           resolve (tokenInfo)
         })
       }
@@ -369,14 +364,7 @@ export default class WalletTrackerChannel {
   }
 
   public async compareTokenBalance(tokenBalance, tokenBalanceFromDB){
-    
     let tokenDifference = tokenBalance-tokenBalanceFromDB
-    // let absTokenDifference = Math.abs(tokenDifference)
-
-    // logger.info('userTokenBalance: %o', tokenBalance)
-    // logger.info('userTokenBalanceFromDB: %o', tokenBalanceFromDB)
-    // logger.info('tokenDifference: %o', tokenDifference)
-
     let resultToken
 
     if(tokenDifference === 0){
@@ -532,16 +520,9 @@ export default class WalletTrackerChannel {
     for (const ticker in SUPPORTED_TOKENS) {
       tokenPromises.push(this.addTokenToDB(ticker, SUPPORTED_TOKENS[ticker].address, SUPPORTED_TOKENS[ticker].decimals))
     }
-    console.log(tokenPromises)
     const results = await Promise.all(tokenPromises)
-    console.log(results)
     return {success: "success", data: results}
   }
-
-    // const tokenPromises = SUPPORTED_TOKENS.map(token => {
-    //   return this.addTokenToDB(token.ticker, token.address, token.decimals)
-    // })
-  
 
   //MONGODB
   public async clearTokenDB(): Promise<boolean> {
