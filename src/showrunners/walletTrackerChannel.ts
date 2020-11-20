@@ -447,13 +447,13 @@ export default class WalletTrackerChannel {
 }
 
   //MONGODB
-  public async getTokenBalanceFromDB(userAddress: string, tokenID: string): Promise<{}> {
+  public async getTokenBalanceFromDB(userAddress: string, token: string): Promise<{}> {
     const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       let userTokenData
-      if (tokenID) {
-        userTokenData = await this.UserTokenModel.find({ user: userAddress, token: tokenID }).populate("token")
+      if (token) {
+        userTokenData = await this.UserTokenModel.find({ user: userAddress, token }).populate("token")
       } else {
         userTokenData = await this.UserTokenModel.find({ user: userAddress }).populate("token")
       }
@@ -466,7 +466,7 @@ export default class WalletTrackerChannel {
   }
 
   //MONGODB
-  public async addUserTokenToDB(user: string, token: mongoose.Types.ObjectId, balance: String): Promise<{}> {
+  public async addUserTokenToDB(user: string, token: string, balance: String): Promise<{}> {
     const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
@@ -475,7 +475,7 @@ export default class WalletTrackerChannel {
         token,
         balance
       })
-      // logger.info('userTokenSetToDB: %o', userToken)
+      // logger.info('addUserTokenToDB: %o', userToken)
       return userToken;
     } catch (error) {
       logger.debug('addUserTokenToDB Error: %o', error);
@@ -483,7 +483,7 @@ export default class WalletTrackerChannel {
   }
 
   //MONGODB
-  public async updateUserTokenBalance(user: string, token: mongoose.Types.ObjectId, balance: String): Promise<{}> {
+  public async updateUserTokenBalance(user: string, token: string, balance: string): Promise<{}> {
     const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
@@ -501,13 +501,10 @@ export default class WalletTrackerChannel {
 
   //MONGODB
   public async getTokenByTicker(ticker: string): Promise<{}> {
-    // public async getTokenByAddress(tokenAddress: string): Promise<{}> {
     const logger = this.logger;
     this.TokenModel = Container.get('TokenModel');
     try {
-      const token = await this.TokenModel.findOne({ticker: ticker})
-      // const token = await this.TokenModel.findOne({address: tokenAddress})
-
+      const token = await this.TokenModel.findOne({ ticker: ticker });
       return token;
     } catch (error) {
       logger.debug('getTokenByTicker Error: %o', error);
@@ -536,9 +533,6 @@ export default class WalletTrackerChannel {
     for (const ticker in SUPPORTED_TOKENS) {
       tokenPromises.push(this.addTokenToDB(ticker, SUPPORTED_TOKENS[ticker].address, SUPPORTED_TOKENS[ticker].decimals))
     }
-    // const tokenPromises = SUPPORTED_TOKENS.map(token => {
-    //   return this.addTokenToDB(token.ticker, token.address, token.decimals)
-    // })
     const results = await Promise.all(tokenPromises)
     return {success: "success", data: results}
   }
@@ -566,11 +560,4 @@ export default class WalletTrackerChannel {
       logger.debug('clearUserTokenDB Error: %o', error);
     }
   }
-
-  
-
-  
-
-
-
 }
