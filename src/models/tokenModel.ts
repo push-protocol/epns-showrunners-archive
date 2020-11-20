@@ -7,7 +7,7 @@ const Token = new Schema(
       required: true,
       unique: true
     },
-    symbol: {
+    ticker: {
         type: String,
         required: true,
     },
