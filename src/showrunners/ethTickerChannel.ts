@@ -1,15 +1,13 @@
+// @name: ETH Tracker Channel
+// @version: 1.0
+// @recent_changes: ETH Price Tracker
+
 import { Service, Inject } from 'typedi';
 import config from '../config';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
-import events from '../subscribers/events';
-
 import { ethers } from 'ethers';
 
 const bent = require('bent'); // Download library
-const moment = require('moment'); // time library
-
-const db = require('../helpers/dbHelper');
-const utils = require('../helpers/utilsHelper');
 const epnsNotify = require('../helpers/epnsNotifyHelper');
 
 @Service()
@@ -20,14 +18,14 @@ export default class EthTickerChannel {
   ) {}
 
   // To form and write to smart contract
-  public async sendMessageToContract() {
+  public async sendMessageToContract(simulate) {
     const logger = this.logger;
     logger.debug('Getting eth price, forming and uploading payload and interacting with smart contract...');
 
     return await new Promise((resolve, reject) => {
       this.getNewPrice()
         .then(async (payload) => {
-          epnsNotify.uploadToIPFS(payload, logger)
+          epnsNotify.uploadToIPFS(payload, logger, simulate)
             .then(async (ipfshash) => {
               logger.info("Success --> uploadToIPFS(): %o", ipfshash);
 
@@ -50,12 +48,13 @@ export default class EthTickerChannel {
               // Send Notification
               await epnsNotify.sendNotification(
                 epns.signingContract,                                           // Contract connected to signing wallet
-                ethers.utils.computeAddress(config.btcTickerPrivateKey),        // Recipient to which the payload should be sent
+                ethers.utils.computeAddress(config.ethTickerPrivateKey),        // Recipient to which the payload should be sent
                 parseInt(payload.data.type),                                    // Notification Type
                 storageType,                                                    // Notificattion Storage Type
                 ipfshash,                                                       // Notification Storage Pointer
                 txConfirmWait,                                                  // Should wait for transaction confirmation
-                logger                                                          // Logger instance (or console.log) to pass
+                logger,                                                         // Logger instance (or console.log) to pass
+                simulate                                                        // Passing true will not allow sending actual notification
               ).then ((tx) => {
                 logger.info("Transaction mined: %o | Notification Sent", tx.hash);
                 logger.info("🙌 ETH Ticker Channel Logic Completed!");
@@ -88,7 +87,7 @@ export default class EthTickerChannel {
 
       const cmcroute = 'v1/cryptocurrency/quotes/latest';
       const pollURL = `${config.cmcEndpoint}${cmcroute}?symbol=ETH&CMC_PRO_API_KEY=${config.cmcAPIKey}`;
-      console.log(pollURL);
+
       getJSON(pollURL)
         .then(async (response) => {
           if (response.status.error_code) {
