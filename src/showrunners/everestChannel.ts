@@ -29,13 +29,13 @@ export default class EverestChannel {
     }
 
   // To form and write to smart contract
-    public async sendMessageToContract() {
+    public async sendMessageToContract(simulate) {
         const logger = this.logger;
         const cache = this.cached;
         logger.debug('Checking for challenged  projects addresses... ');
 
         return await new Promise((resolve, reject) => {
-    
+
             // Call Helper function to get interactableContracts
             const epns = epnsNotify.getInteractableContracts(
             config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
@@ -48,7 +48,7 @@ export default class EverestChannel {
             config.deployedContract,                                                // The contract address which is going to be used
             config.deployedContractABI                                              // The contract abi which is going to be useds
             );
-    
+
             const everest = epnsNotify.getInteractableContracts(
             config.web3MainnetNetwork,                                              // Network for which the interactable contract is req
             {                                                                       // API Keys
@@ -59,7 +59,7 @@ export default class EverestChannel {
             config.everestPrivateKey,                                                // Private Key of the Wallet sending Notification
             config.everestDeployedContract,                                          // The contract address which is going to be used
             config.everestDeployedContractABI                                        // The contract abi which is going to be useds
-            );   
+            );
 
             let allTransactions = [];
 
@@ -82,7 +82,7 @@ export default class EverestChannel {
                             let userAddress = info.log[i].args.member
 
                             allTransactions.push(
-                            this.getTransaction(userAddress) 
+                            this.getTransaction(userAddress)
                                 .then(results => {
                                     return results;
                                 })
@@ -92,14 +92,14 @@ export default class EverestChannel {
                         Promise.all(allTransactions)
                             .then(async (results) => {
                             logger.debug("All Transactions Loaded: %o", results);
-        
+
                             for (const object of results) {
                                 if (object.success) {
                                     // Send notification
                                     const wallet = object.wallet;
                                     const ipfshash = object.ipfshash;
                                     const payloadType = object.payloadType;
-            
+
                                     logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
                                     const storageType = 1; // IPFS Storage Type
                                     const txConfirmWait = 1; // Wait for 0 tx confirmation
@@ -117,7 +117,7 @@ export default class EverestChannel {
                                         logger.info("Transaction mined: %o | Notification Sent", tx.hash);
                                         logger.info("🙌 Evest Ticker Channel Logic Completed!");
                                         resolve(tx);
-                                    })          
+                                    })
                                     .catch (err => {
                                         logger.error("🔥Error --> sendNotification(): %o", err);
                                         reject(err);
@@ -135,11 +135,11 @@ export default class EverestChannel {
                     }
                     else {
                         const message = "No new challenge has been made"
-                        
+
                         resolve({
                             success: message
                         });
-                        
+
                         logger.info(message)
                     }
                 }
@@ -164,7 +164,7 @@ export default class EverestChannel {
             .then(async (eventLog) => {
                 let flag = await cache.getCache(THRESHOLD_FLAG);
 
-                if(flag == 'false'){   
+                if(flag == 'false'){
                     cache.setCache(THRESHOLD_FLAG, true);
                     const lastLogCount = eventLog.length - 1;
                     const lastBlockNumber = eventLog[lastLogCount].blockNumber;
@@ -221,7 +221,7 @@ export default class EverestChannel {
                     success: false,
                     err: "Unable to proceed with Everest transacation Function for wallet: " + userAddress + " | error: " + err
                 });
-            });        
+            });
         })
     }
 
@@ -251,7 +251,7 @@ export default class EverestChannel {
             logger.debug('Payload Prepared: %o', payload);
 
             resolve(payload);
-        }) 
+        })
     }
 
 }

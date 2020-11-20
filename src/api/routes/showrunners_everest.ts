@@ -12,13 +12,18 @@ export default (app: Router) => {
   // to add an incoming feed
   route.post(
     '/send_message',
+    celebrate({
+      body: Joi.object({
+        simmulate: Joi.bool(),
+      }),
+    }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
       Logger.debug('Calling /showrunners/everest ticker endpoint with body: %o', req.body )
       try {
         const everest = Container.get(Everest);
-        const { success,  data } = await everest.sendMessageToContract();
+        const { success,  data } = await everest.sendMessageToContract(req.body.simulate);
 
         return res.status(201).json({ success,  data });
       } catch (e) {
