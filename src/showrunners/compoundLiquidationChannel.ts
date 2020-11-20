@@ -1,3 +1,7 @@
+// @name: Compound Liquidation Channel
+// @version: 1.0
+// @recent_changes: Compound Liquidation Tracker
+
 import { Service, Inject } from 'typedi';
 import config from '../config';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
@@ -24,12 +28,12 @@ export default class CompoundLiquidationChannel {
   ) {}
 
   // To form and write to smart contract
-  public async sendMessageToContract() {
+  public async sendMessageToContract(simulate) {
     const logger = this.logger;
     logger.debug('Checking for liquidated address... ');
     return await new Promise((resolve, reject) => {
       const compoundChannelAddress = ethers.utils.computeAddress(config.compComptrollerPrivateKey);
-      
+
 
        // Call Helper function to get interactableContracts
        const epns = epnsNotify.getInteractableContracts(
@@ -58,7 +62,7 @@ export default class CompoundLiquidationChannel {
 
       epns.contract.channels(compoundChannelAddress)
       .then(async (channelInfo) => {
-        
+
       const filter = epns.contract.filters.Subscribe(compoundChannelAddress)
 
       let startBlock = channelInfo.channelStartBlock.toNumber();
@@ -76,7 +80,7 @@ export default class CompoundLiquidationChannel {
           // Get user address
           const userAddress = log.args.user;
           allTransactions.push(
-            this.getUsersTotal(compound,userAddress)
+            this.getUsersTotal(compound, userAddress, simulate)
               .then( (results) => {
                 return results;
               })
@@ -96,7 +100,7 @@ export default class CompoundLiquidationChannel {
                 const payloadType = object.payloadType;
 
               logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
-              
+
               const storageType = 1; // IPFS Storage Type
                       const txConfirmWait = 1; // Wait for 0 tx confirmation
 
@@ -108,7 +112,9 @@ export default class CompoundLiquidationChannel {
                         storageType,                                                    // Notificattion Storage Type
                         ipfshash,                                                       // Notification Storage Pointer
                         txConfirmWait,                                                  // Should wait for transaction confirmation
-                        logger                                                          // Logger instance (or console.log) to pass
+                        logger,                                                         // Logger instance (or console.log) to pass
+                        logger,                                                         // Logger instance (or console.log) to pass
+                        simulate                                                        // Passing true will not allow sending actual notification
                       ).then ((tx) => {
                         logger.info("Transaction mined: %o | Notification Sent", tx.hash);
                         resolve(tx);
@@ -117,7 +123,7 @@ export default class CompoundLiquidationChannel {
                         logger.error("🔥Error --> sendNotification(): %o", err);
                         reject(err);
                       });
-              
+
               try {
                 let tx = await epns.signingContract.sendMessage(wallet, payloadType, ipfshash, 1);
                 logger.info("Transaction sent: %o", tx);
@@ -196,8 +202,8 @@ export default class CompoundLiquidationChannel {
           success: false,
           err: err
         });
-      })  
-    })       
+      })
+    })
   }
 
   // To Check Account for Amount Left to Liquidation
@@ -252,7 +258,7 @@ export default class CompoundLiquidationChannel {
             liquidity:liquidity,
             addressName:addressName
           });
-          
+
         })
         .catch(err => {
           logger.error("Error occurred in checkLiquidity: %o", userAddress, err);
@@ -260,7 +266,7 @@ export default class CompoundLiquidationChannel {
             success: false,
             err: err
           });
-        }) 
+        })
       })
       .catch(err => {
         logger.error("Error occurred in getAssetsIn: %o", userAddress, err);
@@ -268,11 +274,11 @@ export default class CompoundLiquidationChannel {
           success: false,
           err: err
         });
-      }) 
+      })
     });
   }
 
-  public async getUsersTotal(compound,userAddress){
+  public async getUsersTotal(compound, userAddress, simulate){
     const logger = this.logger;
     return new Promise((resolve, reject) => {
 
@@ -292,7 +298,7 @@ export default class CompoundLiquidationChannel {
           if(liquidityAlert > 0 &&  results.liquidity < liquidityAlert){
             this.getCompoundLiquidityPayload(results.addressName, results.liquidity, sumAllLiquidityOfAsset)
               .then(payload => {
-                epnsNotify.uploadToIPFS(payload, logger)
+                epnsNotify.uploadToIPFS(payload, logger, simulate)
                 .then(async (ipfshash) => {
 
                     resolve({

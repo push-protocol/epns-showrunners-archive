@@ -2,10 +2,17 @@ import { ethers } from 'ethers';
 
 module.exports = {
   // Upload to IPFS
-  uploadToIPFS: async (payload, logger) => {
+  uploadToIPFS: async (payload, logger, simulate) => {
     const enableLogs = 0;
 
     return new Promise(async (resolve, reject) => {
+      if (simulate) {
+        logger.verbose("######## SIMULATED IPFS PAYLOAD ########");
+        logger.simulate("\n%o\n", payload);
+        logger.verbose("################################");
+        resolve("[SimulatedIPFSHash]");
+      }
+
       // Stringify it
       const jsonizedPayload = JSON.stringify(payload);
 
@@ -32,9 +39,14 @@ module.exports = {
       alchemy: (apiKeys.alchemyAPI ? apiKeys.alchemyAPI : null),
     });
 
-    const wallet = new ethers.Wallet(walletPK, provider);
     const contract = new ethers.Contract(deployedContract, deployedContractABI, provider);
-    const contractWithSigner = contract.connect(wallet);
+
+    let contractWithSigner = null;
+
+    if (walletPK) {
+      const wallet = new ethers.Wallet(walletPK, provider);
+      contractWithSigner = contract.connect(wallet);
+    }
 
     return({
       provider: provider,
@@ -50,11 +62,29 @@ module.exports = {
     notificationStorageType,
     notificationStoragePointer,
     waitForTx,
-    logger
+    logger,
+    simulate
   ) => {
     const enableLogs = 0;
 
     return new Promise((resolve, reject) => {
+      if (simulate) {
+        // Log the notification out
+        const txSimulated = {
+          recipientAddr: recipientAddr,
+          notificationType: notificationType,
+          notificationStoragePointer: notificationStoragePointer,
+          pushType: 1,
+          hash: "SimulatedTransaction!!!"
+        }
+
+        logger.verbose("######## SIMULATED TRANSACTION ########");
+        logger.simulate("\n%o\n", txSimulated);
+        logger.verbose("################################");
+
+        resolve(txSimulated);
+      }
+
       // Create Transaction
       const txPromise = signingContract.sendMessage(
         recipientAddr,
