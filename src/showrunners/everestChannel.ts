@@ -28,11 +28,27 @@ export default class EverestChannel {
     this.cached.setCache(BLOCK_NUMBER, 0);
     }
 
+    public async getEverestInteractableContract(){
+        return epnsNotify.getInteractableContracts(
+            config.web3MainnetNetwork,                                              // Network for which the interactable contract is req
+            {                                                                       // API Keys
+                etherscanAPI: config.etherscanAPI,
+                infuraAPI: config.infuraAPI,
+                alchemyAPI: config.alchemyAPI
+            },
+            config.everestPrivateKey,                                                // Private Key of the Wallet sending Notification
+            config.everestDeployedContract,                                          // The contract address which is going to be used
+            config.everestDeployedContractABI                                        // The contract abi which is going to be useds
+        );
+    }
+
   // To form and write to smart contract
-    public async sendMessageToContract() {
+    public async sendMessageToContract(simulate) {
         const logger = this.logger;
         const cache = this.cached;
         logger.debug('Checking for challenged  projects addresses... ');
+
+        const everest = await this.getEverestInteractableContract()
 
         return await new Promise((resolve, reject) => {
     
@@ -48,19 +64,7 @@ export default class EverestChannel {
             config.deployedContract,                                                // The contract address which is going to be used
             config.deployedContractABI                                              // The contract abi which is going to be useds
             );
-    
-            const everest = epnsNotify.getInteractableContracts(
-            config.web3MainnetNetwork,                                              // Network for which the interactable contract is req
-            {                                                                       // API Keys
-                etherscanAPI: config.etherscanAPI,
-                infuraAPI: config.infuraAPI,
-                alchemyAPI: config.alchemyAPI
-            },
-            config.everestPrivateKey,                                                // Private Key of the Wallet sending Notification
-            config.everestDeployedContract,                                          // The contract address which is going to be used
-            config.everestDeployedContractABI                                        // The contract abi which is going to be useds
-            );   
-
+        
             let allTransactions = [];
 
             this.checkMemberChallengedEvent(everest)
@@ -82,7 +86,7 @@ export default class EverestChannel {
                             let userAddress = info.log[i].args.member
 
                             allTransactions.push(
-                            this.getTransaction(userAddress) 
+                            this.getTransaction(userAddress, simulate) 
                                 .then(results => {
                                     return results;
                                 })
@@ -112,7 +116,8 @@ export default class EverestChannel {
                                         storageType,                                                    // Notificattion Storage Type
                                         ipfshash,                                                       // Notification Storage Pointer
                                         txConfirmWait,                                                  // Should wait for transaction confirmation
-                                        logger                                                          // Logger instance (or console.log) to pass
+                                        logger,
+                                        simulate                                                        // Passing true will not allow sending actual notification                                                          // Logger instance (or console.log) to pass
                                     ).then ((tx) => {
                                         logger.info("Transaction mined: %o | Notification Sent", tx.hash);
                                         logger.info("🙌 Evest Ticker Channel Logic Completed!");
@@ -153,6 +158,10 @@ export default class EverestChannel {
 
     public async checkMemberChallengedEvent(everest){
         const logger = this.logger;
+        if(!everest){
+            everest = await this.getEverestInteractableContract()
+          }
+       
         const cache = this.cached;
         logger.debug('Getting eventLog,eventCount,blocks...');
 
@@ -191,14 +200,14 @@ export default class EverestChannel {
         })
     }
 
-    public async getTransaction(userAddress) {
+    public async getTransaction(userAddress, simulate) {
         const logger = this.logger;
         logger.debug('Getting all transactions...');
 
         return await new Promise((resolve, reject) => {
             this.getEverestChallengeMessage(userAddress)
             .then(payload => {
-                epnsNotify.uploadToIPFS(payload, logger)
+                epnsNotify.uploadToIPFS(payload, logger, simulate)
                     .then(async (ipfshash) => {
                         resolve({
                             success: true,
