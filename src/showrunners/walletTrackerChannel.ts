@@ -61,8 +61,6 @@ export default class WalletTrackerChannel {
 
   public getERC20InteractableContract(web3network, tokenAddress) {
     // Get Contract
-    // let contract = [];
-    // contract["interact"] = 
     return epnsNotify.getInteractableContracts(
       web3network,                                                                // Network for which the interactable contract is req
       {                                                                       // API Keys
@@ -74,8 +72,6 @@ export default class WalletTrackerChannel {
       tokenAddress,                                                           // The contract address which is going to be used
       config.erc20DeployedContractABI                                        // The contract abi which is going to be useds
     );
-    // contract["address"]= tokenAddress
-    // return contract
   }
 
   public getSupportedERC20sArray(web3network) {
@@ -89,7 +85,7 @@ export default class WalletTrackerChannel {
     return erc20s;
   }
 
-  public async sendMessageToContract() {
+  public async sendMessageToContract(simulate) {
     const cache = this.cached;
     const logger = this.logger;
 
@@ -100,7 +96,6 @@ export default class WalletTrackerChannel {
       // Call Helper function to get interactableContracts
       const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
       const interactableERC20s = this.getSupportedERC20sArray(NETWORK_TO_MONITOR);
-      logger.info("interactableERC20s: %o", interactableERC20s)
 
       epns.contract.channels(walletTrackerChannel)
         .then(async (channelInfo) => {
@@ -122,7 +117,7 @@ export default class WalletTrackerChannel {
                   const user = log.args.user;
                   logger.info("user: %o", user)
 
-                  this.checkWalletMovement(user, NETWORK_TO_MONITOR, interactableERC20s)
+                  this.checkWalletMovement(user, NETWORK_TO_MONITOR, simulate, interactableERC20s)
                   .then((result) => {
                     // logger.info(" For User: %o | checkTokenMovement result: :%o ", user, result)
 
@@ -156,7 +151,8 @@ export default class WalletTrackerChannel {
                         storageType,                                                    // Notificattion Storage Type
                         ipfshash,                                                       // Notification Storage Pointer
                         txConfirmWait,                                                  // Should wait for transaction confirmation
-                        logger                                                          // Logger instance (or console.log) to pass
+                        logger,
+                        simulate                                                         // Logger instance (or console.log) to pass
                       ).then ((tx) => {
                         logger.info("Transaction successful: %o | Notification Sent", tx.hash);
                         logger.info("🙌 Wallet Tracker Channel Logic Completed!");
@@ -174,6 +170,12 @@ export default class WalletTrackerChannel {
                       catch (err) {
                         logger.error("Unable to complete transaction, error: %o", err);
                       }
+                    }
+                    else{
+                      resolve({
+                        success: false,
+                        data: "No Wallet Movement"
+                      })
                     }
                   }
                 })
@@ -194,7 +196,7 @@ export default class WalletTrackerChannel {
     })
   }
 
-  public async checkWalletMovement(user, networkToMonitor, interactableERC20s) {
+  public async checkWalletMovement(user, networkToMonitor, simulate, interactableERC20s) {
     const logger = this.logger;
 
     // check and recreate provider mostly for routes
@@ -211,10 +213,7 @@ export default class WalletTrackerChannel {
       // let promises = SUPPORTED_TOKENS.map(token => {
       let promises = [];
       for (const ticker in SUPPORTED_TOKENS) {
-        let promise = ()=> {
-          this.checkTokenMovement(user, networkToMonitor, ticker, interactableERC20s)
-        }
-        promises.push(promise)
+        promises.push(this.checkTokenMovement(user, networkToMonitor, ticker, interactableERC20s))
       }
 
       Promise.all(promises)
@@ -225,7 +224,7 @@ export default class WalletTrackerChannel {
         if(changedTokens.length>0){
           this.getWalletTrackerPayload(changedTokens)
           .then(payload =>{
-            epnsNotify.uploadToIPFS(payload, logger)
+            epnsNotify.uploadToIPFS(payload, logger, simulate)
             .then(async (ipfshash) => {
               // Sign the transaction and send it to chain
               // const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
@@ -280,13 +279,19 @@ export default class WalletTrackerChannel {
       .then(tokenDataFromDB=>{
         // logger.info('tokenDataFromDB: %o', tokenDataFromDB)
 
-        this.getTokenBalanceFromDB(user, tokenDataFromDB._id)
+        this.getTokenBalanceFromDB(user, ticker)
         .then(userTokenArrayFromDB =>{
           // logger.info('userTokenArrayFromDB: %o', userTokenArrayFromDB)
           // logger.info('userTokenArrayFromDB.length: %o', userTokenArrayFromDB.length)
           if(userTokenArrayFromDB.length == 0){
 
-            this.addUserTokenToDB(user, tokenDataFromDB._id, userToken.balance)
+            this.addUserTokenToDB(user, ticker, userToken.balance)
+            .then(addedToken =>{
+              resolve({
+                changed: false,
+                addedToken
+              })
+            })
           }
           else{
             let userTokenFromDB
@@ -304,7 +309,7 @@ export default class WalletTrackerChannel {
             .then(resultToken => {
               // logger.info('resultToken: %o', resultToken)
               if(resultToken.changed){
-                this.updateUserTokenBalance(user, tokenDataFromDB._id, resultToken.tokenBalance)
+                this.updateUserTokenBalance(user, ticker, resultToken.tokenBalance)
               }
               resolve(resultToken)
             })
@@ -338,7 +343,6 @@ export default class WalletTrackerChannel {
             ticker,
             balance: etherBalance
           }
-          console.log(tokenInfo);
           resolve (tokenInfo)
         });
       }
@@ -356,7 +360,6 @@ export default class WalletTrackerChannel {
             ticker,
             balance: tokenBalance
           }
-          console.log(tokenInfo);
           resolve (tokenInfo)
         })
       }
@@ -430,13 +433,13 @@ export default class WalletTrackerChannel {
 }
 
   //MONGODB
-  public async getTokenBalanceFromDB(userAddress: string, token: string): Promise<{}> {
+  public async getTokenBalanceFromDB(userAddress: string, ticker: string): Promise<{}> {
     const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       let userTokenData
-      if (token) {
-        userTokenData = await this.UserTokenModel.find({ user: userAddress, token }).populate("token")
+      if (ticker) {
+        userTokenData = await this.UserTokenModel.find({ user: userAddress, ticker }).populate("token")
       } else {
         userTokenData = await this.UserTokenModel.find({ user: userAddress }).populate("token")
       }
@@ -449,13 +452,13 @@ export default class WalletTrackerChannel {
   }
 
   //MONGODB
-  public async addUserTokenToDB(user: string, token: string, balance: String): Promise<{}> {
+  public async addUserTokenToDB(user: string, ticker: string, balance: String): Promise<{}> {
     const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       const userToken = await this.UserTokenModel.create({
         user,
-        token,
+        ticker,
         balance
       })
       // logger.info('addUserTokenToDB: %o', userToken)
@@ -466,12 +469,12 @@ export default class WalletTrackerChannel {
   }
 
   //MONGODB
-  public async updateUserTokenBalance(user: string, token: string, balance: string): Promise<{}> {
+  public async updateUserTokenBalance(user: string, ticker: string, balance: string): Promise<{}> {
     const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       const userToken = await this.UserTokenModel.findOneAndUpdate(
-        { user, token },
+        { user, ticker },
         { balance },
         { safe: true, new: true }
       );
@@ -488,7 +491,6 @@ export default class WalletTrackerChannel {
     this.TokenModel = Container.get('TokenModel');
     try {
       const token = await this.TokenModel.findOne({ ticker: ticker });
-      console.log(token)
       return token;
     } catch (error) {
       logger.debug('getTokenByTicker Error: %o', error);

@@ -6,7 +6,7 @@ const UserToken = new Schema(
         type: String,
         required: true,
     },
-    token: { 
+    ticker: { 
         type: String,
         required: true, 
     },
