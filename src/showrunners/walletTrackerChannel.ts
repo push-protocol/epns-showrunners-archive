@@ -47,13 +47,13 @@ export default class WalletTrackerChannel {
   public getEPNSInteractableContract(web3network) {
     // Get Contract
     return epnsNotify.getInteractableContracts(
-      web3network,                                                                // Network for which the interactable contract is req
+      web3network,                                                             // Network for which the interactable contract is req
       {                                                                       // API Keys
           etherscanAPI: config.etherscanAPI,
           infuraAPI: config.infuraAPI,
           alchemyAPI: config.alchemyAPI
       },
-      config.walletTrackerPrivateKey,                                       // Private Key of the Wallet sending Notification
+      config.walletTrackerPrivateKey,                                          // Private Key of the Wallet sending Notification
       config.deployedContract,                                                // The contract address which is going to be used
       config.deployedContractABI                                              // The contract abi which is going to be useds
     );
@@ -62,7 +62,7 @@ export default class WalletTrackerChannel {
   public getERC20InteractableContract(web3network, tokenAddress) {
     // Get Contract
     return epnsNotify.getInteractableContracts(
-      web3network,                                                                // Network for which the interactable contract is req
+      web3network,                                                             // Network for which the interactable contract is req
       {                                                                       // API Keys
           etherscanAPI: config.etherscanAPI,
           infuraAPI: config.infuraAPI,
@@ -119,8 +119,7 @@ export default class WalletTrackerChannel {
 
                   this.checkWalletMovement(user, NETWORK_TO_MONITOR, simulate, interactableERC20s)
                   .then((result) => {
-                    // logger.info(" For User: %o | checkTokenMovement result: :%o ", user, result)
-
+                    logger.info(" For User: %o | checkWalletMovement result: :%o ", user, result)
                     resolve(result)
                   })
                 });
@@ -207,8 +206,10 @@ export default class WalletTrackerChannel {
       logger.info("Rebuilt interactable erc20s --> %o", interactableERC20s);
     }
 
+    let changedTokens = [];
+
     return new Promise((resolve) => {
-      let changedTokens = [];
+      
 
       // let promises = SUPPORTED_TOKENS.map(token => {
       let promises = [];
@@ -219,7 +220,7 @@ export default class WalletTrackerChannel {
       Promise.all(promises)
       .then(results=> {
         // logger.info('results: %o', results)
-        changedTokens = results.filter(token => token.changed ===true)
+        changedTokens = results.filter(token => token.resultToken.changed ===true)
         // logger.info('changedTokens: %o', changedTokens)
         if(changedTokens.length>0){
           this.getWalletTrackerPayload(changedTokens)
@@ -275,46 +276,46 @@ export default class WalletTrackerChannel {
     .then(userToken => {
 
       // logger.info('userToken: %o', userToken)
-      this.getTokenByTicker(ticker)
-      .then(tokenDataFromDB=>{
-        // logger.info('tokenDataFromDB: %o', tokenDataFromDB)
-
-        this.getTokenBalanceFromDB(user, ticker)
-        .then(userTokenArrayFromDB =>{
-          // logger.info('userTokenArrayFromDB: %o', userTokenArrayFromDB)
-          // logger.info('userTokenArrayFromDB.length: %o', userTokenArrayFromDB.length)
-          if(userTokenArrayFromDB.length == 0){
-
-            this.addUserTokenToDB(user, ticker, userToken.balance)
-            .then(addedToken =>{
-              resolve({
-                changed: false,
-                addedToken
-              })
+      this.getTokenBalanceFromDB(user, ticker)
+      .then(userTokenArrayFromDB =>{
+        // logger.info('userTokenArrayFromDB: %o', userTokenArrayFromDB)
+        // logger.info('userTokenArrayFromDB.length: %o', userTokenArrayFromDB.length)
+        if(userTokenArrayFromDB.length == 0){
+          this.addUserTokenToDB(user, ticker, userToken.balance)
+          .then(addedToken =>{
+            resolve({
+              ticker,
+              resultToken: {
+                changed: false
+              },
+              addedToken,
             })
-          }
-          else{
-            let userTokenFromDB
-            userTokenArrayFromDB.map(usertoken => {
-              return userTokenFromDB = usertoken
-            })
+          })
+        }
+        else{
+          let userTokenFromDB
+          userTokenArrayFromDB.map(usertoken => {
+            return userTokenFromDB = usertoken
+          })
 
-            // logger.info('userTokenFromDB: %o', userTokenFromDB)
-            let tokenBalanceStr= userToken.balance
-            let tokenBalance= Number(tokenBalanceStr.replace(/,/g, ''))
-            let tokenBalanceFromDBStr= userTokenFromDB.balance
-            let tokenBalanceFromDB= Number(tokenBalanceFromDBStr.replace(/,/g, ''))
+          // logger.info('userTokenFromDB: %o', userTokenFromDB)
+          let tokenBalanceStr= userToken.balance
+          let tokenBalance= Number(tokenBalanceStr.replace(/,/g, ''))
+          let tokenBalanceFromDBStr= userTokenFromDB.balance
+          let tokenBalanceFromDB= Number(tokenBalanceFromDBStr.replace(/,/g, ''))
 
-            this.compareTokenBalance(tokenBalance, tokenBalanceFromDB)
-            .then(resultToken => {
-              // logger.info('resultToken: %o', resultToken)
-              if(resultToken.changed){
-                this.updateUserTokenBalance(user, ticker, resultToken.tokenBalance)
-              }
-              resolve(resultToken)
+          this.compareTokenBalance(tokenBalance, tokenBalanceFromDB)
+          .then(resultToken => {
+            // logger.info('resultToken: %o', resultToken)
+            if(resultToken.changed){
+              this.updateUserTokenBalance(user, ticker, resultToken.tokenBalance)
+            }
+            resolve({
+              ticker,
+              resultToken
             })
-          }
-        })
+          })
+        }
       })
     })
   })
@@ -373,7 +374,6 @@ export default class WalletTrackerChannel {
     if(tokenDifference === 0){
       resultToken = {
         changed: false,
-        increased: false,
         tokenDifference: tokenDifference,
         tokenBalance,
       }
@@ -410,7 +410,7 @@ export default class WalletTrackerChannel {
 
     return await new Promise(async (resolve) => {
     const title = "Wallet Tracker Alert!";
-    const message = "Token Movement in the last one hour!";
+    const message = "Token Movement in last one hour!";
 
     const payloadTitle = "Wallet Tracker Alert!";
     const payloadMsg = changedTokensJSON;
