@@ -11,6 +11,9 @@ module.exports = {
         logger.simulate("\n%o\n", payload);
         logger.verbose("################################");
         resolve("[SimulatedIPFSHash]");
+
+        // nothing to do in simulation
+        return;
       }
 
       // Stringify it
@@ -83,6 +86,9 @@ module.exports = {
         logger.verbose("################################");
 
         resolve(txSimulated);
+
+        // nothing to do in simulation
+        return;
       }
 
       // Create Transaction
@@ -110,7 +116,7 @@ module.exports = {
 
           reject("Unable to complete transaction, error: %o", err);
         });
-    });
+      });
   },
   // Prepare Payload for Notification
   preparePayload: async (recipientAddr, payloadType, title, body, payloadTitle, payloadMsg, payloadCTA, payloadImg) => {
