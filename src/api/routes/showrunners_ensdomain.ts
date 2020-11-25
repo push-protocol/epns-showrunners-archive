@@ -52,6 +52,7 @@ export default (app: Router) => {
       body: Joi.object({
         simulate: Joi.bool(),
         address: Joi.string().required(),
+        network: Joi.string().required(),
       }),
     }),
     middlewares.onlyLocalhost,
@@ -59,9 +60,9 @@ export default (app: Router) => {
       const Logger = Container.get('logger');
       Logger.debug('Calling /showrunners/ensdomain/check_expiry endpoint with body: %o', req.body )
       try {
-        const { address, simulate } = req.body;
+        const { address, simulate, network } = req.body;
         const ensDomain = Container.get(EnsExiprationChannel);
-        const data = await ensDomain.checkENSDomainExpiry(address, null,  simulate);
+        const data = await ensDomain.checkENSDomainExpiry(address, null, network, simulate);
         if (data.success && data.success == false) {
           return handleResponse(res, 500, false, "Expiry data", JSON.stringify(data.err));
         } else {

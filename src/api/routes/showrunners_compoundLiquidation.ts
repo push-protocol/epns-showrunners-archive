@@ -48,16 +48,17 @@ export default (app: Router) => {
     celebrate({
       body: Joi.object({
         address: Joi.string().required(),
+        network: Joi.string().required(),
       }),
     }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
-      const { address } = req.body;
+      const { address, network } = req.body;
       const Logger = Container.get('logger');
       Logger.debug('Calling /showrunners/compoundliquidation/check_liquidity endpoint with body: %o', req.body )
       try {
         const compoundLiquidation = Container.get(CompoundLiquidationChannel);
-        const data = await compoundLiquidation.checkLiquidity(null, address);
+        const data = await compoundLiquidation.checkLiquidity(null, network, address);
         console.log(data)
         if (data.success && data.success == false) {
           return handleResponse(res, 500, false, "liquidity data", JSON.stringify(data.err));
@@ -81,16 +82,17 @@ export default (app: Router) => {
     celebrate({
       body: Joi.object({
         address: Joi.string().required(),
+        network: Joi.string().required(),
       }),
     }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
-      const { address } = req.body;
+      const { address, network } = req.body;
       const Logger = Container.get('logger');
       Logger.debug('Calling /showrunners/compoundliquidation/check_assets endpoint with body: %o', req.body )
       try {
         const compoundLiquidation = Container.get(CompoundLiquidationChannel);
-        const data = await compoundLiquidation.checkAssets(null, address);
+        const data = await compoundLiquidation.checkAssets(null, network, address);
         if (data.success && data.success != false) {
           return handleResponse(res, 500, false, "assets data", JSON.stringify(data.err));
         } else {
@@ -114,16 +116,17 @@ export default (app: Router) => {
       body: Joi.object({
         simulate: Joi.bool(),
         address: Joi.string().required(),
+        network: Joi.string().required(),
       }),
     }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
-      const { address, simulate } = req.body;
+      const { address, simulate, network } = req.body;
       const Logger = Container.get('logger');
       Logger.debug('Calling /showrunners/compoundliquidation/total_users endpoint with body: %o', req.body )
       try {
         const compoundLiquidation = Container.get(CompoundLiquidationChannel);
-        const data = await compoundLiquidation.getUsersTotal(null, address, simulate);
+        const data = await compoundLiquidation.getUsersTotal(null, network, address, simulate);
         if (data.success && data.success != false) {
           return handleResponse(res, 500, false, "total users", JSON.stringify(data.err));
         } else {

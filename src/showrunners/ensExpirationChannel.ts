@@ -16,6 +16,8 @@ const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
 const epnsNotify = require('../helpers/epnsNotifyHelper');
 
+const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
+
 @Service()
 export default class EnsExpirationChannel {
   constructor(
@@ -33,19 +35,9 @@ export default class EnsExpirationChannel {
       const ensChannelAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
 
       // Call Helper function to get interactableContracts
-      const epns = epnsNotify.getInteractableContracts(
-        config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
-        {                                                                       // API Keys
-          etherscanAPI: config.etherscanAPI,
-          infuraAPI: config.infuraAPI,
-          alchemyAPI: config.alchemyAPI
-        },
-        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
-        config.deployedContract,                                                // The contract address which is going to be used
-        config.deployedContractABI                                              // The contract abi which is going to be useds
-      );
+      const epns = this.getEPNSInteractableContract(NETWORK_TO_MONITOR)
 
-      const ens = this.getEnsInteractableContract()
+      const ens = this.getENSInteractableContract(NETWORK_TO_MONITOR)
 
 
       epns.contract.channels(ensChannelAddress)
@@ -143,9 +135,9 @@ export default class EnsExpirationChannel {
     });
   }
 
-  public getEnsInteractableContract() {
+  public getENSInteractableContract(web3network) {
     return epnsNotify.getInteractableContracts(
-        config.web3MainnetNetwork,                                              // Network for which the interactable contract is req
+        web3network,                                              // Network for which the interactable contract is req
         {                                                                       // API Keys
           etherscanAPI: config.etherscanAPI,
           infuraAPI: config.infuraAPI,
@@ -157,10 +149,25 @@ export default class EnsExpirationChannel {
       );
   }
 
+  public getEPNSInteractableContract(web3network) {
+    // Get Contract
+    return epnsNotify.getInteractableContracts(
+        web3network,                                              // Network for which the interactable contract is req
+        {                                                                       // API Keys
+          etherscanAPI: config.etherscanAPI,
+          infuraAPI: config.infuraAPI,
+          alchemyAPI: config.alchemyAPI
+        },
+        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
+        config.deployedContract,                                                // The contract address which is going to be used
+        config.deployedContractABI                                              // The contract abi which is going to be useds
+      );
+  }
+
   // To Check for domain expiry
-  public async checkENSDomainExpiry(userAddress, ens, simulate) {
+  public async checkENSDomainExpiry(userAddress, ens, networkToMonitor, simulate) {
     if(!ens){
-      ens = this.getEnsInteractableContract()
+      ens = this.getENSInteractableContract(networkToMonitor)
     }
     const logger = this.logger;
 
