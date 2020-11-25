@@ -50,9 +50,10 @@ export default (app: Router) => {
     '/check_expiry',
     celebrate({
       body: Joi.object({
-        simulate: Joi.bool(),
-        address: Joi.string().required(),
         network: Joi.string().required(),
+        address: Joi.string().required(),
+        triggerThresholdInSecs: Joi.number().required(),
+        simulate: Joi.bool(),
       }),
     }),
     middlewares.onlyLocalhost,
@@ -60,9 +61,11 @@ export default (app: Router) => {
       const Logger = Container.get('logger');
       Logger.debug('Calling /showrunners/ensdomain/check_expiry endpoint with body: %o', req.body )
       try {
-        const { address, simulate, network } = req.body;
+        const { address, network, triggerThresholdInSecs, simulate } = req.body;
+
         const ensDomain = Container.get(EnsExiprationChannel);
-        const data = await ensDomain.checkENSDomainExpiry(address, null, network, simulate);
+        const data = await ensDomain.checkENSDomainExpiry(network, null, address, triggerThresholdInSecs, simulate);
+
         if (data.success && data.success == false) {
           return handleResponse(res, 500, false, "Expiry data", JSON.stringify(data.err));
         } else {
