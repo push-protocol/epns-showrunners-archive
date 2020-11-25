@@ -4,14 +4,16 @@ import CompoundLiquidationChannel from '../../showrunners/compoundLiquidationCha
 import middlewares from '../middlewares';
 import { celebrate, Joi } from 'celebrate';
 import { handleResponse } from '../../helpers/utilsHelper';
-import config from '../../config';
 
 const route = Router();
 
 export default (app: Router) => {
   app.use('/showrunners/compound', route);
+  
   /**
-   * Send message
+   * Send Message
+   * @description Send a notification via the compound showrunner
+   * @param {boolean} simulate whether to send the actual message or simulate message sending
    */
   route.post(
     '/send_message',
@@ -38,7 +40,8 @@ export default (app: Router) => {
 
   /**
    * Check Liquidity
-   * @param {String} address User Address
+   * @description check the liquidity of a given address
+   * @param {string} address User Address
    */
   route.post(
     '/check_liquidity',
@@ -70,7 +73,8 @@ export default (app: Router) => {
 
   /**
    * Check Assets
-   * @param {String} address User Address
+   * @description check assets attached to a given address
+   * @param {string} address User Address
    */
   route.post(
     '/check_assets',
@@ -100,8 +104,9 @@ export default (app: Router) => {
   );
 
   /**
-   * Check Assets
+   * Total Users
    * @param {String} address User Address
+   * @param {boolean} simulate whether to send the actual message or simulate message sending
    */
   route.post(
     '/total_users',

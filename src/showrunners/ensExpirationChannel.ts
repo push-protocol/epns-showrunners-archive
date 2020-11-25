@@ -45,17 +45,7 @@ export default class EnsExpirationChannel {
         config.deployedContractABI                                              // The contract abi which is going to be useds
       );
 
-      const ens = epnsNotify.getInteractableContracts(
-        config.web3MainnetNetwork,                                              // Network for which the interactable contract is req
-        {                                                                       // API Keys
-          etherscanAPI: config.etherscanAPI,
-          infuraAPI: config.infuraAPI,
-          alchemyAPI: config.alchemyAPI
-        },
-        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
-        config.ensDeployedContract,                                             // The contract address which is going to be used
-        config.ensDeployedContractABI                                           // The contract abi which is going to be useds
-      );
+      const ens = this.getEnsInteractableContract()
 
 
       epns.contract.channels(ensChannelAddress)
@@ -153,13 +143,29 @@ export default class EnsExpirationChannel {
     });
   }
 
+  public getEnsInteractableContract() {
+    return epnsNotify.getInteractableContracts(
+        config.web3MainnetNetwork,                                              // Network for which the interactable contract is req
+        {                                                                       // API Keys
+          etherscanAPI: config.etherscanAPI,
+          infuraAPI: config.infuraAPI,
+          alchemyAPI: config.alchemyAPI
+        },
+        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
+        config.ensDeployedContract,                                             // The contract address which is going to be used
+        config.ensDeployedContractABI                                           // The contract abi which is going to be useds
+      );
+  }
+
   // To Check for domain expiry
   public async checkENSDomainExpiry(userAddress, ens, simulate) {
+    if(!ens){
+      ens = this.getEnsInteractableContract()
+    }
     const logger = this.logger;
 
     return new Promise((resolve) => {
       // Lookup the address
-
       ens.provider.lookupAddress(userAddress)
         .then(ensAddressName => {
           let addressName = ensAddressName;

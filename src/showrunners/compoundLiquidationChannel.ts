@@ -33,8 +33,6 @@ export default class CompoundLiquidationChannel {
     logger.debug('Checking for liquidated address... ');
     return await new Promise((resolve, reject) => {
       const compoundChannelAddress = ethers.utils.computeAddress(config.compComptrollerPrivateKey);
-
-
        // Call Helper function to get interactableContracts
        const epns = epnsNotify.getInteractableContracts(
         config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
@@ -47,18 +45,6 @@ export default class CompoundLiquidationChannel {
         config.deployedContract,                                                // The contract address which is going to be used
         config.deployedContractABI                                              // The contract abi which is going to be useds
       );
-
-      // const compound = epnsNotify.getInteractableContracts(
-      //   config.web3RopstenProvider,                                              // Network for which the interactable contract is req
-      //   {                                                                       // API Keys
-      //     etherscanAPI: config.etherscanAPI,
-      //     infuraAPI: config.infuraAPI,
-      //     alchemyAPI: config.alchemyAPI
-      //   },
-      //   config.compComptrollerPrivateKey,                                       // Private Key of the Wallet sending Notification
-      //   config.compComptrollerDeployedContract,                                             // The contract address which is going to be used
-      //   config.compComptrollerDeployedContractABI                                           // The contract abi which is going to be useds
-      // );
 
       const compound = this.getCompoundInteractableContract();
 
@@ -254,7 +240,7 @@ export default class CompoundLiquidationChannel {
         .then(results =>{
           logger.info("Market Address is in: %o | Address: :%o ", marketAddress, results.name);
           for (let i = 0; i < marketAddress.length; i++) {
-            let cAddresses = [0xdb5ed4605c11822811a39f94314fdb8f0fb59a2c, 0x9e95c0b2412ce50c37a121622308e7a6177f819d,0xbe839b6d93e3ea47effcca1f27841c917a8794f3,
+            let cAddresses = [0xdb5ed4605c11822811a39f94314fdb8f0fb59a2c, 0x9e95c0b2412ce50c37a121622308e7a6177f819d, 0xbe839b6d93e3ea47effcca1f27841c917a8794f3,
               0x158079ee67fce2f58472a96584a73c7ab9ac95c1,0xf5dce57282a584d2746faf1593d3121fcac444dc,0x35a18000230da775cac24873d00ff85bccded550,
               0x39aa39c021dfbae8fac545936693ac917d5e7563,0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9,0xc11b1268c1a384e55c48c2391d8d480264a3a7f4,0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407]
             let contracts = [cDai,cBat,cEth,cRep,cSai,cUni,cUsdc,cUsdt,cWbtc,cZrx]
