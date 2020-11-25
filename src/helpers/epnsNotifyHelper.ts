@@ -11,6 +11,9 @@ module.exports = {
         logger.simulate("\n%o\n", payload);
         logger.verbose("################################");
         resolve("[SimulatedIPFSHash]");
+
+        // nothing to do in simulation
+        return;
       }
 
       // Stringify it
@@ -87,6 +90,9 @@ module.exports = {
         logger.verbose("################################");
 
         resolve(txSimulated);
+
+        // nothing to do in simulation
+        return;
       }
 
       const txPromise = signingContract.sendNotification(recipientAddr, identityBytes);
