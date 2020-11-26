@@ -532,56 +532,6 @@ export default class WalletTrackerChannel {
   }
 
   //MONGODB
-  public async getTokenByTicker(ticker: string): Promise<{}> {
-    const logger = this.logger;
-    this.TokenModel = Container.get('TokenModel');
-    try {
-      const token = await this.TokenModel.findOne({ ticker: ticker });
-      return token;
-    } catch (error) {
-      logger.debug('getTokenByTicker Error: %o', error);
-    }
-  }
-
-  //MONGODB
-  public async addTokenToDB(ticker: string, address: string, decimals: number): Promise<{}> {
-    const logger = this.logger;
-    this.TokenModel = Container.get('TokenModel');
-    try {
-      const token = await this.TokenModel.create({
-        ticker,
-        address,
-        decimals
-      })
-      return token;
-    } catch (error) {
-      logger.debug('addTokenToDB Error: %o', error);
-    }
-  }
-
-  //To add all the tokens we support, to MONGODB
-  public async addTokens() {
-    let tokenPromises = [];
-    for (const ticker in SUPPORTED_TOKENS) {
-      tokenPromises.push(this.addTokenToDB(ticker, SUPPORTED_TOKENS[ticker].address, SUPPORTED_TOKENS[ticker].decimals))
-    }
-    const results = await Promise.all(tokenPromises)
-    return {success: "success", data: results}
-  }
-
-  //MONGODB
-  public async clearTokenDB(): Promise<boolean> {
-    const logger = this.logger;
-    this.TokenModel = Container.get('TokenModel');
-    try {
-      await this.TokenModel.deleteMany({})
-      return true;
-    } catch (error) {
-      logger.debug('clearTokenDB Error: %o', error);
-    }
-  }
-
-  //MONGODB
   public async clearUserTokenDB(): Promise<boolean> {
     const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
