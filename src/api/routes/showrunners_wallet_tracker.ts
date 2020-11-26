@@ -157,6 +157,30 @@ export default (app: Router) => {
   );
 
   route.post(
+    '/get_payload_hash',
+    celebrate({
+      body: Joi.object({
+        user: Joi.string().required(),
+        simulate: Joi.bool(),
+      }),
+    }),
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/wallet_tracker/get_wallet_tracker_payload endpoint with body: %o', req.body )
+      try {
+        const walletTracker = Container.get(WalletTrackerChannel);
+        const result = await walletTracker.getPayloadHash(req.body.user, req.body.simulate, req.body.changedTokens);
+
+        return res.status(201).json(result);
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return next(e);
+      }
+    },
+  );
+
+  route.post(
     '/get_wallet_tracker_payload',
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {

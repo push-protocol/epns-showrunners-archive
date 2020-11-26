@@ -137,43 +137,49 @@ export default class WalletTrackerChannel {
 
                   for (const object of results) {
                     if (object.success) {
-                      // Send notification
-                      const ipfshash = object.ipfshash;
-                      const payloadType = object.payloadType;
                       const user = object.user
+                      let res = await this.getPayloadHash(user, object.changedTokens, simulate)
+                      logger.info('IPFS Hash: %o', res)
+                      logger.info('Object: %o', object)
 
-                      logger.info("Wallet: %o | Hash: :%o | Sending Data...", user, ipfshash);
+                        // Send notification
+                        const ipfshash = res.ipfshash;
+                        const payloadType = res.payloadType;
+                        
 
-                      const storageType = 1; // IPFS Storage Type
-                      const txConfirmWait = 1; // Wait for 0 tx confirmation
+                        logger.info("Wallet: %o | Hash: :%o | Sending Data...", user, ipfshash);
 
-                      // Send Notification
-                      await epnsNotify.sendNotification(
-                        epns.signingContract,                                           // Contract connected to signing wallet
-                        user,                                           // Recipient to which the payload should be sent
-                        payloadType,                                                    // Notification Type
-                        storageType,                                                    // Notificattion Storage Type
-                        ipfshash,                                                       // Notification Storage Pointer
-                        txConfirmWait,                                                  // Should wait for transaction confirmation
-                        logger,
-                        simulate                                                         // Logger instance (or console.log) to pass
-                      ).then ((tx) => {
-                        logger.info("Transaction successful: %o | Notification Sent", tx.hash);
-                        logger.info("🙌 Wallet Tracker Channel Logic Completed!");
-                        resolve(tx);
-                      })
-                      .catch (err => {
-                        logger.error("🔥Error --> sendNotification(): %o", err);
-                        reject(err);
-                      });
+                        const storageType = 1; // IPFS Storage Type
+                        const txConfirmWait = 1; // Wait for 0 tx confirmation
 
-                      try {
-                        let tx = await epns.signingContract.sendMessage(walletTrackerChannel, payloadType, ipfshash, 1);
-                        logger.info("Transaction sent: %o", tx);
-                      }
-                      catch (err) {
-                        logger.error("Unable to complete transaction, error: %o", err);
-                      }
+                        // Send Notification
+                        await epnsNotify.sendNotification(
+                          epns.signingContract,                                           // Contract connected to signing wallet
+                          user,                                           // Recipient to which the payload should be sent
+                          payloadType,                                                    // Notification Type
+                          storageType,                                                    // Notificattion Storage Type
+                          ipfshash,                                                       // Notification Storage Pointer
+                          txConfirmWait,                                                  // Should wait for transaction confirmation
+                          logger,
+                          simulate                                                         // Logger instance (or console.log) to pass
+                        ).then ((tx) => {
+                          logger.info("Transaction successful: %o | Notification Sent", tx.hash);
+                          logger.info("🙌 Wallet Tracker Channel Logic Completed!");
+                          resolve(tx);
+                        })
+                        .catch (err => {
+                          logger.error("🔥Error --> sendNotification(): %o", err);
+                          reject(err);
+                        });
+
+                        try {
+                          let tx = await epns.signingContract.sendMessage(walletTrackerChannel, payloadType, ipfshash, 1);
+                          logger.info("Transaction sent: %o", tx);
+                        }
+                        catch (err) {
+                          logger.error("Unable to complete transaction, error: %o", err);
+                        }
+                     
                     }
                     else{
                       resolve({
@@ -228,29 +234,34 @@ export default class WalletTrackerChannel {
         changedTokens = results.filter(token => token.resultToken.changed ===true)
         // logger.info('changedTokens: %o', changedTokens)
         if(changedTokens.length>0){
-          this.getWalletTrackerPayload(changedTokens)
-          .then(payload =>{
-            epnsNotify.uploadToIPFS(payload, logger, simulate)
-            .then(async (ipfshash) => {
-              // Sign the transaction and send it to chain
-              // const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
-              logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, user);
-
-              resolve({
-                success: true,
-                user,
-                ipfshash,
-                payloadType: parseInt(payload.data.type)
-              });
-            })
-            .catch (err => {
-              logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", user, err)
-              resolve({
-                success: false,
-                data: "Unable to obtain ipfshash for wallet: " + user + " | error: " + err
-              });
-            });
+          resolve({
+            success: true,
+            user,
+            changedTokens
           })
+          // this.getWalletTrackerPayload(changedTokens)
+          // .then(payload =>{
+          //   epnsNotify.uploadToIPFS(payload, logger, simulate)
+          //   .then(async (ipfshash) => {
+          //     // Sign the transaction and send it to chain
+          //     // const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
+          //     logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, user);
+
+          //     resolve({
+          //       success: true,
+          //       user,
+          //       ipfshash,
+          //       payloadType: parseInt(payload.data.type)
+          //     });
+          //   })
+          //   .catch (err => {
+          //     logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", user, err)
+          //     resolve({
+          //       success: false,
+          //       data: "Unable to obtain ipfshash for wallet: " + user + " | error: " + err
+          //     });
+          //   });
+          // })
         }
         else{
           resolve({
@@ -324,6 +335,36 @@ export default class WalletTrackerChannel {
       })
     })
   })
+  }
+
+  public async getPayloadHash(user, changedTokens, simulate) {
+    const logger = this.logger;
+
+    return new Promise((resolve) => {
+    
+      this.getWalletTrackerPayload(changedTokens)
+      .then(payload =>{
+        epnsNotify.uploadToIPFS(payload, logger, simulate)
+        .then(async (ipfshash) => {
+          // Sign the transaction and send it to chain
+          logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, user);
+
+          resolve({
+            success: true,
+            user,
+            ipfshash,
+            payloadType: parseInt(payload.data.type)
+          });
+        })
+        .catch (err => {
+          logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", user, err)
+          resolve({
+            success: false,
+            data: "Unable to obtain ipfshash for wallet: " + user + " | error: " + err
+          });
+        });
+      })
+    })
   }
 
   public async getTokenBalance(user, networkToMonitor, ticker, tokenContract){
