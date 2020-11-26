@@ -16,6 +16,9 @@ const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
 const epnsNotify = require('../helpers/epnsNotifyHelper');
 
+const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
+const TRIGGER_THRESHOLD_SECS = 60 * 60 * 24 * 7; // 7 Days
+
 @Service()
 export default class EnsExpirationChannel {
   constructor(
@@ -33,29 +36,8 @@ export default class EnsExpirationChannel {
       const ensChannelAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
 
       // Call Helper function to get interactableContracts
-      const epns = epnsNotify.getInteractableContracts(
-        config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
-        {                                                                       // API Keys
-          etherscanAPI: config.etherscanAPI,
-          infuraAPI: config.infuraAPI,
-          alchemyAPI: config.alchemyAPI
-        },
-        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
-        config.deployedContract,                                                // The contract address which is going to be used
-        config.deployedContractABI                                              // The contract abi which is going to be useds
-      );
-
-      const ens = epnsNotify.getInteractableContracts(
-        config.web3MainnetNetwork,                                              // Network for which the interactable contract is req
-        {                                                                       // API Keys
-          etherscanAPI: config.etherscanAPI,
-          infuraAPI: config.infuraAPI,
-          alchemyAPI: config.alchemyAPI
-        },
-        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
-        config.ensDeployedContract,                                             // The contract address which is going to be used
-        config.ensDeployedContractABI                                           // The contract abi which is going to be useds
-      );
+      const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
+      const ens = this.getENSInteractableContract(NETWORK_TO_MONITOR);
 
 
       epns.contract.channels(ensChannelAddress)
@@ -77,7 +59,7 @@ export default class EnsExpirationChannel {
                 // Get user address
                 const userAddress = log.args.user;
                 allTransactions.push(
-                  this.checkENSDomainExpiry(userAddress, ens, simulate)
+                  this.checkENSDomainExpiry(NETWORK_TO_MONITOR, ens, userAddress, TRIGGER_THRESHOLD_SECS, simulate)
                     .then((result) => {
                       return result;
                     })
@@ -153,15 +135,50 @@ export default class EnsExpirationChannel {
     });
   }
 
+  public getENSInteractableContract(web3network) {
+    return epnsNotify.getInteractableContracts(
+        web3network,                                              // Network for which the interactable contract is req
+        {                                                                       // API Keys
+          etherscanAPI: config.etherscanAPI,
+          infuraAPI: config.infuraAPI,
+          alchemyAPI: config.alchemyAPI
+        },
+        null,                                       // Private Key of the Wallet sending Notification
+        config.ensDeployedContract,                                             // The contract address which is going to be used
+        config.ensDeployedContractABI                                           // The contract abi which is going to be useds
+      );
+  }
+
+  public getEPNSInteractableContract(web3network) {
+    // Get Contract
+    return epnsNotify.getInteractableContracts(
+        web3network,                                              // Network for which the interactable contract is req
+        {                                                                       // API Keys
+          etherscanAPI: config.etherscanAPI,
+          infuraAPI: config.infuraAPI,
+          alchemyAPI: config.alchemyAPI
+        },
+        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
+        config.deployedContract,                                                // The contract address which is going to be used
+        config.deployedContractABI                                              // The contract abi which is going to be useds
+      );
+  }
+
   // To Check for domain expiry
-  public async checkENSDomainExpiry(userAddress, ens, simulate) {
+  public async checkENSDomainExpiry(networkToMonitor, ens, userAddress, triggerThresholdInSecs, simulate) {
     const logger = this.logger;
+
+    if(!ens){
+      logger.debug("ENS Interactable Contract not set... mostly coming from routes, setting contract for --> %s", networkToMonitor);
+      ens = this.getENSInteractableContract(networkToMonitor)
+    }
 
     return new Promise((resolve) => {
       // Lookup the address
-
       ens.provider.lookupAddress(userAddress)
         .then(ensAddressName => {
+          logger.debug("Lookup of %s resulted in %s", userAddress, ensAddressName);
+
           let addressName = ensAddressName;
           let removeEth = '';
           if (addressName === null) {
@@ -185,7 +202,6 @@ export default class EnsExpirationChannel {
 
                   // get date difference
                   let dateDiff = expiryDate - currentDate; // some seconds
-                  let checkDateDiff = 60 * 60 * 24 * 7; // if not then it's within 7 days
 
                   // Log it
                   logger.debug(
@@ -193,12 +209,12 @@ export default class EnsExpirationChannel {
                     removeEth,
                     expiryDate,
                     dateDiff,
-                    checkDateDiff,
-                    (dateDiff < checkDateDiff) ? "Near Expiry! Alert User..." : "Long time to expire, don't alert"
+                    triggerThresholdInSecs,
+                    (dateDiff < triggerThresholdInSecs) ? "Near Expiry! Alert User..." : "Long time to expire, don't alert"
                   );
 
                   // if difference exceeds the date, then it's already expired
-                  if (dateDiff > 0 && dateDiff < checkDateDiff) {
+                  if (dateDiff > 0 && dateDiff < triggerThresholdInSecs) {
 
                     // logic loop, it has 7 days or less to expire but not expired
                     this.getENSDomainExpiryPayload(ensAddressName, dateDiff)
@@ -279,7 +295,7 @@ export default class EnsExpirationChannel {
           message,                                                            // Message of Notification
           payloadTitle,                                                       // Internal Title
           payloadMsg,                                                         // Internal Message
-          null,                                                               // Internal Call to Action Link
+          "https://app.ens.domains/name/" + ensAddressName,                                                               // Internal Call to Action Link
           null,                                                               // internal img of youtube link
         );
 
