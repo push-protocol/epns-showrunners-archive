@@ -16,7 +16,7 @@ const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
 const epnsNotify = require('../helpers/epnsNotifyHelper');
 
-const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
+const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
 
 function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -36,7 +36,7 @@ export default class CompoundLiquidationChannel {
     return await new Promise((resolve, reject) => {
       const compoundChannelAddress = ethers.utils.computeAddress(config.compComptrollerPrivateKey);
        // Call Helper function to get interactableContracts
-      const epns = this.getEPNSInteractableContract(NETWORK_TO_MONITOR);
+      const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
       const compound = this.getCompoundInteractableContract(NETWORK_TO_MONITOR);
 
       epns.contract.channels(compoundChannelAddress)

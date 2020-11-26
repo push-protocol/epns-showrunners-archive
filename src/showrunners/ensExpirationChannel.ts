@@ -16,7 +16,7 @@ const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
 const epnsNotify = require('../helpers/epnsNotifyHelper');
 
-const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
+const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
 const TRIGGER_THRESHOLD_SECS = 60 * 60 * 24 * 7; // 7 Days
 
 @Service()
