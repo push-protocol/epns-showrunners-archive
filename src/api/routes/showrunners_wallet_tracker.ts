@@ -162,6 +162,7 @@ export default (app: Router) => {
       body: Joi.object({
         user: Joi.string().required(),
         simulate: Joi.bool(),
+        changedTokens: Joi.array().required(),
       }),
     }),
     middlewares.onlyLocalhost,
@@ -182,6 +183,11 @@ export default (app: Router) => {
 
   route.post(
     '/get_wallet_tracker_payload',
+    celebrate({
+      body: Joi.object({
+        changedTokens: Joi.array().required(),
+      }),
+    }),
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
