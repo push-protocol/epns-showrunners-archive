@@ -1,0 +1,470 @@
+{
+	"info": {
+		"_postman_id": "fb771a6e-0165-4976-b007-468e25823584",
+		"name": "EPNS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Wallet Tracker",
+			"item": [
+				{
+					"name": "/send_message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_tracker/send_message",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_tracker",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/get_supported_erc20s_array",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"provider\": \"ropsten\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_tracker/get_supported_erc20s_array",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_tracker",
+								"get_supported_erc20s_array"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/check_wallet_movement",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"provider\": \"ropsten\",\n    \"simulate\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_tracker/check_wallet_movement",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_tracker",
+								"check_wallet_movement"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/check_token_movement",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": \"0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D\",\n    \"provider\": \"homestead\",\n    \"ticker\": \"UNI\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_tracker/check_token_movement",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_tracker",
+								"check_token_movement"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/get_token_balance",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"provider\": \"ropsten\",\n    \"ticker\": \"ETH\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_tracker/get_token_balance",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_tracker",
+								"get_token_balance"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/compare_token_balance",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"tokenBalance\": 500,\n        \"tokenBalanceFromDB\":500\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_tracker/compare_token_balance",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_tracker",
+								"compare_token_balance"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/get_token_balance_from_db",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"ticker\": \"ETH\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_tracker/get_token_balance_from_db",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_tracker",
+								"get_token_balance_from_db"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/add_user_token_to_db",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"ticker\": \"ETH\",\n    \"balance\": \"0.5\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_tracker/add_user_token_to_db",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_tracker",
+								"add_user_token_to_db"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/update_user_token_balance",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"ticker\": \"ETH\",\n    \"balance\": \"0.9\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_tracker/update_user_token_balance",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_tracker",
+								"update_user_token_balance"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/clear_user_token_db",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_tracker/clear_user_token_db",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_tracker",
+								"clear_user_token_db"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/get_wallet_tracker_payload",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"changedTokens\": [\n            {\n                \"ticker\": \"ETH\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -0.002931772656126874,\n                    \"tokenBalance\": 4.964172359267811\n                }\n            },\n            {\n                \"ticker\": \"DAI\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -100,\n                    \"tokenBalance\": 82403\n                }\n            }\n        ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_tracker/get_wallet_tracker_payload",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_tracker",
+								"get_wallet_tracker_payload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/get_payload_hash",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"simulate\": false,\n    \"changedTokens\": [\n            {\n                \"ticker\": \"ETH\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -0.002931772656126874,\n                    \"tokenBalance\": 4.964172359267811\n                }\n            },\n            {\n                \"ticker\": \"DAI\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -100,\n                    \"tokenBalance\": 82403\n                }\n            }\n        ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_tracker/get_payload_hash",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_tracker",
+								"get_payload_hash"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "ETH Ticker",
+			"item": [
+				{
+					"name": "ethticker/send_message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/ethticker/send_message",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"ethticker",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "34367a26-fbdc-41a0-97fb-00568d02a55b",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "b1c56534-a6ee-4ed2-989b-ba1892744efd",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Compound",
+			"item": [
+				{
+					"name": "compound/send_message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/compound/send_message",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"compound",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Gas Price",
+			"item": [
+				{
+					"name": "gasprice/send_message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/gasprice/send_message",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"gasprice",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
