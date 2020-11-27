@@ -20,6 +20,8 @@ import BtcTickerChannel from '../showrunners/btcTickerChannel';
 import EthTickerChannel from '../showrunners/ethTickerChannel';
 import EnsExpirationChannel from '../showrunners/ensExpirationChannel';
 import EthGasStationChannel from '../showrunners/ethGasChannel';
+import CompoundLiquidationChannel from '../showrunners/compoundLiquidationChannel';
+import Everest from '../showrunners/everestChannel';
 
 
 export default ({ logger }) => {
@@ -110,10 +112,26 @@ export default ({ logger }) => {
   logger.info('-- 🛵 Scheduling Showrunner - Compound Liquidation Channel [on 24 Hours]');
   schedule.scheduleJob('0 0 */24 * * *', async function(){
     const compoundTicker = Container.get(CompoundLiquidationChannel);
-    const taskName = 'Compound Liquidation and sendMessageToContract()';
+    const taskName = 'Compound Liquidation address checks and sendMessageToContract()';
 
     try {
       await compoundTicker.sendMessageToContract();
+      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+    }
+    catch (err) {
+      logger.error(`❌ Cron Task Failed -- ${taskName}`);
+      logger.error(`Error Object: %o`, err);
+    }
+  });
+
+  // 1.6 EVEREST CHANNEL
+  logger.info('-- 🛵 Scheduling Showrunner - Everest Channel [on 24 Hours]');
+  schedule.scheduleJob('0 0 */24 * * *', async function(){
+    const everestTicker = Container.get(Everest);
+    const taskName = 'Everest event checks and sendMessageToContract()';
+
+    try {
+      await everestTicker.sendMessageToContract();
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
