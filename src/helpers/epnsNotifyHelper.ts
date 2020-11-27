@@ -92,12 +92,30 @@ module.exports = {
       }
 
       // Create Transaction
-      const txPromise = signingContract.sendMessage(
-        recipientAddr,
-        notificationType,
-        notificationStoragePointer,
-        1
-      );
+      const identity = notificationType + "+" + notificationStoragePointer;
+      const identityBytes = ethers.utils.toUtf8Bytes(identity);
+
+      // Simulate if simulation flag is on
+      if (simulate) {
+        // Log the notification out
+        const txSimulated = {
+          recipientAddr: recipientAddr,
+          identity: identity,
+          identityBytes: identityBytes,
+          txHash: "SimulatedTransaction!!!"
+        }
+
+        logger.verbose("######## SIMULATED TRANSACTION ########");
+        logger.simulate("\n%o\n", txSimulated);
+        logger.verbose("################################");
+
+        resolve(txSimulated);
+
+        // nothing to do in simulation
+        return;
+      }
+
+      const txPromise = signingContract.sendNotification(recipientAddr, identityBytes);
 
       txPromise
         .then(async function(tx) {
