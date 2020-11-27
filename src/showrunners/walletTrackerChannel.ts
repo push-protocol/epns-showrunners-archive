@@ -239,29 +239,6 @@ export default class WalletTrackerChannel {
             user,
             changedTokens
           })
-          // this.getWalletTrackerPayload(changedTokens)
-          // .then(payload =>{
-          //   epnsNotify.uploadToIPFS(payload, logger, simulate)
-          //   .then(async (ipfshash) => {
-          //     // Sign the transaction and send it to chain
-          //     // const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
-          //     logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, user);
-
-          //     resolve({
-          //       success: true,
-          //       user,
-          //       ipfshash,
-          //       payloadType: parseInt(payload.data.type)
-          //     });
-          //   })
-          //   .catch (err => {
-          //     logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", user, err)
-          //     resolve({
-          //       success: false,
-          //       data: "Unable to obtain ipfshash for wallet: " + user + " | error: " + err
-          //     });
-          //   });
-          // })
         }
         else{
           resolve({
