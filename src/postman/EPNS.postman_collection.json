@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "fb771a6e-0165-4976-b007-468e25823584",
+		"_postman_id": "f2cd9a99-685e-482b-9d60-222ad2da9731",
 		"name": "EPNS",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -75,7 +75,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"provider\": \"ropsten\",\n    \"simulate\": false\n}",
+							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"provider\": \"ropsten\",\n    \"simulate\": true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -385,13 +385,43 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "ethticker/get_new_price",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/ethticker/get_new_price",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"ethticker",
+								"get_new_price"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"event": [
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "34367a26-fbdc-41a0-97fb-00568d02a55b",
+						"id": "13b90add-21b5-4578-b58a-eae4f0f96c35",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -401,7 +431,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "b1c56534-a6ee-4ed2-989b-ba1892744efd",
+						"id": "c33bff77-d378-402d-8e9a-e264db9a5331",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -434,6 +464,96 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "compound/check_liquidity",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/compound/check_liquidity",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"compound",
+								"check_liquidity"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "compound/check_assets",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/compound/check_liquidity",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"compound",
+								"check_liquidity"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "compound/total_users",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/compound/check_assets",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"compound",
+								"check_assets"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"protocolProfileBehavior": {}
@@ -446,6 +566,15 @@
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/gasprice/send_message",
 							"host": [
@@ -457,6 +586,255 @@
 								"showrunners",
 								"gasprice",
 								"send_message"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "ENS Domain",
+			"item": [
+				{
+					"name": "ensdomain/send_message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/gasprice/send_message",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"gasprice",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ensdomain/check_expiry",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\",\n    \"triggerThresholdInSecs\": 3,\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/ensdomain/check_expiry",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"ensdomain",
+								"check_expiry"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "BTC Ticker",
+			"item": [
+				{
+					"name": "ethticker/send_message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/ethticker/send_message",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"ethticker",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "btcticker/get_new_price",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/ethticker/get_new_price",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"ethticker",
+								"get_new_price"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Everest",
+			"item": [
+				{
+					"name": "everest/send_message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/everest/send_message",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"everest",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "everest/check_member_challenged_event",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/everest/send_message",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"everest",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "everest/get_transaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true,\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/everest/get_transaction",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"everest",
+								"get_transaction"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "everest/get_everest_challenge_message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/everest/get_transaction",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"everest",
+								"get_transaction"
 							]
 						}
 					},
