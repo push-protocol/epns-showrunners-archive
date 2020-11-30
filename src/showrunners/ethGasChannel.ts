@@ -12,7 +12,8 @@ import { truncateSync } from 'fs';
 
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
-const epnsNotify = require('../helpers/epnsNotifyHelper');
+// const epnsNotify = require('../helpers/epnsNotifyHelper');
+import epnsNotify from '../helpers/epnsNotifyHelper';
 
 // variables for mongoDb and redis
 const GAS_PRICE_FOR_THE_DAY = 'gas_price_for_the_day';

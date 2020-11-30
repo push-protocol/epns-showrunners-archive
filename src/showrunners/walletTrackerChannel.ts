@@ -13,7 +13,7 @@ const moment = require('moment'); // time library
 
 const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
-const epnsNotify = require('../helpers/epnsNotifyHelper');
+import epnsNotify from '../helpers/epnsNotifyHelper';
 
 const SUPPORTED_TOKENS = {
   'ETH':{

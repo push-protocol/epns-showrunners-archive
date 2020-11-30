@@ -8,7 +8,7 @@ import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDi
 import { ethers } from 'ethers';
 
 const bent = require('bent'); // Download library
-const epnsNotify = require('../helpers/epnsNotifyHelper');
+import epnsNotify from '../helpers/epnsNotifyHelper';
 
 @Service()
 export default class EthTickerChannel {

@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-module.exports = {
+export default {
   // Upload to IPFS
   uploadToIPFS: async (payload, logger, simulate) => {
     const enableLogs = 0;
