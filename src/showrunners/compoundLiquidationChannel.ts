@@ -16,7 +16,7 @@ const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
 const epnsNotify = require('../helpers/epnsNotifyHelper');
 
-const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
+const NETWORK_TO_MONITOR = config.web3KovanProvider;
 
 function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -37,7 +37,7 @@ export default class CompoundLiquidationChannel {
       const compoundChannelAddress = ethers.utils.computeAddress(config.compComptrollerPrivateKey);
        // Call Helper function to get interactableContracts
       const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
-      const compound = this.getCompoundInteractableContract(config.web3KovanProvider);
+      const compound = this.getCompoundInteractableContract(NETWORK_TO_MONITOR);
 
       epns.contract.channels(compoundChannelAddress)
       .then(async (channelInfo) => {
@@ -59,7 +59,7 @@ export default class CompoundLiquidationChannel {
           // Get user address
           const userAddress = log.args.user;
           allTransactions.push(
-            this.getUsersTotal(compound, NETWORK_TO_MONITOR, userAddress, simulate)
+            this.getUsersTotal(compound, userAddress, simulate)
               .then( (results) => {
                 return results;
               })
@@ -179,9 +179,9 @@ export default class CompoundLiquidationChannel {
     })
   }
 
-  public async checkLiquidity(compound, networkToMonitor, userAddress) {
+  public async checkLiquidity(compound, userAddress) {
     if(!compound){
-      compound = this.getCompoundInteractableContract(networkToMonitor)
+      compound = this.getCompoundInteractableContract(NETWORK_TO_MONITOR)
     }
     const logger = this.logger;
     return new Promise((resolve, reject) => {
@@ -208,9 +208,9 @@ export default class CompoundLiquidationChannel {
   }
 
   // To Check Account for Amount Left to Liquidation
-  public async checkAssets(compound, networkToMonitor, userAddress) {
+  public async checkAssets(compound, userAddress) {
     if(!compound){
-      compound = this.getCompoundInteractableContract(networkToMonitor)
+      compound = this.getCompoundInteractableContract(NETWORK_TO_MONITOR)
     }
     const logger = this.logger;
     return new Promise((resolve, reject) => {
@@ -232,7 +232,7 @@ export default class CompoundLiquidationChannel {
         let cZrx = await this.getContracts(config.cZrxDeployedContract,config.cZrxDeployedContractABI);
         let price = await this.getContracts(config.priceOracleDeployedContract,config.priceOracleDeployedContractABI);
 
-        this.checkLiquidity(compound, networkToMonitor, userAddress)
+        this.checkLiquidity(compound, userAddress)
         .then(results =>{
           logger.info("Market Address is in: %o | Address: :%o ", marketAddress, results.name);
           for (let i = 0; i < marketAddress.length; i++) {
@@ -282,14 +282,14 @@ export default class CompoundLiquidationChannel {
     });
   }
 
-  public async getUsersTotal(compound, networkToMonitor, userAddress, simulate) {
+  public async getUsersTotal(compound, userAddress, simulate) {
     if(!compound){
-      compound = this.getCompoundInteractableContract(networkToMonitor)
+      compound = this.getCompoundInteractableContract(NETWORK_TO_MONITOR)
     }
     const logger = this.logger;
     return new Promise((resolve, reject) => {
 
-      this.checkAssets(compound, networkToMonitor, userAddress)
+      this.checkAssets(compound, userAddress)
       .then(async  (results) => {
         Promise.all(results.allLiquidity)
         .then(result => {
