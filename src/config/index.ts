@@ -81,6 +81,10 @@ export default {
   web3RopstenNetwork: process.env.ROPSTEN_WEB3_NETWORK,
   web3RopstenSocket: process.env.ROPSTEN_WEB3_SOCKET,
 
+  web3KovanProvider: process.env.KOVAN_WEB3_PROVIDER,
+  web3KovanNetwork: process.env.KOVAN_WEB3_NETWORK,
+  web3KovanSocket: process.env.KOVAN_WEB3_SOCKET,
+
   /**
    * EPNS Related
    */

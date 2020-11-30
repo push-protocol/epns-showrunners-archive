@@ -37,7 +37,7 @@ export default class CompoundLiquidationChannel {
       const compoundChannelAddress = ethers.utils.computeAddress(config.compComptrollerPrivateKey);
        // Call Helper function to get interactableContracts
       const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
-      const compound = this.getCompoundInteractableContract(NETWORK_TO_MONITOR);
+      const compound = this.getCompoundInteractableContract(config.web3KovanProvider);
 
       epns.contract.channels(compoundChannelAddress)
       .then(async (channelInfo) => {
@@ -165,7 +165,7 @@ export default class CompoundLiquidationChannel {
   public async getContracts(address, abi){
     return new Promise((resolve, reject) => {
     const setUp = epnsNotify.getInteractableContracts(
-      config.web3RopstenProvider,                                              // Network for which the interactable contract is req
+      config.web3KovanProvider,                                              // Network for which the interactable contract is req
       {                                                                        // API Keys
         etherscanAPI: config.etherscanAPI,
         infuraAPI: config.infuraAPI,
@@ -189,23 +189,13 @@ export default class CompoundLiquidationChannel {
       .then(result => {
         let {1:liq} = result;
         liq = ethers.utils.formatEther(liq).toString();
-        compound.provider.lookupAddress(userAddress)
-        .then(async (ensAddressName) => {
-          let addressName = ensAddressName;
 
           resolve({
             liquidity: liq,
-            name: addressName
+            name: userAddress
           })
 
-        })
-        .catch(err => {
-            logger.error("Error occurred in lookup of address[%s]: %o", userAddress, err);
-            resolve({
-              success: false,
-              err: err
-            });
-        });
+        
       })
       .catch(err => {
         logger.error("Error occurred on Compound Liquidation for Address Liquidation amount: %s: %o", userAddress, err);
@@ -246,9 +236,9 @@ export default class CompoundLiquidationChannel {
         .then(results =>{
           logger.info("Market Address is in: %o | Address: :%o ", marketAddress, results.name);
           for (let i = 0; i < marketAddress.length; i++) {
-            let cAddresses = [0xdb5ed4605c11822811a39f94314fdb8f0fb59a2c, 0x9e95c0b2412ce50c37a121622308e7a6177f819d, 0xbe839b6d93e3ea47effcca1f27841c917a8794f3,
-              0x158079ee67fce2f58472a96584a73c7ab9ac95c1,0xf5dce57282a584d2746faf1593d3121fcac444dc,0x35a18000230da775cac24873d00ff85bccded550,
-              0x39aa39c021dfbae8fac545936693ac917d5e7563,0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9,0xc11b1268c1a384e55c48c2391d8d480264a3a7f4,0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407]
+            let cAddresses = [0xf0d0eb522cfa50b716b3b1604c4f0fa6f04376ad, 0x4a77fAeE9650b09849Ff459eA1476eaB01606C7a,0x41b5844f4680a8c38fbb695b7f9cfd1f64474a72,
+              0xa4ec170599a1cf87240a35b9b1b8ff823f448b57,0xb3f7fb482492f4220833de6d6bfcc81157214bec,0x35a18000230da775cac24873d00ff85bccded550,
+              0x4a92e71227d294f041bd82dd8f78591b75140d63,0x3f0a0ea2f86bae6362cf9799b523ba06647da018,0xa1faa15655b0e7b6b6470ed3d096390e6ad93abb,0xaf45ae737514c8427d373d50cd979a242ec59e5a]
             let contracts = [cDai,cBat,cEth,cRep,cSai,cUni,cUsdc,cUsdt,cWbtc,cZrx]
 
             if(marketAddress[i] == marketAddress[i])  {
