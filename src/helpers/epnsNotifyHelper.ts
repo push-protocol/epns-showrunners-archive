@@ -6,7 +6,13 @@ module.exports = {
     const enableLogs = 0;
 
     return new Promise(async (resolve, reject) => {
-      if (simulate) {
+      if (simulate &&
+        (typeof simulate === 'boolean' ||
+          (simulate && typeof simulate === 'object' && simulate.hasOwnProperty("payloadMode") &&
+            (simulate.payloadMode == "Simulated")
+          )
+        )
+      ) {
         logger.verbose("######## SIMULATED IPFS PAYLOAD ########");
         logger.simulate("\n%o\n", payload);
         logger.verbose("################################");
@@ -70,8 +76,22 @@ module.exports = {
   ) => {
     const enableLogs = 0;
 
+    // SIMULATE OBJECT CHECK
+    if (simulate.hasOwnProperty("txOverride")) {
+      if (simulate.txOverride.hasOwnProperty("recipientAdd")) recipientAddr = simulate.txOverride.recipientAdd;
+      if (simulate.txOverride.hasOwnProperty("notificationType")) notificationType = simulate.txOverride.notificationType;
+      if (simulate.txOverride.hasOwnProperty("notificationStorageType")) notificationStorageType = simulate.txOverride.notificationStorageType;
+    }
+
     return new Promise((resolve, reject) => {
-      if (simulate) {
+      // Ensure Backward Compatibility
+      if (simulate &&
+          (typeof simulate === 'boolean' ||
+            (simulate && typeof simulate === 'object' && simulate.hasOwnProperty("txMode") &&
+              (simulate.mode == "Simulated")
+            )
+          )
+        ) {
         // Log the notification out
         const txSimulated = {
           recipientAddr: recipientAddr,

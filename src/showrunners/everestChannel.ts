@@ -19,7 +19,6 @@ const utils = require('../helpers/utilsHelper');
 const epnsNotify = require('../helpers/epnsNotifyHelper');
 
 // SET CONSTANTS
-const THRESHOLD_FLAG = 'threshold_flag';
 const BLOCK_NUMBER = 'block_number';
 
 @Service()
@@ -30,7 +29,6 @@ export default class EverestChannel {
       @EventDispatcher() private eventDispatcher: EventDispatcherInterface,
   ) {
       //initializing cache
-      this.cached.setCache(THRESHOLD_FLAG, false);
       this.cached.setCache(BLOCK_NUMBER, 0);
   }
 
@@ -43,7 +41,7 @@ export default class EverestChannel {
         infuraAPI: config.infuraAPI,
         alchemyAPI: config.alchemyAPI
       },
-      config.walletTrackerPrivateKey,                                       // Private Key of the Wallet sending Notification
+      config.everestPrivateKey,                                               // Private Key of the Wallet sending Notification
       config.deployedContract,                                                // The contract address which is going to be used
       config.deployedContractABI                                              // The contract abi which is going to be useds
     );
@@ -58,7 +56,7 @@ export default class EverestChannel {
         infuraAPI: config.infuraAPI,
         alchemyAPI: config.alchemyAPI
       },
-      config.everestPrivateKey,                                                // Private Key of the Wallet sending Notification
+      null,                                                                     // Private Key of the Wallet sending Notification
       config.everestDeployedContract,                                          // The contract address which is going to be used
       config.everestDeployedContractABI                                        // The contract abi which is going to be useds
     );
@@ -68,103 +66,108 @@ export default class EverestChannel {
   public async sendMessageToContract(simulate) {
     const logger = this.logger;
     const cache = this.cached;
-    logger.debug('Checking for challenged projects addresses... ');
+
+    logger.debug('Checking for challenged projects addresses...');
 
     return await new Promise(async (resolve, reject) => {
-
-      // Call Helper function to get interactableContracts
-      const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
-      const everest = this.getEverestInteractableContract(config.web3MainnetNetwork);
-
       let allTransactions = [];
 
-      // Initialize block as well
-      const cachedBlock = await cache.getCache(BLOCK_NUMBER);
-      const fromBlock = Number(cachedBlock);
-      const toBlock = "latest";
+      // Overide logic if need be
+      const logicOverride = simulate.hasOwnProperty("logicOverride");
 
-      this.checkMemberChallengedEvent(config.web3MainnetNetwork, everest, fromBlock, toBlock, simulate).then((info) => {
-        if(!info.change) {
-          const message = 'Threshold initailized'
+      const epnsNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("epnsNetwork") ? simulate.logicOverride.epnsNetwork : config.web3RopstenNetwork;
+      const everestNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("everestNetwork") ? simulate.logicOverride.everestNetwork : config.web3MainnetNetwork;
+      // -- End Override logic
 
-          resolve({
-            success: message
-          });
+      // Call Helper function to get interactableContracts
+      const epns = this.getEPNSInteractableContract(epnsNetwork);
+      const everest = this.getEverestInteractableContract(everestNetwork);
 
-          logger.info(message)
+      // Initialize block if that is missing
+      let cachedBlock = await cache.getCache(BLOCK_NUMBER);
+      if (!cachedBlock) {
+        cachedBlock = 0;
+
+        logger.debug("Initialized flag was not set, first time initalzing, saving latest block of blockchain where everest contract is...");
+
+        everest.provider().getBlockNumber().then((blockNumber) => {
+          logger.debug("Current block number is... %s", blockNumber);
+          cache.setCache(BLOCK_NUMBER, blockNumber);
+
+          resolve("Initialized Block Number: %s", blockNumber);
+        })
+        .catch(err => {
+          logger.error("Error occurred while getting Block Number: %o", err);
+          reject(err);
+        })
+
+        return;
+      }
+
+      // Overide logic if need be
+      const fromBlock = logicOverride && simulate.logicOverride.hasOwnProperty("fromBlock") ? Number(simulate.logicOverride.fromBlock) : Number(cachedBlock);
+      const toBlock = logicOverride && simulate.logicOverride.hasOwnProperty("toBlock") ? Number(simulate.logicOverride.toBlock) : "latest";
+      // -- End Override logic
+
+      // Check Member Challenge Event
+      this.checkMemberChallengedEvent(everestNetwork, everest, fromBlock, toBlock, simulate).then((info) => {
+        // First save the block number
+        cache.setCache(BLOCK_NUMBER, info.lastBlock);
+
+        // Check if there are events else return
+        if (info.eventCount == 0) {
+          resolve("No New Challenges Made...");
+          return;
         }
-        else {
-          if (info.lastBlock > info.blockChecker) {
 
-            cache.setCache(BLOCK_NUMBER, info.lastBlock);
+        // Otherwise process those challenges
+        for(let i = 1; i < info.eventCount; i++) {
+          let userAddress = info.log[i].args.member
 
-            for(let i = 1; i < info.eventCount; i++) {
-              let userAddress = info.log[i].args.member
-
-              allTransactions.push(
-                this.getTransaction(userAddress).then(results => {
-                  return results;
-                })
-              );
-            }
-
-            Promise.all(allTransactions)
-            .then(async (results) => {
-              logger.debug("All Transactions Loaded: %o", results);
-
-              for (const object of results) {
-                if (object.success) {
-                  // Send notification
-                  const wallet = object.wallet;
-                  const ipfshash = object.ipfshash;
-                  const payloadType = object.payloadType;
-
-                  logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
-                  const storageType = 1; // IPFS Storage Type
-                  const txConfirmWait = 1; // Wait for 0 tx confirmation
-
-                  // Send Notification
-                  await epnsNotify.sendNotification(
-                    epns.signingContract,                                           // Contract connected to signing wallet
-                    wallet,                                                         // Recipient to which the payload should be sent
-                    payloadType,                                                    // Notification Type
-                    storageType,                                                    // Notificattion Storage Type
-                    ipfshash,                                                       // Notification Storage Pointer
-                    txConfirmWait,                                                  // Should wait for transaction confirmation
-                    logger,                                                         // Logger instance (or console.log) to pass
-                    simulate                                                        // Passing true will not allow sending actual notification
-                  ).then ((tx) => {
-                    logger.info("Transaction mined: %o | Notification Sent", tx.hash);
-                    logger.info("🙌 Everest Ticker Channel Logic Completed!");
-                    resolve(tx);
-                  })
-                  .catch (err => {
-                    logger.error("🔥Error --> sendNotification(): %o", err);
-                    reject(err);
-                  });
-
-                  try {
-                    let tx = await epns.signingContract.sendMessage(wallet, payloadType, ipfshash, 1);
-                    logger.info("Transaction sent: %o", tx);
-                  }
-                  catch (err) {
-                    logger.error("Unable to complete transaction, error: %o", err);
-                  }
-
-                }
-              }
+          allTransactions.push(
+            this.getTransaction(userAddress, simulate).then(results => {
+              return results;
             })
-          }
-          else {
-            const message = "No new challenge has been made"
-
-            resolve({
-              success: message
-            });
-
-            logger.info(message)
-          }
+          );
         }
+
+        Promise.all(allTransactions)
+        .then(async (results) => {
+          logger.debug("All Transactions Loaded: %o", results);
+
+          for (const object of results) {
+            if (object.success) {
+              // Send notification
+              const wallet = object.wallet;
+              const ipfshash = object.ipfshash;
+              const payloadType = object.payloadType;
+
+              logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
+              const storageType = 1; // IPFS Storage Type
+              const txConfirmWait = 1; // Wait for 0 tx confirmation
+
+              // Send Notification
+              await epnsNotify.sendNotification(
+                epns.signingContract,                                           // Contract connected to signing wallet
+                wallet,                                                         // Recipient to which the payload should be sent
+                payloadType,                                                    // Notification Type
+                storageType,                                                    // Notificattion Storage Type
+                ipfshash,                                                       // Notification Storage Pointer
+                txConfirmWait,                                                  // Should wait for transaction confirmation
+                logger,                                                         // Logger instance (or console.log) to pass
+                simulate                                                        // Passing true will not allow sending actual notification
+              ).then ((tx) => {
+                logger.info("Transaction mined: %o | Notification Sent", tx.hash);
+              })
+              .catch (err => {
+                logger.error("🔥Error on wallet: %s [SKIPPING] --> sendNotification(): %o", wallet, err);
+              });
+            }
+          }
+
+          logger.info("🙌 Everest Ticker Channel Logic Completed!");
+          resolve("🙌 Everest Ticker Channel Logic Completed!");
+        })
       })
       .catch(err => {
         logger.error(err);
@@ -199,34 +202,26 @@ export default class EverestChannel {
       everest.contract.queryFilter(filter, fromBlock, toBlock)
         .then(async (eventLog) => {
           logger.debug("MemberChallenged() --> %o", eventLog);
-          let flag = await cache.getCache(THRESHOLD_FLAG);
 
-          if(flag == 'false') {
-            cache.setCache(THRESHOLD_FLAG, true);
-            const lastLogCount = eventLog.length - 1;
-            const lastBlockNumber = eventLog[lastLogCount].blockNumber;
-            cache.setCache(BLOCK_NUMBER, lastBlockNumber);
-
-            const info = {
-              change:false
-            }
-
-            resolve(info);
+          // Need to fetch latest block
+          try {
+            toBlock = await everest.provider.getBlockNumber();
+            logger.debug("Latest block updated to --> %s", toBlock);
           }
-          else {
-            const newEventsCount = eventLog.length - 1;
-            const lastBlockNumber = eventLog[newEventsCount].blockNumber;
-            const info = {
-              change:true,
-              log: eventLog,
-              blockChecker: fromBlock,
-              lastBlock: lastBlockNumber,
-              eventCount: newEventsCount
-            }
-            resolve(info);
-
-            logger.info('EventLog, eventCount, and blocks sent')
+          catch (err) {
+            logger.error("!Errored out while fetching Block Number --> %o", err);
           }
+
+          const info = {
+            change: true,
+            log: eventLog,
+            blockChecker: fromBlock,
+            lastBlock: toBlock,
+            eventCount: eventLog.length
+          }
+          resolve(info);
+
+          logger.debug('Events retreived for MemberChallenged() call of Everest Contract --> %d Events', eventLog.length);
         })
         .catch (err => {
           logger.error("Unable to obtain query filter, error: %o", err)
@@ -238,15 +233,15 @@ export default class EverestChannel {
     })
   }
 
-  public async getTransaction(userAddress) {
+  public async getTransaction(userAddress, simulate) {
     const logger = this.logger;
     logger.debug('Getting all transactions...');
 
     return await new Promise((resolve, reject) => {
-      this.getEverestChallengeMessage(userAddress)
-        .then(payload => {
+      this.prepareEverestChallengePayload(userAddress, simulate)
+        .then(async payload => {
 
-          epnsNotify.uploadToIPFS(payload, logger).then(async (ipfshash) => {
+          epnsNotify.uploadToIPFS(payload, logger, simulate).then(async (ipfshash) => {
             resolve({
               success: true,
               wallet: userAddress,
@@ -275,7 +270,7 @@ export default class EverestChannel {
     })
   }
 
-  public async getEverestChallengeMessage(userAddress) {
+  public async prepareEverestChallengePayload(userAddress, simulate) {
     const logger = this.logger;
     logger.debug('Getting payload message... ');
 
