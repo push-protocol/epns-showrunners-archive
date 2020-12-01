@@ -7,8 +7,8 @@ export default {
 
     return new Promise(async (resolve, reject) => {
       if (simulate &&
-        (typeof simulate === 'boolean' ||
-          (simulate && typeof simulate === 'object' && simulate.hasOwnProperty("payloadMode") &&
+        (typeof simulate == 'boolean' ||
+          (simulate && typeof simulate == 'object' && simulate.hasOwnProperty("payloadMode") &&
             (simulate.payloadMode == "Simulated")
           )
         )
@@ -77,17 +77,22 @@ export default {
     const enableLogs = 0;
 
     // SIMULATE OBJECT CHECK
-    if (simulate && typeof simulate === 'object' && simulate.hasOwnProperty("txOverride")) {
+    if (simulate && typeof simulate == 'object' && simulate.hasOwnProperty("txOverride")) {
       if (simulate.txOverride.hasOwnProperty("recipientAddr")) recipientAddr = simulate.txOverride.recipientAddr;
       if (simulate.txOverride.hasOwnProperty("notificationType")) notificationType = simulate.txOverride.notificationType;
       if (simulate.txOverride.hasOwnProperty("notificationStorageType")) notificationStorageType = simulate.txOverride.notificationStorageType;
     }
 
     return new Promise((resolve, reject) => {
+      // Create Transaction
+      const identity = notificationType + "+" + notificationStoragePointer;
+      const identityBytes = ethers.utils.toUtf8Bytes(identity);
+
       // Ensure Backward Compatibility
       if (simulate &&
-          (typeof simulate === 'boolean' ||
-            (simulate && typeof simulate === 'object' && simulate.hasOwnProperty("txMode") &&
+          (
+            typeof simulate == 'boolean' ||
+            (typeof simulate == 'object' && simulate.hasOwnProperty("txMode") &&
               (simulate.txMode == "Simulated")
             )
           )
@@ -99,30 +104,6 @@ export default {
           notificationStoragePointer: notificationStoragePointer,
           pushType: 1,
           hash: "SimulatedTransaction!!!"
-        }
-
-        logger.verbose("######## SIMULATED TRANSACTION ########");
-        logger.simulate("\n%o\n", txSimulated);
-        logger.verbose("################################");
-
-        resolve(txSimulated);
-
-        // nothing to do in simulation
-        return;
-      }
-
-      // Create Transaction
-      const identity = notificationType + "+" + notificationStoragePointer;
-      const identityBytes = ethers.utils.toUtf8Bytes(identity);
-
-      // Simulate if simulation flag is on
-      if (simulate) {
-        // Log the notification out
-        const txSimulated = {
-          recipientAddr: recipientAddr,
-          identity: identity,
-          identityBytes: identityBytes,
-          txHash: "SimulatedTransaction!!!"
         }
 
         logger.verbose("######## SIMULATED TRANSACTION ########");
