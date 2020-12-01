@@ -14,7 +14,7 @@ export default (app: Router) => {
     '/send_message',
     celebrate({
       body: Joi.object({
-        simulate: Joi.bool(),
+        simulate: [Joi.bool(), Joi.object()],
       }),
     }),
     middlewares.onlyLocalhost,
@@ -50,7 +50,7 @@ export default (app: Router) => {
       try {
         const everest = Container.get(Everest);
         const response = await everest.checkMemberChallengedEvent(req.body.web3network, null, req.body.fromBlock, req.body.toBlock, req.body.simulate);
-        
+
         return res.status(201).json(response);
       } catch (e) {
         Logger.error('🔥 error: %o', e);
@@ -96,7 +96,7 @@ export default (app: Router) => {
       Logger.debug('Calling /showrunners/everest ticker endpoint with body: %o', req.body )
       try {
         const everest = Container.get(Everest);
-        const { success,  data } = await everest.getEverestChallengeMessage(req.body.address);
+        const { success,  data } = await everest.prepareEverestChallengePayload(req.body.address);
 
         return res.status(201).json({ success,  data });
       } catch (e) {
