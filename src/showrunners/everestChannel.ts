@@ -73,7 +73,7 @@ export default class EverestChannel {
       let allTransactions = [];
 
       // Overide logic if need be
-      const logicOverride = simulate.hasOwnProperty("logicOverride");
+      const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
 
       const epnsNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("epnsNetwork") ? simulate.logicOverride.epnsNetwork : config.web3RopstenNetwork;
       const everestNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("everestNetwork") ? simulate.logicOverride.everestNetwork : config.web3MainnetNetwork;
@@ -134,7 +134,7 @@ export default class EverestChannel {
         Promise.all(allTransactions)
         .then(async (results) => {
           logger.debug("All Transactions Loaded: %o", results);
-          
+
           for (const object of results) {
             if (object.success) {
               // Send notification
