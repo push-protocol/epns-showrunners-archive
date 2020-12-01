@@ -134,7 +134,7 @@ export default class EverestChannel {
         Promise.all(allTransactions)
         .then(async (results) => {
           logger.debug("All Transactions Loaded: %o", results);
-
+          
           for (const object of results) {
             if (object.success) {
               // Send notification
