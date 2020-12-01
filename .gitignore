@@ -137,3 +137,4 @@ logs/*
 .env
 epns-firebase-adminsdk.json
 external
+dump.rdb*

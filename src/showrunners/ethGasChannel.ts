@@ -1,6 +1,6 @@
 // @name: ETH GAS Cnannel
-// @version: 1.1.2
-// @recent_changes: Changed Price Threshold logic low price
+// @version: 1.1.1
+// @recent_changes: Changed Price Threshold logic
 
 import { Service, Inject, Container } from 'typedi';
 import config from '../config';
@@ -12,13 +12,13 @@ import { truncateSync } from 'fs';
 
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
-const epnsNotify = require('../helpers/epnsNotifyHelper');
+// const epnsNotify = require('../helpers/epnsNotifyHelper');
+import epnsNotify from '../helpers/epnsNotifyHelper';
 
 // variables for mongoDb and redis
 const GAS_PRICE_FOR_THE_DAY = 'gas_price_for_the_day';
 const HIGH_PRICE_FLAG = 'ethgas_high_price';
-const PRICE_THRESHOLD_HIGH_MULTIPLIER = 1.3; // multiply by 1.3x for checking high price
-const PRICE_THRESHOLD_LOW_MULTIPLIER = 1.1; // multiply by 1.3x for checking low price
+const PRICE_THRESHOLD_MULTIPLIER = 1.3; // multiply by 1.3x for checking high price
 
 @Service()
 export default class GasStationChannel {
@@ -142,7 +142,7 @@ export default class GasStationChannel {
         let highPriceFlag = await cache.getCache(HIGH_PRICE_FLAG);
 
         // checks if the result gotten every 10 minutes is higher than the movingAverageGasForTheLast90DaysFromMongoDB
-        if ((movingAverageGasForTheLast90DaysFromMongoDB.average * PRICE_THRESHOLD_HIGH_MULTIPLIER) < averageGas10Mins && highPriceFlag == "false") {
+        if ((movingAverageGasForTheLast90DaysFromMongoDB.average * PRICE_THRESHOLD_MULTIPLIER) < averageGas10Mins && highPriceFlag == "false") {
           const info = {
             changed: true,
             gasHigh: true,
@@ -157,7 +157,7 @@ export default class GasStationChannel {
         }
 
         // checks if the result gotten every 10 minutes is less than the movingAverageGasForTheLast90DaysFromMongoDB
-        else if (movingAverageGasForTheLast90DaysFromMongoDB.average * PRICE_THRESHOLD_LOW_MULTIPLIER > averageGas10Mins && highPriceFlag == "true") {
+        else if (movingAverageGasForTheLast90DaysFromMongoDB.average > averageGas10Mins && highPriceFlag == "true") {
           const info = {
             changed: true,
             gasHigh: false,
