@@ -8,8 +8,13 @@ module.exports = {
     return new Promise(async (resolve, reject) => {
       if (simulate &&
         (typeof simulate === 'boolean' ||
+<<<<<<< HEAD
           (simulate && typeof simulate === 'object' && simulate.hasOwnProperty("payloadMode") &&
             (simulate.payloadMode == "Simulated")
+=======
+          (simulate && typeof simulate === 'object' && simulate.hasOwnProperty("mode") &&
+            (simulate.mode == "SimulatedTx")
+>>>>>>> 36df85c8681600694e50484eb72da21475e8248c
           )
         )
       ) {
@@ -87,8 +92,13 @@ module.exports = {
       // Ensure Backward Compatibility
       if (simulate &&
           (typeof simulate === 'boolean' ||
+<<<<<<< HEAD
             (simulate && typeof simulate === 'object' && simulate.hasOwnProperty("txMode") &&
               (simulate.mode == "Simulated")
+=======
+            (simulate && typeof simulate === 'object' && simulate.hasOwnProperty("mode") &&
+              (simulate.mode == "SimulatedTx")
+>>>>>>> 36df85c8681600694e50484eb72da21475e8248c
             )
           )
         ) {
