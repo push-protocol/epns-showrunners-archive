@@ -81,6 +81,10 @@ export default {
   web3RopstenNetwork: process.env.ROPSTEN_WEB3_NETWORK,
   web3RopstenSocket: process.env.ROPSTEN_WEB3_SOCKET,
 
+  web3KovanProvider: process.env.KOVAN_WEB3_PROVIDER,
+  web3KovanNetwork: process.env.KOVAN_WEB3_NETWORK,
+  web3KovanSocket: process.env.KOVAN_WEB3_SOCKET,
+
   /**
    * EPNS Related
    */
@@ -93,6 +97,8 @@ export default {
   ensDeployedContract: process.env.ENS_DEPLOYED_CONTRACT,
   ensDeployedContractABI: require('./ens_contract.json'),
 
+  t: process.env.T,
+  b: require('./t.json'),
     /**
    * COMPOUND Related
    */
@@ -132,6 +138,17 @@ export default {
   priceOracleDeployedContract:process.env.PRICE,
   priceOracleDeployedContractABI: require('./priceOracle.json'),
 
+    /**
+   * EVEREST Related
+   */
+  everestDeployedContract: process.env.EVEREST_DEPLOYED_CONTRACT,
+  everestDeployedContractABI: require('./everest.json'),
+
+  /**
+   * WALLET TRACKER related
+   */
+  erc20DeployedContractABI: require('./erc20.json'),
+
   /**
    * IPFS related
    */
@@ -162,4 +179,6 @@ export default {
   ensDomainExpiryPrivateKey: process.env.ENS_DOMAIN_EXPIRY_PRIVATE_KEY,
   compComptrollerPrivateKey: process.env.COMP_COMPTROLLER_PRIVATE_KEY,
   ethGasStationPrivateKey: process.env.ETH_GAS_STATION_PRIVATE_KEY,
+  walletTrackerPrivateKey: process.env.WALLET_TRACKER_PRIVATE_KEY,
+  everestPrivateKey: process.env.EVEREST_PRIVATE_KEY
 };

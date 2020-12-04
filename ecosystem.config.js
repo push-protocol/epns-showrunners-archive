@@ -1,6 +1,6 @@
 module.exports = {
   apps : [{
-    name: "EPNS Staging Showrunners",
+    name: "EPNS Showrunners",
     script: "build/app.js",
     instances: "max",
     max_memory_restart: "256M",

@@ -14,7 +14,9 @@ const moment = require('moment'); // time library
 
 const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
-const epnsNotify = require('../helpers/epnsNotifyHelper');
+import epnsNotify from '../helpers/epnsNotifyHelper';
+
+const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
 
 function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -33,32 +35,9 @@ export default class CompoundLiquidationChannel {
     logger.debug('Checking for liquidated address... ');
     return await new Promise((resolve, reject) => {
       const compoundChannelAddress = ethers.utils.computeAddress(config.compComptrollerPrivateKey);
-
-
        // Call Helper function to get interactableContracts
-       const epns = epnsNotify.getInteractableContracts(
-        config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
-        {                                                                       // API Keys
-          etherscanAPI: config.etherscanAPI,
-          infuraAPI: config.infuraAPI,
-          alchemyAPI: config.alchemyAPI
-        },
-        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
-        config.deployedContract,                                                // The contract address which is going to be used
-        config.deployedContractABI                                              // The contract abi which is going to be useds
-      );
-
-      const compound = epnsNotify.getInteractableContracts(
-        config.web3RopstenProvider,                                              // Network for which the interactable contract is req
-        {                                                                       // API Keys
-          etherscanAPI: config.etherscanAPI,
-          infuraAPI: config.infuraAPI,
-          alchemyAPI: config.alchemyAPI
-        },
-        config.compComptrollerPrivateKey,                                       // Private Key of the Wallet sending Notification
-        config.compComptrollerDeployedContract,                                             // The contract address which is going to be used
-        config.compComptrollerDeployedContractABI                                           // The contract abi which is going to be useds
-      );
+      const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
+      const compound = this.getCompoundInteractableContract(config.web3KovanProvider);
 
       epns.contract.channels(compoundChannelAddress)
       .then(async (channelInfo) => {
@@ -80,7 +59,7 @@ export default class CompoundLiquidationChannel {
           // Get user address
           const userAddress = log.args.user;
           allTransactions.push(
-            this.getUsersTotal(compound, userAddress, simulate)
+            this.getUsersTotal(compound, NETWORK_TO_MONITOR, userAddress, simulate)
               .then( (results) => {
                 return results;
               })
@@ -154,10 +133,39 @@ export default class CompoundLiquidationChannel {
     })
   }
 
+  public getCompoundInteractableContract(web3network) {
+    return epnsNotify.getInteractableContracts(
+        web3network,                                              // Network for which the interactable contract is req
+        {                                                                       // API Keys
+          etherscanAPI: config.etherscanAPI,
+          infuraAPI: config.infuraAPI,
+          alchemyAPI: config.alchemyAPI
+        },
+        config.compComptrollerPrivateKey,                                       // Private Key of the Wallet sending Notification
+        config.compComptrollerDeployedContract,                                             // The contract address which is going to be used
+        config.compComptrollerDeployedContractABI                                           // The contract abi which is going to be useds
+      );
+  }
+
+  public getEPNSInteractableContract(web3network) {
+    // Get Contract
+    return epnsNotify.getInteractableContracts(
+        web3network,                                              // Network for which the interactable contract is req
+        {                                                                       // API Keys
+          etherscanAPI: config.etherscanAPI,
+          infuraAPI: config.infuraAPI,
+          alchemyAPI: config.alchemyAPI
+        },
+        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
+        config.deployedContract,                                                // The contract address which is going to be used
+        config.deployedContractABI                                              // The contract abi which is going to be useds
+      );
+  }
+
   public async getContracts(address, abi){
     return new Promise((resolve, reject) => {
     const setUp = epnsNotify.getInteractableContracts(
-      config.web3RopstenProvider,                                              // Network for which the interactable contract is req
+      config.web3KovanProvider,                                              // Network for which the interactable contract is req
       {                                                                        // API Keys
         etherscanAPI: config.etherscanAPI,
         infuraAPI: config.infuraAPI,
@@ -171,30 +179,23 @@ export default class CompoundLiquidationChannel {
     })
   }
 
-  public async checkLiquidity(compound,userAddress){
+  public async checkLiquidity(compound, networkToMonitor, userAddress) {
+    if(!compound){
+      compound = this.getCompoundInteractableContract(networkToMonitor)
+    }
     const logger = this.logger;
     return new Promise((resolve, reject) => {
       compound.contract.getAccountLiquidity(userAddress)
       .then(result => {
         let {1:liq} = result;
         liq = ethers.utils.formatEther(liq).toString();
-        compound.provider.lookupAddress(userAddress)
-        .then(async (ensAddressName) => {
-          let addressName = ensAddressName;
 
           resolve({
-            liquidity:liq,
-            name:addressName
+            liquidity: liq,
+            name: userAddress
           })
 
-        })
-        .catch(err => {
-            logger.error("Error occurred in lookup of address[%s]: %o", userAddress, err);
-            resolve({
-              success: false,
-              err: err
-            });
-        });
+        
       })
       .catch(err => {
         logger.error("Error occurred on Compound Liquidation for Address Liquidation amount: %s: %o", userAddress, err);
@@ -207,7 +208,10 @@ export default class CompoundLiquidationChannel {
   }
 
   // To Check Account for Amount Left to Liquidation
-  public async checkAssets(compound, userAddress) {
+  public async checkAssets(compound, networkToMonitor, userAddress) {
+    if(!compound){
+      compound = this.getCompoundInteractableContract(networkToMonitor)
+    }
     const logger = this.logger;
     return new Promise((resolve, reject) => {
 
@@ -228,13 +232,13 @@ export default class CompoundLiquidationChannel {
         let cZrx = await this.getContracts(config.cZrxDeployedContract,config.cZrxDeployedContractABI);
         let price = await this.getContracts(config.priceOracleDeployedContract,config.priceOracleDeployedContractABI);
 
-        this.checkLiquidity(compound,userAddress)
+        this.checkLiquidity(compound, networkToMonitor, userAddress)
         .then(results =>{
           logger.info("Market Address is in: %o | Address: :%o ", marketAddress, results.name);
           for (let i = 0; i < marketAddress.length; i++) {
-            let cAddresses = [0xdb5ed4605c11822811a39f94314fdb8f0fb59a2c, 0x9e95c0b2412ce50c37a121622308e7a6177f819d,0xbe839b6d93e3ea47effcca1f27841c917a8794f3,
-              0x158079ee67fce2f58472a96584a73c7ab9ac95c1,0xf5dce57282a584d2746faf1593d3121fcac444dc,0x35a18000230da775cac24873d00ff85bccded550,
-              0x39aa39c021dfbae8fac545936693ac917d5e7563,0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9,0xc11b1268c1a384e55c48c2391d8d480264a3a7f4,0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407]
+            let cAddresses = [0xf0d0eb522cfa50b716b3b1604c4f0fa6f04376ad, 0x4a77fAeE9650b09849Ff459eA1476eaB01606C7a,0x41b5844f4680a8c38fbb695b7f9cfd1f64474a72,
+              0xa4ec170599a1cf87240a35b9b1b8ff823f448b57,0xb3f7fb482492f4220833de6d6bfcc81157214bec,0x35a18000230da775cac24873d00ff85bccded550,
+              0x4a92e71227d294f041bd82dd8f78591b75140d63,0x3f0a0ea2f86bae6362cf9799b523ba06647da018,0xa1faa15655b0e7b6b6470ed3d096390e6ad93abb,0xaf45ae737514c8427d373d50cd979a242ec59e5a]
             let contracts = [cDai,cBat,cEth,cRep,cSai,cUni,cUsdc,cUsdt,cWbtc,cZrx]
 
             if(marketAddress[i] == marketAddress[i])  {
@@ -242,7 +246,7 @@ export default class CompoundLiquidationChannel {
                 let address = marketAddress[i];
 
                 allLiquidity.push(
-                  this.getUserTotalLiquidityFromAllAssetEntered(contract,address,compound,price,userAddress)
+                  this.getUserTotalLiquidityFromAllAssetEntered(contract, address, compound, price, userAddress)
                   .then(result =>{
                     return result
                   })
@@ -278,11 +282,14 @@ export default class CompoundLiquidationChannel {
     });
   }
 
-  public async getUsersTotal(compound, userAddress, simulate){
+  public async getUsersTotal(compound, networkToMonitor, userAddress, simulate) {
+    if(!compound){
+      compound = this.getCompoundInteractableContract(networkToMonitor)
+    }
     const logger = this.logger;
     return new Promise((resolve, reject) => {
 
-      this.checkAssets(compound,userAddress)
+      this.checkAssets(compound, networkToMonitor, userAddress)
       .then(async  (results) => {
         Promise.all(results.allLiquidity)
         .then(result => {
@@ -344,7 +351,7 @@ export default class CompoundLiquidationChannel {
     }
   }
 
-  public async getUserTotalLiquidityFromAllAssetEntered(contract,address,compound,price,userAddress) {
+  public async getUserTotalLiquidityFromAllAssetEntered(contract, address, compound, price, userAddress) {
     const logger = this.logger;
     logger.debug('Preparing user liquidity info...');
     return await new Promise((resolve, reject) => {

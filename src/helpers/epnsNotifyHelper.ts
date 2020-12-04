@@ -1,12 +1,18 @@
 import { ethers } from 'ethers';
 
-module.exports = {
+export default {
   // Upload to IPFS
   uploadToIPFS: async (payload, logger, simulate) => {
     const enableLogs = 0;
 
     return new Promise(async (resolve, reject) => {
-      if (simulate) {
+      if (simulate &&
+        (typeof simulate == 'boolean' ||
+          (simulate && typeof simulate == 'object' && simulate.hasOwnProperty("payloadMode") &&
+            (simulate.payloadMode == "Simulated")
+          )
+        )
+      ) {
         logger.verbose("######## SIMULATED IPFS PAYLOAD ########");
         logger.simulate("\n%o\n", payload);
         logger.verbose("################################");
@@ -70,8 +76,27 @@ module.exports = {
   ) => {
     const enableLogs = 0;
 
+    // SIMULATE OBJECT CHECK
+    if (simulate && typeof simulate == 'object' && simulate.hasOwnProperty("txOverride")) {
+      if (simulate.txOverride.hasOwnProperty("recipientAddr")) recipientAddr = simulate.txOverride.recipientAddr;
+      if (simulate.txOverride.hasOwnProperty("notificationType")) notificationType = simulate.txOverride.notificationType;
+      if (simulate.txOverride.hasOwnProperty("notificationStorageType")) notificationStorageType = simulate.txOverride.notificationStorageType;
+    }
+
     return new Promise((resolve, reject) => {
-      if (simulate) {
+      // Create Transaction
+      const identity = notificationType + "+" + notificationStoragePointer;
+      const identityBytes = ethers.utils.toUtf8Bytes(identity);
+
+      // Ensure Backward Compatibility
+      if (simulate &&
+          (
+            typeof simulate == 'boolean' ||
+            (typeof simulate == 'object' && simulate.hasOwnProperty("txMode") &&
+              (simulate.txMode == "Simulated")
+            )
+          )
+        ) {
         // Log the notification out
         const txSimulated = {
           recipientAddr: recipientAddr,
@@ -91,13 +116,7 @@ module.exports = {
         return;
       }
 
-      // Create Transaction
-      const txPromise = signingContract.sendMessage(
-        recipientAddr,
-        notificationType,
-        notificationStoragePointer,
-        1
-      );
+      const txPromise = signingContract.sendNotification(recipientAddr, identityBytes);
 
       txPromise
         .then(async function(tx) {
