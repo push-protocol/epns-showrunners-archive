@@ -121,7 +121,7 @@ export default class EverestChannel {
         }
 
         // Otherwise process those challenges
-        for(let i = 1; i < info.eventCount; i++) {
+        for(let i = 0; i < info.eventCount; i++) {
           let userAddress = info.log[i].args.member
 
           allTransactions.push(
