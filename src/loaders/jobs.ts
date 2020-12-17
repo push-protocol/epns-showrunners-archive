@@ -139,4 +139,20 @@ export default ({ logger }) => {
       logger.error(`Error Object: %o`, err);
     }
   });
+
+  // 1.6 Wallets CHANNEL
+  logger.info('-- 🛵 Scheduling Showrunner - Everest Channel [on 24 Hours]');
+  schedule.scheduleJob('0 0 */24 * * *', async function(){
+    const everestTicker = Container.get(Everest);
+    const taskName = 'Everest event checks and sendMessageToContract()';
+
+    try {
+      await everestTicker.sendMessageToContract();
+      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+    }
+    catch (err) {
+      logger.error(`❌ Cron Task Failed -- ${taskName}`);
+      logger.error(`Error Object: %o`, err);
+    }
+  });
 };
