@@ -22,6 +22,7 @@ import EnsExpirationChannel from '../showrunners/ensExpirationChannel';
 import EthGasStationChannel from '../showrunners/ethGasChannel';
 import CompoundLiquidationChannel from '../showrunners/compoundLiquidationChannel';
 import Everest from '../showrunners/everestChannel';
+import WalletMonitoring from '../showrunners/walletMonitoringChannel';
 
 
 export default ({ logger }) => {
@@ -140,14 +141,14 @@ export default ({ logger }) => {
     }
   });
 
-  // 1.6 Wallets CHANNEL
-  logger.info('-- 🛵 Scheduling Showrunner - Everest Channel [on 24 Hours]');
-  schedule.scheduleJob('0 0 */24 * * *', async function(){
-    const everestTicker = Container.get(Everest);
-    const taskName = 'Everest event checks and sendMessageToContract()';
+  // 1.6 Wallets Monitoring CHANNEL
+  logger.info('-- 🛵 Scheduling Showrunner - Everest Channel [every Hour]');
+  schedule.scheduleJob('0 0 */1 * * *', async function(){
+    const walletMonitoring = Container.get(WalletMonitoring);
+    const taskName = 'WalletMonitoring event checks and processWallet()';
 
     try {
-      await everestTicker.sendMessageToContract();
+      await walletMonitoring.processWallets(false);
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
