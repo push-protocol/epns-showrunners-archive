@@ -17,6 +17,14 @@ export default class AuthService {
   ) {}
 
   // to generate server tokens for auhtnetication
+  /**
+   * Send Mail using Amazon SES
+   * @param from Mail's sender
+   * @param name Sender's Name
+   * @param topic Email Topic
+   * @param sub Email Subject
+   * @param msg Email Message
+   */
   public async sendMailSES(from, name, topic, sub, msg) {
     const logger = this.logger;
 
@@ -28,7 +36,7 @@ export default class AuthService {
 
           ],
           ToAddresses: [
-            'EPNS Support <support@epns.io>'
+            `${config.supportMailName} <${config.supportMailAddress}>`
           ]
         },
         Message: { /* required */
@@ -43,7 +51,7 @@ export default class AuthService {
             Data: `Support Required | ${topic} | ${sub}`
            }
           },
-        Source: `EPNS Support Bot <dbot@epns.io>`, /* required */
+        Source: `${config.sourceMailName} <${config.supportMailAddress}>`, /* required */
         ReplyToAddresses: [
            `${name} <${from}>`
         ],
@@ -63,6 +71,14 @@ export default class AuthService {
     });
   }
 
+  /**
+   * Send Mail using Amazon SES
+   * @param from Mail's sender
+   * @param name Sender's Name
+   * @param topic Email Topic
+   * @param sub Email Subject
+   * @param msg Email Message
+   */
   public returnHTMLEmail(from, name, topic, sub, msg) {
     const html=`
       <html>

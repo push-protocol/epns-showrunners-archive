@@ -31,4 +31,27 @@ export default (app: Router) => {
       }
     },
   );
+
+  route.post(
+    '/check_main_wallet',
+    celebrate({
+      body: Joi.object({
+        simulate: Joi.bool(),
+      }),
+    }),
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/wallet_monitoring/check_main_wallet endpoint with body: %o', req.body )
+      try {
+        const walletMonitor = Container.get(walletMonitoringChannel);
+        const result = await walletMonitor.processMainWallet(req.body.simulate);
+
+        return res.status(201).json({result});
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return next(e);
+      }
+    },
+  );
 };
