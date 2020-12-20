@@ -7,6 +7,7 @@ import { BigNumber, ethers, logger, Wallet } from 'ethers';
 const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
 const ETHER_TRANSFER_AMOUNT = String(config.etherTransferAmount);
 const ETH_THRESHOLD = Number(config.ethThreshold);
+const ETH_MAIN_THRESHOLD = Number(config.ethMainThreshold);
 const provider = ethers.getDefaultProvider(NETWORK_TO_MONITOR, {
       etherscan: (config.etherscanAPI ? config.etherscanAPI : null),
       infura: (config.infuraAPI ? {projectId: config.infuraAPI.projectID, projectSecret: config.infuraAPI.projectSecret} : null),
@@ -90,7 +91,7 @@ export default class WalletTrackerChannel {
     logger.info(`checking balance for main ETH wallet..`); 
     const balance = ethers.utils.formatEther(await MAIN.getBalance())
     let result = null;
-    if (Number(balance.toString()) < ETH_THRESHOLD) {
+    if (Number(balance.toString()) < ETH_MAIN_THRESHOLD) {
       const email = Container.get(EmailService);
       logger.info(`You've got mail: Main ETH Wallet balance is below threshold at ${balance}`); 
       if(simulate) return result

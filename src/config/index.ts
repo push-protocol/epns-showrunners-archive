@@ -186,6 +186,7 @@ export default {
    * ETH threshold
    */
   ethThreshold: process.env.ETH_THRESHOLD,
+  ethMainThreshold: process.env.ETH_MAIN_THRESHOLD,
   etherTransferAmount: process.env.ETHER_TRANSFER_AMOUNT,
 
   /**
