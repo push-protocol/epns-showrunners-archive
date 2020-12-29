@@ -15,9 +15,13 @@ const moment = require('moment'); // time library
 const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
 import epnsNotify from '../helpers/epnsNotifyHelper';
+import { database } from 'firebase-admin';
+import { resolve } from 'dns';
+const gr = require('graphql-request')
+const { request, gql } = gr;
 
 const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
-const TRIGGER_THRESHOLD_SECS = 60 * 60 * 24 * 7; // 7 Days
+const TRIGGER_THRESHOLD_SECS = 1623066505 //60 * 60 * 24 * 7; // 7 Days
 
 @Service()
 export default class EnsExpirationChannel {
@@ -35,7 +39,7 @@ export default class EnsExpirationChannel {
       // Preparing to get all subscribers of the channel
       const ensChannelAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
 
-      // Call Helper function to get interactableContracts
+       // Call Helper function to get interactableContracts
       const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
       const ens = this.getENSInteractableContract(NETWORK_TO_MONITOR);
 
@@ -95,21 +99,12 @@ export default class EnsExpirationChannel {
                         simulate                                                        // Passing true will not allow sending actual notification
                       ).then ((tx) => {
                         logger.info("Transaction mined: %o | Notification Sent", tx.hash);
-                        logger.info("🙌 ETH Ticker Channel Logic Completed!");
                         resolve(tx);
                       })
                       .catch (err => {
                         logger.error("🔥Error --> sendNotification(): %o", err);
                         reject(err);
                       });
-
-                      try {
-                        let tx = await epns.signingContract.sendMessage(wallet, payloadType, ipfshash, 1);
-                        logger.info("Transaction sent: %o", tx);
-                      }
-                      catch (err) {
-                        logger.error("Unable to complete transaction, error: %o", err);
-                      }
                     }
                   }
 
@@ -132,7 +127,7 @@ export default class EnsExpirationChannel {
           reject(err);
         });
 
-    });
+    });    
   }
 
   public getENSInteractableContract(web3network) {
@@ -174,119 +169,165 @@ export default class EnsExpirationChannel {
     }
 
     return new Promise((resolve) => {
-      // Lookup the address
-      ens.provider.lookupAddress(userAddress)
-        .then(ensAddressName => {
-          logger.debug("Lookup of %s resulted in %s", userAddress, ensAddressName);
 
-          let addressName = ensAddressName;
-          let removeEth = '';
-          if (addressName === null) {
-            resolve({
-              success: false,
-              err: `ENS name doesn't exist for address: ${userAddress}, skipping...`
-            });
+      const ensRoute = "subgraphs/name/ensdomains/ens"
+      const ENS_URL = `${config.ensEndpoint}${ensRoute}`;
+      const address = userAddress.toLowerCase();
+
+      const GET_LABEL_NAME = gql`{
+        registrations(where:{registrant:"${address}"})
+        {
+          id
+          domain{
+            id
+            labelhash
           }
-          else{
-            removeEth = addressName.slice(0, -4);
-            let hashedName = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(removeEth));
-            logger.debug("Checking Domain: %s for Hashed Name: %s", removeEth, hashedName);
+        }
+      }`
 
-            ens.contract.nameExpires(hashedName)
-              .then(expiredDate => {
-                  // convert the date returned
-                  let expiryDate = ethers.utils.formatUnits(expiredDate, 0).split('.')[0];
-
-                  // get current date
-                  let currentDate = (new Date().getTime() - new Date().getMilliseconds()) / 1000;
-
-                  // get date difference
-                  let dateDiff = expiryDate - currentDate; // some seconds
-
-                  // Log it
-                  logger.debug(
-                    "Domain %s exists with Expiry Date: %d | Date Diff: %d | Checking against: %d | %o",
-                    removeEth,
-                    expiryDate,
-                    dateDiff,
-                    triggerThresholdInSecs,
-                    (dateDiff < triggerThresholdInSecs) ? "Near Expiry! Alert User..." : "Long time to expire, don't alert"
-                  );
-
-                  // if difference exceeds the date, then it's already expired
-                  if (dateDiff > 0 && dateDiff < triggerThresholdInSecs) {
-
-                    // logic loop, it has 7 days or less to expire but not expired
-                    this.getENSDomainExpiryPayload(ensAddressName, dateDiff)
-                      .then(payload => {
-                        epnsNotify.uploadToIPFS(payload, logger, simulate)
-                          .then(async (ipfshash) => {
-                            // Sign the transaction and send it to chain
-                            const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
-                            logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, walletAddress);
-
-                            resolve({
-                              success: true,
-                              wallet: userAddress,
-                              ipfshash: ipfshash,
-                              payloadType: parseInt(payload.data.type)
-                            });
-                          })
-                          .catch (err => {
-                            logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", userAddress, err)
-                            resolve({
-                              success: false,
-                              err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
-                            });
-                          });
-                      })
-                      .catch(err => {
-                        logger.error("Unable to proceed with ENS Name Expiry Function for wallet: %s, error: %o", userAddress, err);
-                        resolve({
-                          success: false,
-                          err: "Unable to proceed with ENS Name Expiry Function for wallet: " + userAddress + " | error: " + err
-                        });
-                      });
-                  }
-                  else {
-                    resolve({
-                      success: false,
-                      err: "Date Expiry condition unmet for wallet: " + userAddress
-                    });
-                  }
-              })
-              .catch(err => {
-                logger.error("Error occurred on Name Expiry for ENS Address: %s: %o", ensAddressName, err);
-                resolve({
-                  success: false,
-                  err: err
-                });
-              })
-          }
-        })
-        .catch(err => {
-          logger.error("Error occurred in lookup of address[%s]: %o", userAddress, err);
+      request(ENS_URL, GET_LABEL_NAME)
+      .then(async (datas) => {
+        if(datas.registrations.length == 0){
           resolve({
             success: false,
-            err: err
+            err: `ENS name doesn't exist for address: ${userAddress}, skipping...`
           });
-        });
+        }
+        else{
+          let loop = datas.registrations.length;
+          const result =  await this.getDomain(loop,datas,ENS_URL,ens,triggerThresholdInSecs)
 
+          if(result.flag){
+          // logic loop, it has 7 days or less to expire but not expired
+          this.getENSDomainExpiryPayload(result.ensAddressName, result.dateDiff)
+            .then(payload => {
+              epnsNotify.uploadToIPFS(payload, logger, simulate)
+                .then(async (ipfshash) => {
+                  // Sign the transaction and send it to chain
+                  const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
+                  logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, walletAddress);
+
+                  resolve({
+                    success: true,
+                    wallet: userAddress,
+                    ipfshash: ipfshash,
+                    payloadType: parseInt(payload.data.type)
+                  });
+                })
+                .catch (err => {
+                  logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", userAddress, err)
+                  resolve({
+                    success: false,
+                    err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
+                  });
+                });
+            })
+            .catch(err => {
+              logger.error("Unable to proceed with ENS Name Expiry Function for wallet: %s, error: %o", userAddress, err);
+              resolve({
+                success: false,
+                err: "Unable to proceed with ENS Name Expiry Function for wallet: " + userAddress + " | error: " + err
+              });
+            });
+          }
+          else {
+            resolve({
+              success: false,
+              err: "Date Expiry condition unmet for wallet: " + userAddress
+            });
+          }
+        }
+      });
     });
+  }
+
+  public async getDomain(loop,datas,ENS_URL,ens,triggerThresholdInSecs) {
+    const logger = this.logger;
+
+    return new Promise(async (resolve) => {
+
+      let dates = [];
+      let ensName = [];
+      let flag;
+
+      for(let i = 0; i < loop; i++){
+        let hashedName = datas.registrations[i].domain.labelhash;
+
+        const GET_LABEL_NAME = gql`
+        query{
+          domains(where:{labelhash:"${hashedName}"}){
+            labelName
+          }
+        }`
+
+        const data = await request(ENS_URL, GET_LABEL_NAME)
+        
+        let ensAddressName = data.domains[0].labelName;
+
+        const expiredDate = await ens.contract.nameExpires(hashedName)
+      
+        // convert the date returned
+        let expiryDate = ethers.utils.formatUnits(expiredDate, 0).split('.')[0];
+
+        // get current date
+        let currentDate = (new Date().getTime() - new Date().getMilliseconds()) / 1000;
+
+        // get date difference
+        let dateDiff = expiryDate - currentDate; // some seconds
+
+        // Log it
+        logger.debug(
+          "Domain %s exists with Expiry Date: %d | Date Diff: %d | Checking against: %d | %o",
+          ensAddressName,
+          expiryDate,
+          dateDiff,
+          triggerThresholdInSecs,
+          (dateDiff < triggerThresholdInSecs) ? "Near Expiry! Alert User..." : "Long time to expire, don't alert"
+        );
+
+        // if difference exceeds the date, then it's already expired
+        if (dateDiff > 0 && dateDiff < triggerThresholdInSecs) {
+          dates.push(dateDiff);
+          ensName.push(ensAddressName);
+          flag = true;
+        }
+      }
+
+      resolve({
+        dateDiff:dates,
+        ensAddressName:ensName,
+        flag:flag
+      })
+
+    })
   }
 
 	public async getENSDomainExpiryPayload(ensAddressName, dateDiff) {
 			const logger = this.logger;
-			logger.debug('Preparing payload...');
+      logger.debug('Preparing payload...');
 
-      const numOfDays = Math.floor(dateDiff / (60 * 60 * 24));
+      let loop = dateDiff.length;
+      let numOfDays = [];
+
+      for(let i = 0; i < loop; i++){
+        const calNumOfDays = Math.floor(dateDiff[i] / (60 * 60 * 24));
+        numOfDays.push(calNumOfDays);
+      }
 
       return await new Promise(async (resolve, reject) => {
         const title = "ENS Domain Expiry Alert!";
-        const message = ensAddressName + " is set to expire in " + numOfDays + " days";
-
         const payloadTitle = "ENS Domain Expiry Alert!";
-        const payloadMsg = "[d:" + ensAddressName + "] is set to expire in " + numOfDays + " days, tap me to renew it! [timestamp: " + Math.floor(new Date() / 1000) + "]";
+        let message;
+        let payloadMsg;
+
+        if(loop > 1){
+          message = "your domains:" + ensAddressName + " are set to expire in " + numOfDays + " days";
+          payloadMsg = "[d subscriber your domains:" + ensAddressName + "] are set to expire in " + numOfDays + " days, tap me to renew it! [timestamp: " + Math.floor(new Date() / 1000) + "]";
+        }
+        else{
+          message = ensAddressName + " is set to expire in " + numOfDays + " days";
+          payloadMsg = "[d:" + ensAddressName + "] is set to expire in " + numOfDays + " days, tap me to renew it! [timestamp: " + Math.floor(new Date() / 1000) + "]";
+        }
 
         const payload = await epnsNotify.preparePayload(
           null,                                                               // Recipient Address | Useful for encryption
@@ -295,7 +336,7 @@ export default class EnsExpirationChannel {
           message,                                                            // Message of Notification
           payloadTitle,                                                       // Internal Title
           payloadMsg,                                                         // Internal Message
-          "https://app.ens.domains/name/" + ensAddressName,                                                               // Internal Call to Action Link
+          "https://app.ens.domains/name/" + ensAddressName[0],                                                               // Internal Call to Action Link
           null,                                                               // internal img of youtube link
         );
 
