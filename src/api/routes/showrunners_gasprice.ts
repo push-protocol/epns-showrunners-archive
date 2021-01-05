@@ -14,7 +14,7 @@ export default (app: Router) => {
     '/send_message',
     celebrate({
       body: Joi.object({
-        simulate: Joi.bool(),
+        simulate: Joi.object(),
       }),
     }),
     middlewares.onlyLocalhost,
