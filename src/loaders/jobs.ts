@@ -22,7 +22,7 @@ import EnsExpirationChannel from '../showrunners/ensExpirationChannel';
 import EthGasStationChannel from '../showrunners/ethGasChannel';
 import CompoundLiquidationChannel from '../showrunners/compoundLiquidationChannel';
 import Everest from '../showrunners/everestChannel';
-import WalletMonitoring from '../showrunners/walletMonitoringChannel';
+import WalletMonitoring from '../helpers/walletMonitoring';
 
 
 export default ({ logger }) => {

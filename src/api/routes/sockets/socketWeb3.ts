@@ -1,11 +1,12 @@
 import { Container } from 'typedi';
 import config from '../../../config';
 import epnsNotify from '../../../helpers/epnsNotifyHelper';
-const events = require('events');
-const eventEmitter = new events.EventEmitter();
+import { EventDispatcher, EventDispatcherInterface } from '../../../decorators/eventDispatcher';
+
 
 export default async (app: Router) => {
   const Logger = Container.get('logger');
+  const eventDispatcher = Container.get(EventDispatcherInterface);
   const epns = epnsNotify.getInteractableContracts(
     config.web3RopstenNetwork,                                      // Network for which the interactable contract is req
     {                                                               // API Keys
@@ -20,6 +21,6 @@ export default async (app: Router) => {
   // EXAMPLE
   epns.provider.on('block', (blockNumber) => {
     console.log('New block mined!', blockNumber);
-    eventEmitter.emit('New block mined!', blockNumber);
+    eventDispatcher.dispatch("newBlockMined", blockNumber)
   })
 }
