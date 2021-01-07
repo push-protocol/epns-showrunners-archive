@@ -5,7 +5,7 @@ import { EventDispatcher, EventDispatcherInterface } from '../../../decorators/e
 
 
 export default async (app: Router) => {
-  const Logger = Container.get('logger');
+  const logger = Container.get('logger');
   const eventDispatcher = Container.get(EventDispatcherInterface);
   const epns = epnsNotify.getInteractableContracts(
     config.web3RopstenNetwork,                                      // Network for which the interactable contract is req
@@ -20,7 +20,7 @@ export default async (app: Router) => {
   );
   // EXAMPLE
   epns.provider.on('block', (blockNumber) => {
-    console.log('New block mined!', blockNumber);
+    logger.info(`🐣 New block mined! -- ${blockNumber}`);
     eventDispatcher.dispatch("newBlockMined", blockNumber)
   })
 }
