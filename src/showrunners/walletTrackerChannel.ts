@@ -171,15 +171,6 @@ export default class WalletTrackerChannel {
                           logger.error("🔥Error --> sendNotification(): %o", err);
                           reject(err);
                         });
-
-                        try {
-                          let tx = await epns.signingContract.sendMessage(walletTrackerChannel, payloadType, ipfshash, 1);
-                          logger.info("Transaction sent: %o", tx);
-                        }
-                        catch (err) {
-                          logger.error("Unable to complete transaction, error: %o", err);
-                        }
-                     
                     }
                     else{
                       resolve({
