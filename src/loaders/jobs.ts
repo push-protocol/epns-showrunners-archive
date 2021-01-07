@@ -179,16 +179,16 @@ export default ({ logger }) => {
   const eventDispatcher = Container.get(EventDispatcherInterface);
   eventDispatcher.on("newBlockMined", async function (data) {
     console.log("data: %o", data)
-    // const walletTracker = Container.get(WalletTrackerChannel);
-    // const taskName = 'Track wallets on every new block mined';
+    const walletTracker = Container.get(WalletTrackerChannel);
+    const taskName = 'Track wallets on every new block mined';
 
-    // try {
-    //   await walletTracker.sendMessageToContract(false);
-    //   logger.info(`🐣 Cron Task Completed -- ${taskName}`);
-    // }
-    // catch (err) {
-    //   logger.error(`❌ Cron Task Failed -- ${taskName}`);
-    //   logger.error(`Error Object: %o`, err);
-    // }
+    try {
+      await walletTracker.sendMessageToContract(false);
+      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+    }
+    catch (err) {
+      logger.error(`❌ Cron Task Failed -- ${taskName}`);
+      logger.error(`Error Object: %o`, err);
+    }
   })
 };
