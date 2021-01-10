@@ -13,7 +13,7 @@ export default (app: Router) => {
     '/send_message',
     celebrate({
       body: Joi.object({
-        simulate: Joi.object(),
+        simulate: [Joi.bool(), Joi.object()],
       }),
     }),
     middlewares.onlyLocalhost,
@@ -253,7 +253,7 @@ export default (app: Router) => {
     },
   );
 
-  
+
 
   route.post(
     '/update_user_token_balance',
@@ -299,6 +299,6 @@ export default (app: Router) => {
   );
 
 
-  
+
 
 };

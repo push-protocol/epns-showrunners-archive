@@ -9,7 +9,7 @@ const route = Router();
 
 export default (app: Router) => {
   app.use('/showrunners/compound', route);
-  
+
   /**
    * Send Message
    * @description Send a notification via the compound showrunner
@@ -19,7 +19,7 @@ export default (app: Router) => {
     '/send_message',
     celebrate({
       body: Joi.object({
-        simulate: Joi.object(),
+        simulate: [Joi.bool(), Joi.object()],
       }),
     }),
     middlewares.onlyLocalhost,
@@ -139,4 +139,3 @@ export default (app: Router) => {
     },
   );
 };
-
