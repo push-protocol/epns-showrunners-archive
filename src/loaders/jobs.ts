@@ -176,8 +176,10 @@ export default ({ logger }) => {
     }
   });
 
+  // 2. EVENT DISPATHER SERVICE
   const eventDispatcher = Container.get(EventDispatcherInterface);
   eventDispatcher.on("newBlockMined", async function (data) {
+    // 2.1 Wallet Tracker Service
     const walletTracker = Container.get(WalletTrackerChannel);
     const taskName = 'Track wallets on every new block mined';
 
