@@ -6,7 +6,9 @@ import ensDomain from './routes/showrunners_ensdomain';
 import compoundTicker from './routes/showrunners_compoundLiquidation';
 import gasPrice from './routes/showrunners_gasprice';
 import wallet_tracker from './routes/showrunners_wallet_tracker';
+import wallet_monitoring from './routes/showrunners_wallet_monitoring';
 import everest from './routes/showrunners_everest';
+import socketWeb3 from './routes/sockets/socketWeb3';
 
 import mailing from './routes/mailing';
 
@@ -22,6 +24,10 @@ export default () => {
 	gasPrice(app);
 	wallet_tracker(app);
 	everest(app);
+	wallet_monitoring(app);
+
+	// SOCKETS
+	socketWeb3(app);
 
 	// -- HELPERS
 	// For mailing route

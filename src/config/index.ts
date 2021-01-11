@@ -182,5 +182,20 @@ export default {
   compComptrollerPrivateKey: process.env.COMP_COMPTROLLER_PRIVATE_KEY,
   ethGasStationPrivateKey: process.env.ETH_GAS_STATION_PRIVATE_KEY,
   walletTrackerPrivateKey: process.env.WALLET_TRACKER_PRIVATE_KEY,
-  everestPrivateKey: process.env.EVEREST_PRIVATE_KEY
+  everestPrivateKey: process.env.EVEREST_PRIVATE_KEY,
+
+  /**
+   * ETH threshold
+   */
+  ethThreshold: process.env.ETH_THRESHOLD,
+  ethMainThreshold: process.env.ETH_MAIN_THRESHOLD,
+  etherTransferAmount: process.env.ETHER_TRANSFER_AMOUNT,
+
+  /**
+   * mail config
+   */
+  supportMailAddress: process.env.SUPPORT_MAIL_ADDRESS,
+  supportMailName: process.env.SUPPORT_MAIL_NAME,
+  sourceMailAddress: process.env.SOURCE_MAIL_ADDRESS,
+  sourceMailName: process.env.SOURCE_MAIL_NAME
 };
