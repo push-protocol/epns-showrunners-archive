@@ -15,6 +15,8 @@
 import config from '../config';
 import { Container } from 'typedi';
 import schedule from 'node-schedule';
+import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
+
 
 import BtcTickerChannel from '../showrunners/btcTickerChannel';
 import EthTickerChannel from '../showrunners/ethTickerChannel';
@@ -22,7 +24,8 @@ import EnsExpirationChannel from '../showrunners/ensExpirationChannel';
 import EthGasStationChannel from '../showrunners/ethGasChannel';
 import CompoundLiquidationChannel from '../showrunners/compoundLiquidationChannel';
 import Everest from '../showrunners/everestChannel';
-import WalletMonitoring from '../showrunners/walletMonitoringChannel';
+import WalletTrackerChannel from '../showrunners/walletTrackerChannel';
+import WalletMonitoring from '../helpers/walletMonitoring';
 
 
 export default ({ logger }) => {
@@ -35,7 +38,7 @@ export default ({ logger }) => {
     const taskName = 'BTC Ticker Fetch and sendMessageToContract()';
 
     try {
-      await btcTicker.sendMessageToContract();
+      await btcTicker.sendMessageToContract(false);
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
@@ -51,7 +54,7 @@ export default ({ logger }) => {
     const taskName = 'ETH Ticker Fetch and sendMessageToContract()';
 
     try {
-      await ethTicker.sendMessageToContract();
+      await ethTicker.sendMessageToContract(false);
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
@@ -68,7 +71,7 @@ export default ({ logger }) => {
     const taskName = 'ENS Domain Expiry and sendMessageToContract()';
 
     try {
-      await ensTicker.sendMessageToContract();
+      await ensTicker.sendMessageToContract(false);
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
@@ -84,7 +87,7 @@ export default ({ logger }) => {
     const taskName = 'Gas result and sendMessageToContract()';
 
     try {
-      await gasTicker.sendMessageToContract();
+      await gasTicker.sendMessageToContract(false);
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
@@ -116,7 +119,7 @@ export default ({ logger }) => {
     const taskName = 'Compound Liquidation address checks and sendMessageToContract()';
 
     try {
-      await compoundTicker.sendMessageToContract();
+      await compoundTicker.sendMessageToContract(false);
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
@@ -132,7 +135,7 @@ export default ({ logger }) => {
     const taskName = 'Everest event checks and sendMessageToContract()';
 
     try {
-      await everestTicker.sendMessageToContract();
+      await everestTicker.sendMessageToContract(false);
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
@@ -172,4 +175,25 @@ export default ({ logger }) => {
       logger.error(`Error Object: %o`, err);
     }
   });
+
+  // 2. EVENT DISPATHER SERVICE
+  const eventDispatcher = Container.get(EventDispatcherInterface);
+  eventDispatcher.on("newBlockMined", async function (data) {
+
+    // 2.1 Wallet Tracker Service
+    // Added condition to approx it at 10 blocks
+    if (data % 1000 == 0) {
+      const walletTracker = Container.get(WalletTrackerChannel);
+      const taskName = 'Track wallets on every new block mined';
+
+      try {
+        await walletTracker.sendMessageToContract(false);
+        logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+      }
+      catch (err) {
+        logger.error(`❌ Cron Task Failed -- ${taskName}`);
+        logger.error(`Error Object: %o`, err);
+      }
+    }
+  })
 };

@@ -59,7 +59,6 @@ export default (app: Router) => {
       try {
         const compoundLiquidation = Container.get(CompoundLiquidationChannel);
         const data = await compoundLiquidation.checkLiquidity(null, network, address);
-        console.log(data)
         if (data.success && data.success == false) {
           return handleResponse(res, 500, false, "liquidity data", JSON.stringify(data.err));
         } else {

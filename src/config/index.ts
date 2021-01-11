@@ -171,6 +171,8 @@ export default {
   gasAPIKey: process.env.GAS_API_KEY,
   gasEndpoint: process.env.GAS_ENDPOINT,
 
+  ensEndpoint: process.env.ENS_ENDPOINT,
+
   cmcSandboxAPIKey: process.env.CMS_SANDBOX_API_KEY,
   cmcSandboxEndpoint: process.env.CMC_SANDBOX_ENDPOINT,
 

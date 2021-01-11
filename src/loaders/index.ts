@@ -14,7 +14,7 @@ import dbListenerLoader from './dbListener';
 import './events';
 
 export default async ({ expressApp }) => {
-  logger.info('✌️   Loaders connected!');
+  logger.info('✌️   Injecting dependencies loaders');
 
   const GasPriceModel = {
     name: 'GasPriceModel',
@@ -30,21 +30,21 @@ export default async ({ expressApp }) => {
 
   // It returns the agenda instance because it's needed in the subsequent loaders
   await dependencyInjectorLoader({ models: [GasPriceModel, UserTokenModel] });
-  logger.info('✌️   Dependency Injector loaded');
+  logger.info('✔️   Dependency Injector loaded');
 
   const mongoConnection = await mongooseLoader();
-  logger.info('✌️   Mongoose Loaded and connected!');
+  logger.info('✔️   Mongoose Loaded and connected!');
 
   const pool = await dbLoader();
-  logger.info('✌️   Database connected!');
+  logger.info('✔️   Database connected!');
   logger.info('✌️   Loading DB Events listener');
   await dbListenerLoader({ pool, logger });
-  logger.info('✌️   DB Listener loaded!');
+  logger.info('✔️   DB Listener loaded!');
 
   logger.info('✌️   Loading jobs');
   await jobsLoader({ logger });
-  logger.info('✌️   Jobs loaded');
+  logger.info('✔️   Jobs loaded');
 
   await expressLoader({ app: expressApp });
-  logger.info('✌️   Express loaded');
+  logger.info('✔️   Express loaded');
 };

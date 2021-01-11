@@ -81,39 +81,29 @@ export default class CompoundLiquidationChannel {
               logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
 
               const storageType = 1; // IPFS Storage Type
-                      const txConfirmWait = 1; // Wait for 0 tx confirmation
+              const txConfirmWait = 1; // Wait for 0 tx confirmation
 
-                      // Send Notification
-                      await epnsNotify.sendNotification(
-                        epns.signingContract,                                           // Contract connected to signing wallet
-                        wallet,                                                         // Recipient to which the payload should be sent
-                        payloadType,                                                    // Notification Type
-                        storageType,                                                    // Notificattion Storage Type
-                        ipfshash,                                                       // Notification Storage Pointer
-                        txConfirmWait,                                                  // Should wait for transaction confirmation
-                        logger,                                                         // Logger instance (or console.log) to pass
-                        logger,                                                         // Logger instance (or console.log) to pass
-                        simulate                                                        // Passing true will not allow sending actual notification
-                      ).then ((tx) => {
-                        logger.info("Transaction mined: %o | Notification Sent", tx.hash);
-                        resolve(tx);
-                      })
-                      .catch (err => {
-                        logger.error("🔥Error --> sendNotification(): %o", err);
-                        reject(err);
-                      });
-
-              try {
-                let tx = await epns.signingContract.sendMessage(wallet, payloadType, ipfshash, 1);
-                logger.info("Transaction sent: %o", tx);
-              }
-              catch (err) {
-                logger.error("Unable to complete transaction, error: %o", err);
-              }
+              // Send Notification
+              await epnsNotify.sendNotification(
+                epns.signingContract,                                           // Contract connected to signing wallet
+                wallet,                                                         // Recipient to which the payload should be sent
+                payloadType,                                                    // Notification Type
+                storageType,                                                    // Notificattion Storage Type
+                ipfshash,                                                       // Notification Storage Pointer
+                txConfirmWait,                                                  // Should wait for transaction confirmation
+                logger,                                                        // Logger instance (or console.log) to pass
+                simulate                                                        // Passing true will not allow sending actual notification
+              ).then ((tx) => {
+                logger.info("Transaction mined: %o | Notification Sent", tx.hash);
+                resolve(tx);
+              })
+              .catch (err => {
+                logger.error("🔥Error --> sendNotification(): %o", err);
+                reject(err);
+              });
             }
           }
           logger.debug("Compound Liquidation Alert! logic completed!");
-          // })
         })
         .catch(err => {
           logger.error("Error occurred sending transactions: %o", err);
