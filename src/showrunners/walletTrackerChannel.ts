@@ -38,6 +38,11 @@ const SUPPORTED_TOKENS = {
   // },
 }
 
+const CUSTOMIZABLE_SETTINGS = {
+  'precision': 3,
+  'ticker': 5,
+}
+
 const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
 
 @Service()
@@ -409,9 +414,11 @@ export default class WalletTrackerChannel {
           let decimals = SUPPORTED_TOKENS[ticker].decimals
 
           // Simulate random balance
-          if (simulateRandomEthBal) {
-            balance = ethers.utils.parseEther((Math.random() * 100001 / 100).toString());
-            logger.info("Simulating Random Ether Balance: %s" + ethers.utils.formatEther(balance));
+          if (simulateRandomTokenBal) {
+            const random = ethers.BigNumber.from(Math.floor(Math.random() * 10000));
+            const randBal = ethers.BigNumber.from(10).pow(SUPPORTED_TOKENS[ticker].decimals - 2);
+            res = random.mul(randBal);
+            logger.info("Simulating Random Token Balance [%s]: %s", SUPPORTED_TOKENS[ticker].ticker, res.toString());
           }
 
           let rawBalance = Number(Number(res));
@@ -466,33 +473,64 @@ export default class WalletTrackerChannel {
 
     logger.debug('Preparing payload...');
 
-    let changedTokensJSON = JSON.stringify(changedTokens)
-    logger.info('changedTokensJSON: %o', changedTokensJSON)
-
-
     return await new Promise(async (resolve) => {
-    const title = "Wallet Tracker Alert!";
-    const message = "Crypto Movement from your wallet deteched [➕]";
+      const title = "Wallet Tracker Alert!";
+      const message = "Crypto Movement from your wallet detected!";
 
-    const payloadTitle = "Wallet Tracker Alert!";
-    const payloadMsg = changedTokensJSON;
+      const payloadTitle = "Crypto Movement Alert!";
+      const payloadMsg = this.prettyTokenBalances(changedTokens);
 
-    const payload = await epnsNotify.preparePayload(
-      null,                                                               // Recipient Address | Useful for encryption
-      3,                                                                  // Type of Notification
-      title,                                                              // Title of Notification
-      message,                                                            // Message of Notification
-      payloadTitle,                                                       // Internal Title
-      payloadMsg,                                                         // Internal Message
-      null,                                                               // Internal Call to Action Link
-      null,                                                               // internal img of youtube link
-    );
+      const payload = await epnsNotify.preparePayload(
+        null,                                                               // Recipient Address | Useful for encryption
+        3,                                                                  // Type of Notification
+        title,                                                              // Title of Notification
+        message,                                                            // Message of Notification
+        payloadTitle,                                                       // Internal Title
+        payloadMsg,                                                         // Internal Message
+        null,                                                               // Internal Call to Action Link
+        null,                                                               // internal img of youtube link
+      );
+      logger.debug('Payload Prepared: %o', payload);
 
-    logger.debug('Payload Prepared: %o', payload);
-
-    resolve(payload);
+      resolve(payload);
     });
-}
+  }
+
+  // Pretty format token balances
+  public prettyTokenBalances(changedTokens) {
+    const h1 = "[d:Summary & Latest Balance]\n---------";
+
+    let body = '';
+
+    changedTokens.map(token => {
+      // convert to four decimal places at max
+      const precision = CUSTOMIZABLE_SETTINGS.precision;
+
+      let change = parseFloat(token.resultToken.tokenDifference).toFixed(precision);
+      let ticker = token.ticker.trim() + ":";
+      const padding = CUSTOMIZABLE_SETTINGS.ticker - ticker.length;
+      const spaces = ("               ").slice(-padding);
+
+      if (padding > 0) {
+        ticker = ticker + spaces;
+      }
+
+      ticker = change >= 0 ? `[➕] [d:${ticker}]` : `[➖] [t:${ticker}]`;
+      const newBal = parseFloat(token.resultToken.tokenBalance).toFixed(precision);
+      const prevBal = parseFloat(parseFloat(newBal) + parseFloat(newBal)).toFixed(precision);
+      change = change >= 0 ? "+" + change : change;
+      const sign = change.slice(0, 1);
+      const unsignedChange = change.slice(1);
+
+      const formatter = change >= 0 ? "[d:" : "[t:";
+      body = `${body}\n${ticker}  [b:${newBal}] ${formatter}${token.ticker}] [[dg:${sign}${unsignedChange} ${token.ticker}]]`;
+    })
+
+    const prettyFormat = `${h1}\n${body}[timestamp: ${Math.floor(new Date() / 1000)}]`;
+    logger.info('Pretty Formatted Token Balance \n%o', prettyFormat);
+
+    return prettyFormat;
+  }
 
   //MONGODB
   public async getTokenBalanceFromDB(userAddress: string, ticker: string): Promise<{}> {

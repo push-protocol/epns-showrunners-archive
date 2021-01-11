@@ -181,8 +181,8 @@ export default ({ logger }) => {
   eventDispatcher.on("newBlockMined", async function (data) {
 
     // 2.1 Wallet Tracker Service
-    // Added condition to approx it at 10 blocks
-    if (data % 1000 == 0) {
+    // Added condition to approx it at 10 blocks (150 secs approx)
+    if (data % 10 == 0) {
       const walletTracker = Container.get(WalletTrackerChannel);
       const taskName = 'Track wallets on every new block mined';
 

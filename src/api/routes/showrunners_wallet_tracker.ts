@@ -205,6 +205,29 @@ export default (app: Router) => {
   );
 
   route.post(
+    '/pretty_token_balances',
+    celebrate({
+      body: Joi.object({
+        changedTokensJSON: Joi.array(),
+      }),
+    }),
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/wallet_tracker/pretty_token_balances endpoint with body: %o', req.body )
+      try {
+        const walletTracker = Container.get(WalletTrackerChannel);
+        const result = await walletTracker.prettyTokenBalances(req.body.changedTokensJSON);
+
+        return res.status(201).json(result);
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return next(e);
+      }
+    },
+  );
+
+  route.post(
     '/get_token_balance_from_db',
     celebrate({
       body: Joi.object({
