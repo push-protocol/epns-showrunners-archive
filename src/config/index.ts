@@ -186,5 +186,14 @@ export default {
    * ETH threshold
    */
   ethThreshold: process.env.ETH_THRESHOLD,
-  etherTransferAmount: process.env.ETHER_TRANSFER_AMOUNT
+  ethMainThreshold: process.env.ETH_MAIN_THRESHOLD,
+  etherTransferAmount: process.env.ETHER_TRANSFER_AMOUNT,
+
+  /**
+   * mail config
+   */
+  supportMailAddress: process.env.SUPPORT_MAIL_ADDRESS,
+  supportMailName: process.env.SUPPORT_MAIL_NAME,
+  sourceMailAddress: process.env.SOURCE_MAIL_ADDRESS,
+  sourceMailName: process.env.SOURCE_MAIL_NAME
 };

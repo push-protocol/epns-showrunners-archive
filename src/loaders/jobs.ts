@@ -141,14 +141,30 @@ export default ({ logger }) => {
     }
   });
 
-  // 1.6 Wallets Monitoring CHANNEL
-  logger.info('-- 🛵 Scheduling Showrunner - Everest Channel [every Hour]');
+  // 1.7 Wallets Monitoring CHANNEL
+  logger.info('-- 🛵 Scheduling Showrunner - Wallets Monitoring [every Hour]');
   schedule.scheduleJob('0 0 */1 * * *', async function(){
     const walletMonitoring = Container.get(WalletMonitoring);
     const taskName = 'WalletMonitoring event checks and processWallet()';
 
     try {
       await walletMonitoring.processWallets(false);
+      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+    }
+    catch (err) {
+      logger.error(`❌ Cron Task Failed -- ${taskName}`);
+      logger.error(`Error Object: %o`, err);
+    }
+  });
+
+  // 1.7.2 Main Wallet Monitoring CHANNEL
+  logger.info('-- 🛵 Scheduling Showrunner - Main Wallets Monitoring [every Hour]');
+  schedule.scheduleJob('0 0 */1 * * *', async function(){
+    const walletMonitoring = Container.get(WalletMonitoring);
+    const taskName = 'Main Wallet Monitoring event checks and processWallet()';
+
+    try {
+      await walletMonitoring.processMainWallet(false);
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
