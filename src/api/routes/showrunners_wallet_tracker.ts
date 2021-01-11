@@ -13,7 +13,7 @@ export default (app: Router) => {
     '/send_message',
     celebrate({
       body: Joi.object({
-        simulate: Joi.object(),
+        simulate: [Joi.bool(), Joi.object()],
       }),
     }),
     middlewares.onlyLocalhost,
@@ -62,7 +62,7 @@ export default (app: Router) => {
       body: Joi.object({
         user: Joi.string().required(),
         provider: Joi.string().required(),
-        simulate: Joi.object(),
+        simulate: [Joi.bool(), Joi.object()],
       }),
     }),
     middlewares.onlyLocalhost,
@@ -161,7 +161,7 @@ export default (app: Router) => {
     celebrate({
       body: Joi.object({
         user: Joi.string().required(),
-        simulate: Joi.object(),
+        simulate: [Joi.bool(), Joi.object()],
         changedTokens: Joi.array().required(),
       }),
     }),

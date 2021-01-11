@@ -40,7 +40,7 @@ export default (app: Router) => {
         web3network: Joi.string().required(),
         fromBlock: Joi.number().required(),
         toBlock: Joi.number(),
-        simulate: Joi.object(),
+        simulate: [Joi.bool(), Joi.object()],
       }),
     }),
     middlewares.onlyLocalhost,
@@ -64,7 +64,7 @@ export default (app: Router) => {
     celebrate({
       body: Joi.object({
         address: Joi.string().required(),
-        simulate: Joi.object(),
+        simulate: [Joi.bool(), Joi.object()],
       }),
     }),
     middlewares.onlyLocalhost,
