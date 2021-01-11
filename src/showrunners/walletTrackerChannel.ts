@@ -31,11 +31,11 @@ const SUPPORTED_TOKENS = {
     ticker: 'cUSDT',
     decimals: 8
   },
-  'UNI':{
-    address: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
-    ticker: 'UNI',
-    decimals: 18
-  },
+  // 'UNI':{
+  //   address: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
+  //   ticker: 'UNI',
+  //   decimals: 18
+  // },
 }
 
 const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
@@ -47,6 +47,7 @@ export default class WalletTrackerChannel {
     @Inject('cached') private cached,
     @EventDispatcher() private eventDispatcher: EventDispatcherInterface,
   ) {
+    var running = false;
   }
 
   public getEPNSInteractableContract(web3network) {
@@ -91,8 +92,16 @@ export default class WalletTrackerChannel {
   }
 
   public async sendMessageToContract(simulate) {
+
     const cache = this.cached;
     const logger = this.logger;
+
+    // Ignore call if this is already running
+    if (this.running) {
+      logger.debug("Wallet Tracker instance is already running! Skipping...");
+      return;
+    }
+    this.running = true;
 
     return await new Promise((resolve, reject) => {
 
@@ -145,7 +154,7 @@ export default class WalletTrackerChannel {
                         // Send notification
                         const ipfshash = res.ipfshash;
                         const payloadType = res.payloadType;
-                        
+
 
                         logger.info("Wallet: %o | Hash: :%o | Sending Data...", user, ipfshash);
 
@@ -179,19 +188,24 @@ export default class WalletTrackerChannel {
                       })
                     }
                   }
+
+                  this.running = false;
                 })
                 .catch(err => {
                   logger.error("Error retreiving all promises", err);
+                  this.running = false;
                   reject(err);
                 });
             })
             .catch(err => {
               logger.error("Error retreiving Subscriber event log: %o", err);
+              this.running = false;
               reject(err);
             });
         })
         .catch(err => {
             logger.error("Error retreiving channel info: %o", err);
+            this.running = false;
             reject(err);
         });
     })
@@ -199,6 +213,16 @@ export default class WalletTrackerChannel {
 
   public async checkWalletMovement(user, networkToMonitor, simulate, interactableERC20s) {
     const logger = this.logger;
+
+    // check and return if the wallet is the channel owner
+    if (this.isChannelOwner(user)) {
+      return new Promise((resolve) => {
+        resolve({
+          success: false,
+          data: "Channel Owner User: " + user
+        });
+      });
+    }
 
     // check and recreate provider mostly for routes
     if (!interactableERC20s) {
@@ -211,12 +235,10 @@ export default class WalletTrackerChannel {
     let changedTokens = [];
 
     return new Promise((resolve) => {
-      
-
       // let promises = SUPPORTED_TOKENS.map(token => {
       let promises = [];
       for (const ticker in SUPPORTED_TOKENS) {
-        promises.push(this.checkTokenMovement(user, networkToMonitor, ticker, interactableERC20s))
+        promises.push(this.checkTokenMovement(user, networkToMonitor, ticker, interactableERC20s, simulate))
       }
 
       Promise.all(promises)
@@ -240,10 +262,17 @@ export default class WalletTrackerChannel {
 
       })
     })
-
   }
 
-  public async checkTokenMovement(user, networkToMonitor, ticker, interactableERC20s) {
+  public isChannelOwner(user) {
+    if (ethers.utils.computeAddress(config.walletTrackerPrivateKey) == user) {
+      return true;
+    }
+
+    return false;
+  }
+
+  public async checkTokenMovement(user, networkToMonitor, ticker, interactableERC20s, simulate) {
     const logger = this.logger;
 
     // check and recreate provider mostly for routes
@@ -256,7 +285,7 @@ export default class WalletTrackerChannel {
 
     return new Promise((resolve) => {
 
-    this.getTokenBalance(user, networkToMonitor, ticker, interactableERC20s[ticker])
+    this.getTokenBalance(user, networkToMonitor, ticker, interactableERC20s[ticker], simulate)
     .then(userToken => {
 
       // logger.info('userToken: %o', userToken)
@@ -309,7 +338,7 @@ export default class WalletTrackerChannel {
     const logger = this.logger;
 
     return new Promise((resolve) => {
-    
+
       this.getWalletTrackerPayload(changedTokens)
       .then(payload =>{
         epnsNotify.uploadToIPFS(payload, logger, simulate)
@@ -335,19 +364,30 @@ export default class WalletTrackerChannel {
     })
   }
 
-  public async getTokenBalance(user, networkToMonitor, ticker, tokenContract){
+  public async getTokenBalance(user, networkToMonitor, ticker, tokenContract, simulate){
     const logger = this.logger;
 
     if(!tokenContract){
       tokenContract = this.getERC20InteractableContract(networkToMonitor, SUPPORTED_TOKENS[ticker].address)
     }
 
+    // Check simulate object
+    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
+    const simulateApplyToAddr = logicOverride && simulate.logicOverride.hasOwnProperty("applyToAddr") ? simulate.logicOverride.applyToAddr : false;
+    const simulateRandomEthBal = logicOverride && (simulateApplyToAddr == user || !simulateApplyToAddr) && simulate.logicOverride.hasOwnProperty("randomEthBalance") ? simulate.logicOverride.randomEthBalance : false;
+    const simulateRandomTokenBal = logicOverride && (simulateApplyToAddr == user || !simulateApplyToAddr) && simulate.logicOverride.hasOwnProperty("randomTokenBalance") ? simulate.logicOverride.randomTokenBalance : false;
+
     return await new Promise((resolve, reject) => {
 
       if (ticker === 'ETH' ){
         tokenContract.contract.provider.getBalance(user).then(balance => {
           // logger.info("wei balance" + balance);
-          let etherBalance
+          let etherBalance;
+
+          if (simulateRandomEthBal) {
+            balance = ethers.utils.parseEther((Math.random() * 100001 / 100).toString());
+            logger.info("Simulating Random Ether Balance: %s" + ethers.utils.formatEther(balance));
+          }
 
           // balance is a BigNumber (in wei); format is as a string (in ether)
           etherBalance = ethers.utils.formatEther(balance);
@@ -367,7 +407,15 @@ export default class WalletTrackerChannel {
         tokenContract.contract.balanceOf(user)
         .then(res=> {
           let decimals = SUPPORTED_TOKENS[ticker].decimals
+
+          // Simulate random balance
+          if (simulateRandomEthBal) {
+            balance = ethers.utils.parseEther((Math.random() * 100001 / 100).toString());
+            logger.info("Simulating Random Ether Balance: %s" + ethers.utils.formatEther(balance));
+          }
+
           let rawBalance = Number(Number(res));
+
           tokenBalance = Number(rawBalance/Math.pow(10, decimals)).toLocaleString()
           // logger.info("tokenBalance: " + tokenBalance);
           let tokenInfo = {
@@ -419,25 +467,25 @@ export default class WalletTrackerChannel {
     logger.debug('Preparing payload...');
 
     let changedTokensJSON = JSON.stringify(changedTokens)
-    // logger.info('changedTokensJSON: %o', changedTokensJSON)
+    logger.info('changedTokensJSON: %o', changedTokensJSON)
 
 
     return await new Promise(async (resolve) => {
     const title = "Wallet Tracker Alert!";
-    const message = "Token Movement in last one hour!";
+    const message = "Crypto Movement from your wallet deteched [➕]";
 
     const payloadTitle = "Wallet Tracker Alert!";
     const payloadMsg = changedTokensJSON;
 
     const payload = await epnsNotify.preparePayload(
-    null,                                                               // Recipient Address | Useful for encryption
-    3,                                                                  // Type of Notification
-    title,                                                              // Title of Notification
-    message,                                                            // Message of Notification
-    payloadTitle,                                                       // Internal Title
-    payloadMsg,                                                         // Internal Message
-    null,                                                               // Internal Call to Action Link
-    null,                                                               // internal img of youtube link
+      null,                                                               // Recipient Address | Useful for encryption
+      3,                                                                  // Type of Notification
+      title,                                                              // Title of Notification
+      message,                                                            // Message of Notification
+      payloadTitle,                                                       // Internal Title
+      payloadMsg,                                                         // Internal Message
+      null,                                                               // Internal Call to Action Link
+      null,                                                               // internal img of youtube link
     );
 
     logger.debug('Payload Prepared: %o', payload);
