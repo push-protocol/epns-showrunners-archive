@@ -21,16 +21,16 @@ const SUPPORTED_TOKENS = {
       ticker: 'ETH',
       decimals: 18
   },
-  'DAI':{
-      address: '0xf80A32A835F79D7787E8a8ee5721D0fEaFd78108',
-      ticker: 'DAI',
-      decimals: 18
-  },
-  'cUSDT':{
-    address: '0x135669c2dcbd63f639582b313883f101a4497f76',
-    ticker: 'cUSDT',
-    decimals: 8
-  },
+  // 'DAI':{
+  //     address: '0xf80A32A835F79D7787E8a8ee5721D0fEaFd78108',
+  //     ticker: 'DAI',
+  //     decimals: 18
+  // },
+  // 'cUSDT':{
+  //   address: '0x135669c2dcbd63f639582b313883f101a4497f76',
+  //   ticker: 'cUSDT',
+  //   decimals: 8
+  // },
   // 'UNI':{
   //   address: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
   //   ticker: 'UNI',
