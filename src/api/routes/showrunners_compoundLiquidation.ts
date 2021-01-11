@@ -19,7 +19,7 @@ export default (app: Router) => {
     '/send_message',
     celebrate({
       body: Joi.object({
-        simulate: Joi.bool(),
+        simulate: [Joi.bool(), Joi.object()],
       }),
     }),
     middlewares.onlyLocalhost,
@@ -114,7 +114,7 @@ export default (app: Router) => {
     '/total_users',
     celebrate({
       body: Joi.object({
-        simulate: Joi.bool(),
+        simulate: [Joi.bool(), Joi.object()],
         address: Joi.string().required(),
         network: Joi.string().required(),
       }),
