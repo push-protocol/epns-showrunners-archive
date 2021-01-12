@@ -13,7 +13,7 @@ export default (app: Router) => {
     '/check_wallets',
     celebrate({
       body: Joi.object({
-        simulate: Joi.bool(),
+        simulate: [Joi.bool(), Joi.object()],
       }),
     }),
     middlewares.onlyLocalhost,
@@ -36,7 +36,7 @@ export default (app: Router) => {
     '/check_main_wallet',
     celebrate({
       body: Joi.object({
-        simulate: Joi.bool(),
+        simulate: [Joi.bool(), Joi.object()],
       }),
     }),
     middlewares.onlyLocalhost,
