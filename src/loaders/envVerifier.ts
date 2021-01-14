@@ -7,7 +7,6 @@ export default async () => {
     const fs = require('fs');
     const envfile = require('envfile');
     const readline = require('readline');
-    const readlineSync = require('readline-sync');
 
     var fileModified = false;
 
