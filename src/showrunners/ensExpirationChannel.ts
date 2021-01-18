@@ -90,7 +90,7 @@ export default class EnsExpirationChannel {
                       // Send Notification
                       await epnsNotify.sendNotification(
                         epns.signingContract,                                           // Contract connected to signing wallet
-                        ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey),        // Recipient to which the payload should be sent
+                        wallet,        // Recipient to which the payload should be sent
                         parseInt(payloadType),                                    // Notification Type
                         storageType,                                                              // Notificattion Storage Type
                         ipfshash,                                                       // Notification Storage Pointer
