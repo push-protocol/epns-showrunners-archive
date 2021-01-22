@@ -9,6 +9,11 @@ const route = Router();
 export default (app: Router) => {
   app.use('/showrunners/wallet_tracker', route);
 
+  /**
+   * Send Message
+   * @description Send a notification via the wallet tracker showrunner
+   * @param {boolean} simulate whether to send the actual message or simulate message sending
+   */
   route.post(
     '/send_message',
     celebrate({
@@ -32,6 +37,10 @@ export default (app: Router) => {
     },
   );
 
+  /**
+   * Get Supported Erc20s Array
+   * @description Get Interactable Contracts of all erc20s supported by wallet tracker showrunner
+   */
   route.post(
     '/get_supported_erc20s_array',
     celebrate({
@@ -56,6 +65,11 @@ export default (app: Router) => {
     },
   );
 
+  /**
+   * Check Wallet Movement
+   * @description Check the wallet movement for each user
+   * @param {boolean} simulate whether to upload to ipfs or simulate the ipfs payload
+   */
   route.post(
     '/check_wallet_movement',
     celebrate({
@@ -81,6 +95,10 @@ export default (app: Router) => {
     },
   );
 
+  /**
+   * Check Token Movement
+   * @description Check a particular token's movement for a user
+   */
   route.post(
     '/check_token_movement',
     celebrate({
@@ -106,6 +124,11 @@ export default (app: Router) => {
     },
   );
 
+  /**
+   * Get Token Balance
+   * @description Get a particular token's balance for a user
+   * @param {boolean} simulate whether to upload to ipfs or simulate the ipfs payload
+   */
   route.post(
     '/get_token_balance',
     celebrate({
@@ -132,6 +155,10 @@ export default (app: Router) => {
   );
 
 
+  /**
+   * Compare Token Balance
+   * @description Compare the token balance with token balance from db
+   */
   route.post(
     '/compare_token_balance',
     celebrate({
@@ -156,6 +183,11 @@ export default (app: Router) => {
     },
   );
 
+  /**
+   * Get Payload Hash
+   * @description Get the payload hash for a user
+   * @param {boolean} simulate whether to upload to ipfs or simulate the ipfs payload hash
+   */
   route.post(
     '/get_payload_hash',
     celebrate({
@@ -181,6 +213,10 @@ export default (app: Router) => {
     },
   );
 
+  /**
+   * Get Wallet Tracker Payload
+   * @description Get the wallet tracker payload with changed tokens summary
+   */
   route.post(
     '/get_wallet_tracker_payload',
     celebrate({
@@ -204,6 +240,37 @@ export default (app: Router) => {
     },
   );
 
+  /**
+   * Pretty Token Balances
+   * @description Get the token balances in pretty format
+   */
+  route.post(
+    '/pretty_token_balances',
+    celebrate({
+      body: Joi.object({
+        changedTokensJSON: Joi.array(),
+      }),
+    }),
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/wallet_tracker/pretty_token_balances endpoint with body: %o', req.body )
+      try {
+        const walletTracker = Container.get(WalletTrackerChannel);
+        const result = await walletTracker.prettyTokenBalances(req.body.changedTokensJSON);
+
+        return res.status(201).json(result);
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return next(e);
+      }
+    },
+  );
+
+  /**
+   * Get Token Balance From DB
+   * @description Get the token balance from DB for a user
+   */
   route.post(
     '/get_token_balance_from_db',
     celebrate({
@@ -228,6 +295,10 @@ export default (app: Router) => {
     },
   );
 
+  /**
+   * Add User Token to DB
+   * @description Add a user's token balance to DB
+   */
   route.post(
     '/add_user_token_to_db',
     celebrate({
@@ -253,8 +324,10 @@ export default (app: Router) => {
     },
   );
 
-
-
+  /**
+   * Update User Token Balance
+   * @description Update a user's token balance to DB
+   */
   route.post(
     '/update_user_token_balance',
     celebrate({
@@ -280,6 +353,10 @@ export default (app: Router) => {
     },
   );
 
+  /**
+   * Clear User Token DB
+   * @description Clear the user token data stored in DB
+   */
   route.post(
     '/clear_user_token_db',
     middlewares.onlyLocalhost,

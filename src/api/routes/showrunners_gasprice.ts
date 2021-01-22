@@ -52,4 +52,61 @@ export default (app: Router) => {
     },
   );
 
+  // for updating average gas price
+  route.post(
+    '/get_gas_price',
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/get_gas_price endpoint with body: %o', req.body )
+      try {
+        const ethGasChannel = Container.get(EthGasStationChannel);
+        const gasPrice = await ethGasChannel.getGasPrice();
+
+        return res.status(201).json(gasPrice);
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return next(e);
+      }
+    },
+  );
+
+  // for updating average gas price
+  route.post(
+    '/get_average_gas_price',
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/get_average_gas_price endpoint with body: %o', req.body )
+      try {
+        const ethGasChannel = Container.get(EthGasStationChannel);
+        const averageGasPrice = await ethGasChannel.getAverageGasPrice();
+
+        return res.status(201).json(averageGasPrice);
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return next(e);
+      }
+    },
+  );
+
+  // for updating average gas price
+  route.post(
+    '/clear_gas_price',
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/clear_gas_price endpoint with body: %o', req.body )
+      try {
+        const ethGasChannel = Container.get(EthGasStationChannel);
+        await ethGasChannel.clearGasPrices();
+
+        return res.status(204).json(null);
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return next(e);
+      }
+    },
+  );
+
 };
