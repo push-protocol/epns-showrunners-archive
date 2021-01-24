@@ -675,7 +675,7 @@
 							"raw": "{\n    \"simulate\": true\n}"
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/gasprice/send_message",
+							"raw": "localhost:5432/apis/showrunners/ensdomain/send_message",
 							"host": [
 								"localhost"
 							],
