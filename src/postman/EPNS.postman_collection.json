@@ -612,7 +612,7 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/gasprice/send_message",
+							"raw": "localhost:5432/apis/showrunners/ensdomain/send_message",
 							"host": [
 								"localhost"
 							],
@@ -634,7 +634,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\",\n    \"triggerThresholdInSecs\": 3,\n    \"simulate\": true\n}",
+							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\",\n    \"triggerThresholdInSecs\": 1623066505,\n    \"simulate\": true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
