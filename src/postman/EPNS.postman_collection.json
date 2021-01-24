@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8681fa5f-fb89-47bb-97a0-472c6ba88d80",
+		"_postman_id": "b003ecdf-ac43-464f-ae43-1f3c6b5b70c5",
 		"name": "EPNS",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -421,7 +421,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "6653ffb3-d374-46ed-b7fd-775e2ab215f5",
+						"id": "d0d4457e-bed8-4abc-8448-0dfc0648e29b",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -431,7 +431,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "10621e5b-2f85-4aaf-9b45-2014d65b2fcc",
+						"id": "d9242791-0931-4a74-b3a0-b63c5e390597",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -656,6 +656,36 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "ensdomain/domain_Info",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"address\": \"0xb59cdc85cacd15097ece4c77ed9d225014b4d56d\",\n    \"ensUrl\": \"https://api.thegraph.com/subgraphs/name/ensdomains/ens\",\n    \"network\": \"mainnet\",\n    \"triggerThresholdInSecs\": 1623066505,\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/ensdomain/domain_info",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"ensdomain",
+								"domain_info"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"protocolProfileBehavior": {}
@@ -835,42 +865,6 @@
 								"showrunners",
 								"everest",
 								"get_transaction"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"protocolProfileBehavior": {}
-		},
-		{
-			"name": "Wallet Monitoring",
-			"item": [
-				{
-					"name": "/check_wallets",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:5432/apis/showrunners/wallet_tracker/send_message",
-							"host": [
-								"localhost"
-							],
-							"port": "5432",
-							"path": [
-								"apis",
-								"showrunners",
-								"wallet_tracker",
-								"send_message"
 							]
 						}
 					},
