@@ -21,7 +21,7 @@ const gr = require('graphql-request')
 const { request, gql } = gr;
 
 const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
-const TRIGGER_THRESHOLD_SECS = 60 * 60 * 24 * 7; // 7 Days
+const TRIGGER_THRESHOLD_SECS = 1623066505 //60 * 60 * 24 * 7; // 7 Days
 
 @Service()
 export default class EnsExpirationChannel {
@@ -90,7 +90,7 @@ export default class EnsExpirationChannel {
                       // Send Notification
                       await epnsNotify.sendNotification(
                         epns.signingContract,                                           // Contract connected to signing wallet
-                        ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey),        // Recipient to which the payload should be sent
+                        wallet,        // Recipient to which the payload should be sent
                         parseInt(payloadType),                                    // Notification Type
                         storageType,                                                              // Notificattion Storage Type
                         ipfshash,                                                       // Notification Storage Pointer
@@ -168,90 +168,89 @@ export default class EnsExpirationChannel {
       ens = this.getENSInteractableContract(networkToMonitor)
     }
 
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
 
       const ensRoute = "subgraphs/name/ensdomains/ens"
       const ENS_URL = `${config.ensEndpoint}${ensRoute}`;
       const address = userAddress.toLowerCase();
 
-      const GET_LABEL_NAME = gql`{
-        registrations(where:{registrant:"${address}"})
-        {
-          id
-          domain{
-            id
-            labelhash
-          }
-        }
-      }`
+      let data = await this.getData(address,ENS_URL)
+      
+      if(data.registrations.length == 0){
+        resolve({
+          success: false,
+          err: `ENS name doesn't exist for address: ${userAddress}, skipping...`
+        });
+      }
+      else{
+        let loop = data.registrations.length;
+        const result =  await this.getDomain(loop,data,address,ENS_URL,ens,triggerThresholdInSecs,networkToMonitor,simulate)
+        
+        if(result.flag){
+        // logic loop, it has 7 days or less to expire but not expired
+        this.getENSDomainExpiryPayload(result.ensAddressName, result.dateDiff)
+          .then(payload => {
+            epnsNotify.uploadToIPFS(payload, logger, simulate)
+              .then(async (ipfshash) => {
+                // Sign the transaction and send it to chain
+                const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
+                logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, walletAddress);
 
-      request(ENS_URL, GET_LABEL_NAME)
-      .then(async (datas) => {
-        if(datas.registrations.length == 0){
-          resolve({
-            success: false,
-            err: `ENS name doesn't exist for address: ${userAddress}, skipping...`
-          });
-        }
-        else{
-          let loop = datas.registrations.length;
-          const result =  await this.getDomain(loop,datas,ENS_URL,ens,triggerThresholdInSecs)
-
-          if(result.flag){
-          // logic loop, it has 7 days or less to expire but not expired
-          this.getENSDomainExpiryPayload(result.ensAddressName, result.dateDiff)
-            .then(payload => {
-              epnsNotify.uploadToIPFS(payload, logger, simulate)
-                .then(async (ipfshash) => {
-                  // Sign the transaction and send it to chain
-                  const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
-                  logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, walletAddress);
-
-                  resolve({
-                    success: true,
-                    wallet: userAddress,
-                    ipfshash: ipfshash,
-                    payloadType: parseInt(payload.data.type)
-                  });
-                })
-                .catch (err => {
-                  logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", userAddress, err)
-                  resolve({
-                    success: false,
-                    err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
-                  });
+                resolve({
+                  success: true,
+                  wallet: userAddress,
+                  ipfshash: ipfshash,
+                  payloadType: parseInt(payload.data.type)
                 });
-            })
-            .catch(err => {
-              logger.error("Unable to proceed with ENS Name Expiry Function for wallet: %s, error: %o", userAddress, err);
-              resolve({
-                success: false,
-                err: "Unable to proceed with ENS Name Expiry Function for wallet: " + userAddress + " | error: " + err
+              })
+              .catch (err => {
+                logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", userAddress, err)
+                resolve({
+                  success: false,
+                  err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
+                });
               });
-            });
-          }
-          else {
+          })
+          .catch(err => {
+            logger.error("Unable to proceed with ENS Name Expiry Function for wallet: %s, error: %o", userAddress, err);
             resolve({
               success: false,
-              err: "Date Expiry condition unmet for wallet: " + userAddress
+              err: "Unable to proceed with ENS Name Expiry Function for wallet: " + userAddress + " | error: " + err
             });
-          }
+          });
         }
-      });
+        else {
+          resolve({
+            success: false,
+            err: "Date Expiry condition unmet for wallet: " + userAddress
+          });
+        }
+      }
+     
     });
   }
 
-  public async getDomain(loop,datas,ENS_URL,ens,triggerThresholdInSecs) {
+  public async getDomain(loop,data,address,ENS_URL,ens,triggerThresholdInSecs,networkToMonitor,simulate) {
     const logger = this.logger;
+
+    if(!ens){
+      logger.debug("ENS Interactable Contract not set... mostly coming from routes, setting contract for --> %s", networkToMonitor);
+      ens = this.getENSInteractableContract(networkToMonitor)
+    }
+
+    if(!data){
+      data = await this.getData(address,ENS_URL);
+      loop = data.registrations.length
+    }
 
     return new Promise(async (resolve) => {
 
-      let dates = [];
-      let ensName = [];
-      let flag;
+      let dates:number[] = [];
+      let ensName:string[] = [];
+      let flag:boolean;
 
       for(let i = 0; i < loop; i++){
-        let hashedName = datas.registrations[i].domain.labelhash;
+        let hashedName = data.registrations[i].domain.labelhash;
 
         const GET_LABEL_NAME = gql`
         query{
@@ -260,9 +259,9 @@ export default class EnsExpirationChannel {
           }
         }`
 
-        const data = await request(ENS_URL, GET_LABEL_NAME)
+        const dataInfo = await request(ENS_URL, GET_LABEL_NAME)
         
-        let ensAddressName = data.domains[0].labelName;
+        let ensAddressName = dataInfo.domains[0].labelName;
 
         const expiredDate = await ens.contract.nameExpires(hashedName)
       
@@ -300,6 +299,24 @@ export default class EnsExpirationChannel {
       })
 
     })
+  }
+
+  private async getData(address,ENS_URL){
+    let data;
+    const GET_LABEL_NAME = gql`{
+      registrations(where:{registrant:"${address}"})
+      {
+        id
+        domain{
+          id
+          labelhash
+        }
+      }
+    }`
+
+   data = await request(ENS_URL, GET_LABEL_NAME)
+   console.log(data)
+   return(data)
   }
 
 	public async getENSDomainExpiryPayload(ensAddressName, dateDiff) {
