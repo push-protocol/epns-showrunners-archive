@@ -21,32 +21,6 @@ const WALLETS = walletConfig.wallets.reduce((initial, value) => {
 }, {})
 
 const MAIN = new Wallet(walletConfig.mainWalletPrivateKey, provider)
-console.log("monitoring wallets: %o ", WALLETS)
-  // new Wallet(config.ensDomainExpiryPrivateKey, provider)
-// const MAIN = new Wallet(config.ensDomainExpiryPrivateKey, provider)
-// const WALLETS = {
-//   'ens':{
-//     wallet: new Wallet(config.ensDomainExpiryPrivateKey, provider)
-//   },
-//   'btcTicker':{
-//     wallet: new Wallet(config.btcTickerPrivateKey, provider)
-//   },
-//   'ethTicker':{
-//     wallet: new Wallet(config.ethTickerPrivateKey, provider)
-//   },
-//   'everest':{
-//     wallet: new Wallet(config.everestPrivateKey, provider)
-//   },
-//   'compound':{
-//     wallet: new Wallet(config.compComptrollerPrivateKey, provider)
-//   },
-//   'walletTracker':{
-//     wallet: new Wallet(config.walletTrackerPrivateKey, provider)
-//   },
-//   'gasStation':{
-//     wallet: new Wallet(config.ethGasStationPrivateKey, provider)
-//   },
-// }
 
 @Service()
 export default class WalletTrackerChannel {
