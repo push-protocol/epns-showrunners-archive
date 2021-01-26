@@ -104,36 +104,36 @@ export default ({ logger }) => {
   });
 
   // 1.4.1 GAS CHANNEL
-  schedule.scheduleJob({ start: startTime, rule: tenMinuteRule }, async function () {
-    logger.info('-- 🛵 Scheduling Showrunner - Gas Price Checker [on 10 minutes]' + new Date(Date.now()));
-    const gasTicker = Container.get(EthGasStationChannel);
-    const taskName = 'Gas result and sendMessageToContract()';
+  // schedule.scheduleJob({ start: startTime, rule: tenMinuteRule }, async function () {
+  //   logger.info('-- 🛵 Scheduling Showrunner - Gas Price Checker [on 10 minutes]' + new Date(Date.now()));
+  //   const gasTicker = Container.get(EthGasStationChannel);
+  //   const taskName = 'Gas result and sendMessageToContract()';
 
-    try {
-      await gasTicker.sendMessageToContract(false);
-      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
-    }
-    catch (err) {
-      logger.error(`❌ Cron Task Failed -- ${taskName}`);
-      logger.error(`Error Object: %o`, err);
-    }
-  });
+  //   try {
+  //     await gasTicker.sendMessageToContract(false);
+  //     logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+  //   }
+  //   catch (err) {
+  //     logger.error(`❌ Cron Task Failed -- ${taskName}`);
+  //     logger.error(`Error Object: %o`, err);
+  //   }
+  // });
 
-  // 1.4.2 GAS CHANNEL
-  schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
-    logger.info('-- 🛵 Scheduling Showrunner - Gas Average Update [on 24 hours]');
-    const gasDbTicker = Container.get(EthGasStationChannel);
-    const taskName = 'updated mongoDb';
+  // // 1.4.2 GAS CHANNEL
+  // schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
+  //   logger.info('-- 🛵 Scheduling Showrunner - Gas Average Update [on 24 hours]');
+  //   const gasDbTicker = Container.get(EthGasStationChannel);
+  //   const taskName = 'updated mongoDb';
 
-    try {
-      await gasDbTicker.updateGasPriceAverage();
-      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
-    }
-    catch (err) {
-      logger.error(`❌ Cron Task Failed -- ${taskName}`);
-      logger.error(`Error Object: %o`, err);
-    }
-  });
+  //   try {
+  //     await gasDbTicker.updateGasPriceAverage();
+  //     logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+  //   }
+  //   catch (err) {
+  //     logger.error(`❌ Cron Task Failed -- ${taskName}`);
+  //     logger.error(`Error Object: %o`, err);
+  //   }
+  // });
 
   // 1.5 COMPOUND LIQUIDATION CHANNEL
   schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
@@ -168,54 +168,54 @@ export default ({ logger }) => {
   });
 
   // 1.7 Wallets Monitoring CHANNEL
-  schedule.scheduleJob({ start: startTime, rule: oneHourRule }, async function () {
-    logger.info('-- 🛵 Scheduling Showrunner - Wallets Monitoring [every Hour]' + new Date(Date.now()));
-    const walletMonitoring = Container.get(WalletMonitoring);
-    const taskName = 'WalletMonitoring event checks and processWallet()';
+  // schedule.scheduleJob({ start: startTime, rule: oneHourRule }, async function () {
+  //   logger.info('-- 🛵 Scheduling Showrunner - Wallets Monitoring [every Hour]' + new Date(Date.now()));
+  //   const walletMonitoring = Container.get(WalletMonitoring);
+  //   const taskName = 'WalletMonitoring event checks and processWallet()';
 
-    try {
-      await walletMonitoring.processWallets(false);
-      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
-    }
-    catch (err) {
-      logger.error(`❌ Cron Task Failed -- ${taskName}`);
-      logger.error(`Error Object: %o`, err);
-    }
-  });
+  //   try {
+  //     await walletMonitoring.processWallets(false);
+  //     logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+  //   }
+  //   catch (err) {
+  //     logger.error(`❌ Cron Task Failed -- ${taskName}`);
+  //     logger.error(`Error Object: %o`, err);
+  //   }
+  // });
 
-  // 1.7.2 Main Wallet Monitoring CHANNEL
-  schedule.scheduleJob({ start: startTime, rule: oneHourRule }, async function () {
-    logger.info('-- 🛵 Scheduling Showrunner - Main Wallets Monitoring [every Hour]' + new Date(Date.now()));
-    const walletMonitoring = Container.get(WalletMonitoring);
-    const taskName = 'Main Wallet Monitoring event checks and processWallet()';
+  // // 1.7.2 Main Wallet Monitoring CHANNEL
+  // schedule.scheduleJob({ start: startTime, rule: oneHourRule }, async function () {
+  //   logger.info('-- 🛵 Scheduling Showrunner - Main Wallets Monitoring [every Hour]' + new Date(Date.now()));
+  //   const walletMonitoring = Container.get(WalletMonitoring);
+  //   const taskName = 'Main Wallet Monitoring event checks and processWallet()';
 
-    try {
-      await walletMonitoring.processMainWallet(false);
-      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
-    }
-    catch (err) {
-      logger.error(`❌ Cron Task Failed -- ${taskName}`);
-      logger.error(`Error Object: %o`, err);
-    }
-  });
+  //   try {
+  //     await walletMonitoring.processMainWallet(false);
+  //     logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+  //   }
+  //   catch (err) {
+  //     logger.error(`❌ Cron Task Failed -- ${taskName}`);
+  //     logger.error(`Error Object: %o`, err);
+  //   }
+  // });
 
-  // // 2. EVENT DISPATHER SERVICE
-  const eventDispatcher = Container.get(EventDispatcherInterface);
-  eventDispatcher.on("newBlockMined", async function (data) {
-    // 2.1 Wallet Tracker Service
-    // Added condition to approx it at 10 blocks (150 secs approx)
-    if (data % 10 == 0) {
-      const walletTracker = Container.get(WalletTrackerChannel);
-      const taskName = 'Track wallets on every new block mined';
+  // // // 2. EVENT DISPATHER SERVICE
+  // const eventDispatcher = Container.get(EventDispatcherInterface);
+  // eventDispatcher.on("newBlockMined", async function (data) {
+  //   // 2.1 Wallet Tracker Service
+  //   // Added condition to approx it at 10 blocks (150 secs approx)
+  //   if (data % 10 == 0) {
+  //     const walletTracker = Container.get(WalletTrackerChannel);
+  //     const taskName = 'Track wallets on every new block mined';
 
-      try {
-        await walletTracker.sendMessageToContract(false);
-        logger.info(`🐣 Cron Task Completed -- ${taskName}`);
-      }
-      catch (err) {
-        logger.error(`❌ Cron Task Failed -- ${taskName}`);
-        logger.error(`Error Object: %o`, err);
-      }
-    }
-  })
+  //     try {
+  //       await walletTracker.sendMessageToContract(false);
+  //       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+  //     }
+  //     catch (err) {
+  //       logger.error(`❌ Cron Task Failed -- ${taskName}`);
+  //       logger.error(`Error Object: %o`, err);
+  //     }
+  //   }
+  // })
 };

@@ -126,7 +126,7 @@ export default (app: Router) => {
       try {
         const compoundLiquidation = Container.get(CompoundLiquidationChannel);
         const data = await compoundLiquidation.getUsersTotal(null, network, address, simulate);
-        if (data.success && data.success != false) {
+        if (data.success && data.success == false) {
           return handleResponse(res, 500, false, "total users", JSON.stringify(data.err));
         } else {
           return handleResponse(res, 200, true, "total users", data);

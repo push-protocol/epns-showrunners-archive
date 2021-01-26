@@ -315,7 +315,6 @@ export default class EnsExpirationChannel {
     }`
 
    data = await request(ENS_URL, GET_LABEL_NAME)
-   console.log(data)
    return(data)
   }
 
