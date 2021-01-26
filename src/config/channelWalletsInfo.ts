@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { Wallet } from 'ethers';
 
 const envFound = dotenv.config();
 if (envFound.error) {
@@ -6,10 +7,7 @@ if (envFound.error) {
 
   throw new Error("⚠️  Couldn't find .env file  ⚠️");
 }
-
-export default {
-    mainWalletPrivateKey: process.env.MASTER_WALLET_PRIVATE_KEY,
-    wallets: [
+const wallets = [
         {
             ensDomainExpiryPrivateKey_1: process.env.ENS_DOMAIN_EXPIRY_PRIVATE_KEY
         },
@@ -23,13 +21,24 @@ export default {
             ethGasStationPrivateKey_1: process.env.ETH_GAS_STATION_PRIVATE_KEY
         },
         {
-            compComptrollerPrivateKey: process.env.COMP_COMPTROLLER_PRIVATE_KEY
+            compComptrollerPrivateKey_1: process.env.COMP_COMPTROLLER_PRIVATE_KEY
         },
         {
-            walletTrackerPrivateKey: process.env.WALLET_TRACKER_PRIVATE_KEY
+            walletTrackerPrivateKey_1: process.env.WALLET_TRACKER_PRIVATE_KEY
         },
         {
             everestPrivateKey_1: process.env.EVEREST_PRIVATE_KEY
         }
-    ]
+]
+    
+const walletsKV = wallets.reduce((initial, value) => {
+    Object.keys(value).map(key => initial[key] = value[key])
+    return initial;
+}, {})
+console.log({walletsKV})
+
+export default {
+    mainWalletPrivateKey: process.env.MASTER_WALLET_PRIVATE_KEY,
+    wallets,
+    walletsKV
 }

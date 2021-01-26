@@ -4,6 +4,7 @@
 
 import { Service, Inject } from 'typedi';
 import config from '../config';
+import channelWalletsInfo from '../config/channelWalletsInfo';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import events from '../subscribers/events';
 
@@ -34,7 +35,7 @@ export default class CompoundLiquidationChannel {
     const logger = this.logger;
     logger.debug('Checking for liquidated address... ');
     return await new Promise((resolve, reject) => {
-      const compoundChannelAddress = ethers.utils.computeAddress(config.compComptrollerPrivateKey);
+      const compoundChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['compComptrollerPrivateKey_1']);
        // Call Helper function to get interactableContracts
       const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
       const compound = this.getCompoundInteractableContract(config.web3KovanProvider);
@@ -131,7 +132,7 @@ export default class CompoundLiquidationChannel {
           infuraAPI: config.infuraAPI,
           alchemyAPI: config.alchemyAPI
         },
-        config.compComptrollerPrivateKey,                                       // Private Key of the Wallet sending Notification
+        channelWalletsInfo.walletsKV['compComptrollerPrivateKey_1'],                       // Private Key of the Wallet sending Notification
         config.compComptrollerDeployedContract,                                             // The contract address which is going to be used
         config.compComptrollerDeployedContractABI                                           // The contract abi which is going to be useds
       );
@@ -146,7 +147,7 @@ export default class CompoundLiquidationChannel {
           infuraAPI: config.infuraAPI,
           alchemyAPI: config.alchemyAPI
         },
-        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
+        channelWalletsInfo.walletsKV['compComptrollerPrivateKey_1'],            // Private Key of the Wallet sending Notification
         config.deployedContract,                                                // The contract address which is going to be used
         config.deployedContractABI                                              // The contract abi which is going to be useds
       );
@@ -161,7 +162,7 @@ export default class CompoundLiquidationChannel {
         infuraAPI: config.infuraAPI,
         alchemyAPI: config.alchemyAPI
       },
-      config.compComptrollerPrivateKey,                                       // Private Key of the Wallet sending Notification
+      channelWalletsInfo.walletsKV['compComptrollerPrivateKey_1'],            // Private Key of the Wallet sending Notification
       address,                                                                // The contract address which is going to be used
       abi                                                                     // The contract abi which is going to be useds
     );

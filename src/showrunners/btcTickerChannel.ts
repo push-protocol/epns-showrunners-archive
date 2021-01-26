@@ -4,6 +4,7 @@
 
 import { Service, Inject } from 'typedi';
 import config from '../config';
+import channelWalletsInfo from '../config/channelWalletsInfo';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import events from '../subscribers/events';
 
@@ -43,7 +44,7 @@ export default class BtcTickerChannel {
                   infuraAPI: config.infuraAPI,
                   alchemyAPI: config.alchemyAPI
                 },
-                config.btcTickerPrivateKey,                                     // Private Key of the Wallet sending Notification
+                channelWalletsInfo.walletsKV['btcTickerPrivateKey_1'],                                     // Private Key of the Wallet sending Notification
                 config.deployedContract,                                        // The contract address which is going to be used
                 config.deployedContractABI                                      // The contract abi which is going to be useds
               );
@@ -54,7 +55,7 @@ export default class BtcTickerChannel {
               // Send Notification
               await epnsNotify.sendNotification(
                 epns.signingContract,                                           // Contract connected to signing wallet
-                ethers.utils.computeAddress(config.btcTickerPrivateKey),        // Recipient to which the payload should be sent
+                ethers.utils.computeAddress(channelWalletsInfo.walletsKV['btcTickerPrivateKey_1']),        // Recipient to which the payload should be sent
                 parseInt(payload.data.type),                                    // Notification Type
                 storageType,                                                    // Notificattion Storage Type
                 ipfshash,                                                       // Notification Storage Pointer
