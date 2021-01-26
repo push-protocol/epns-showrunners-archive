@@ -8,7 +8,7 @@ if (envFound.error) {
 }
 
 export default {
-    mainWalletPrivateKey: process.env.WALLET_TRACKER_PRIVATE_KEY,
+    mainWalletPrivateKey: process.env.MASTER_WALLET_PRIVATE_KEY,
     wallets: [
         {
             ensDomainExpiryPrivateKey_1: process.env.ENS_DOMAIN_EXPIRY_PRIVATE_KEY
