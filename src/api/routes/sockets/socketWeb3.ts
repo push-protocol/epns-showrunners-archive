@@ -1,26 +1,59 @@
 import { Container } from 'typedi';
 import config from '../../../config';
-import { ethers } from 'ethers';
-// import epnsNotify from '../../../helpers/epnsNotifyHelper';
+import epnsNotify from '../../../helpers/epnsNotifyHelper';
 import { EventDispatcher, EventDispatcherInterface } from '../../../decorators/eventDispatcher';
-// let epns;
-function initializeEPNS(logger, eventDispatcher) {
+
+let epns;
+
+async function initializeEPNS(logger, eventDispatcher) {
   try {
-    const provider = new ethers.providers.AlchemyWebSocketProvider(3, config.alchemyAPI);
+    // console.log("tick");
+
+    epns = epnsNotify.getInteractableContracts(
+      config.web3RopstenNetwork,                                      // Network for which the interactable contract is req
+      {                                                               // API Keys
+        etherscanAPI: config.etherscanAPI,
+        infuraAPI: config.infuraAPI,
+        alchemyAPI: config.alchemyAPI
+      },
+      null,                                     // Private Key of the Wallet sending Notification
+      config.deployedContract,                                        // The contract address which is going to be used
+      config.deployedContractABI                                      // The contract abi which is going to be useds
+    );
+
     // EXAMPLE
-    provider.on('block', (blockNumber) => {
+    epns.provider.on('block', (blockNumber) => {
       logger.info(`🐣 New block mined! -- ${blockNumber}`);
       eventDispatcher.dispatch("newBlockMined", blockNumber)
     })
   } catch (error) {
-    console.log(error)
-    // initializeEPNS(logger, eventDispatcher)
+    deleteEPNSInstance();
+    initializeEPNS(logger, eventDispatcher)
+  }
+}
+
+async function deleteEPNSInstance() {
+  if (epns) {
+    // console.log("b:", epns.provider.listenerCount("block"))
+    await epns.provider.removeAllListeners("block");
+    // console.log("c:", epns.provider.listenerCount("block"))
+
+    delete epns.provider;
+    delete epns.contract;
+    delete epns.signingContract;
+
+    epns = null
   }
 }
 
 export default async (app: Router) => {
   const logger = Container.get('logger');
   const eventDispatcher = Container.get(EventDispatcherInterface);
-  initializeEPNS(logger, eventDispatcher)
-}
+  await initializeEPNS(logger, eventDispatcher)
 
+  const thirtyMins = 30 * 60 * 1000; // Thirty mins
+  setInterval(async function(){
+    await deleteEPNSInstance();
+    await initializeEPNS(logger, eventDispatcher)
+  }, thirtyMins);
+}
