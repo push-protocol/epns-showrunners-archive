@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "d4e99415-519c-4554-b62a-57b975c14dcf",
-		"name": "EPNS",
+		"_postman_id": "7a7f6831-3a11-47f2-8f92-b041d3726a37",
+		"name": "EPNS Showrunners Staging",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -12,15 +12,17 @@
 					"name": "/send_message",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Simulated\",\n\t\t\"txMode\": \"Simulated\",\n\t\t\"logicOverride\": {\n\t\t\t\"applyToAddr\": \"0x108C2E758BC771AFF2F7B0B006c9deD1101440AE\",\n\t\t\t\"randomEthBalance\": true,\n\t\t\t\"randomTokenBalance\": true\n\t\t},\n\t\t\"txOverride\": {\n\t\t\t\"recipientAddr\": \"0x108C2E758BC771AFF2F7B0B006c9deD1101440AE\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/wallet_tracker/send_message",
@@ -42,15 +44,17 @@
 					"name": "/get_supported_erc20s_array",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"provider\": \"ropsten\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"provider\": \"ropsten\"\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/wallet_tracker/get_supported_erc20s_array",
@@ -72,15 +76,17 @@
 					"name": "/check_wallet_movement",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"provider\": \"ropsten\",\n    \"simulate\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"provider\": \"ropsten\",\n    \"simulate\": true\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/wallet_tracker/check_wallet_movement",
@@ -102,15 +108,17 @@
 					"name": "/check_token_movement",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user\": \"0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D\",\n    \"provider\": \"homestead\",\n    \"ticker\": \"UNI\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"user\": \"0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D\",\n    \"provider\": \"homestead\",\n    \"ticker\": \"UNI\"\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/wallet_tracker/check_token_movement",
@@ -132,15 +140,17 @@
 					"name": "/get_token_balance",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"provider\": \"ropsten\",\n    \"ticker\": \"ETH\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"provider\": \"ropsten\",\n    \"ticker\": \"ETH\"\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/wallet_tracker/get_token_balance",
@@ -162,15 +172,17 @@
 					"name": "/compare_token_balance",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n        \"tokenBalance\": 500,\n        \"tokenBalanceFromDB\":500\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n        \"tokenBalance\": 500,\n        \"tokenBalanceFromDB\":500\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/wallet_tracker/compare_token_balance",
@@ -192,15 +204,17 @@
 					"name": "/get_token_balance_from_db",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"ticker\": \"ETH\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"ticker\": \"ETH\"\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/wallet_tracker/get_token_balance_from_db",
@@ -222,15 +236,17 @@
 					"name": "/add_user_token_to_db",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"ticker\": \"ETH\",\n    \"balance\": \"0.5\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"ticker\": \"ETH\",\n    \"balance\": \"0.5\"\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/wallet_tracker/add_user_token_to_db",
@@ -252,15 +268,17 @@
 					"name": "/update_user_token_balance",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"ticker\": \"ETH\",\n    \"balance\": \"0.9\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"ticker\": \"ETH\",\n    \"balance\": \"0.9\"\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/wallet_tracker/update_user_token_balance",
@@ -282,7 +300,18 @@
 					"name": "/clear_user_token_db",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/wallet_tracker/clear_user_token_db",
 							"host": [
@@ -303,15 +332,17 @@
 					"name": "/get_wallet_tracker_payload",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"changedTokens\": [\n            {\n                \"ticker\": \"ETH\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -0.002931772656126874,\n                    \"tokenBalance\": 4.964172359267811\n                }\n            },\n            {\n                \"ticker\": \"DAI\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -100,\n                    \"tokenBalance\": 82403\n                }\n            }\n        ]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"changedTokens\": [\n            {\n                \"ticker\": \"ETH\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -0.002931772656126874,\n                    \"tokenBalance\": 4.964172359267811\n                }\n            },\n            {\n                \"ticker\": \"DAI\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -100,\n                    \"tokenBalance\": 82403\n                }\n            }\n        ]\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/wallet_tracker/get_wallet_tracker_payload",
@@ -333,15 +364,17 @@
 					"name": "/get_payload_hash",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n   \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"simulate\": false,\n    \"changedTokens\": [\n            {\n                \"ticker\": \"ETH\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -0.002931772656126874,\n                    \"tokenBalance\": 4.964172359267811\n                }\n            },\n            {\n                \"ticker\": \"DAI\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -100,\n                    \"tokenBalance\": 82403\n                }\n            }\n        ]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n   \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"simulate\": false,\n    \"changedTokens\": [\n            {\n                \"ticker\": \"ETH\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -0.002931772656126874,\n                    \"tokenBalance\": 4.964172359267811\n                }\n            },\n            {\n                \"ticker\": \"DAI\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -100,\n                    \"tokenBalance\": 82403\n                }\n            }\n        ]\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/wallet_tracker/get_payload_hash",
@@ -359,7 +392,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "ETH Ticker",
@@ -368,7 +402,18 @@
 					"name": "ethticker/send_message",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/ethticker/send_message",
 							"host": [
@@ -389,15 +434,17 @@
 					"name": "ethticker/get_new_price",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"simulate\": true\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/ethticker/get_new_price",
@@ -420,6 +467,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
+						"id": "40fd4125-d639-473b-ab26-d2ebb3720a1d",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -429,13 +477,15 @@
 				{
 					"listen": "test",
 					"script": {
+						"id": "24714323-c9c2-42dd-81c9-34d5591b1a2a",
 						"type": "text/javascript",
 						"exec": [
 							""
 						]
 					}
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Compound",
@@ -444,7 +494,18 @@
 					"name": "compound/send_message",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}"
+						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/compound/send_message",
 							"host": [
@@ -465,15 +526,17 @@
 					"name": "compound/check_liquidity",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"kovan\"\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/compound/check_liquidity",
@@ -495,45 +558,17 @@
 					"name": "compound/check_assets",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:5432/apis/showrunners/compound/check_liquidity",
-							"host": [
-								"localhost"
-							],
-							"port": "5432",
-							"path": [
-								"apis",
-								"showrunners",
-								"compound",
-								"check_liquidity"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "compound/total_users",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"kovan\"\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/compound/check_assets",
@@ -550,8 +585,41 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "compound/total_users",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"kovan\",\n    \"simulate\": true\n}"
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/compound/total_users",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"compound",
+								"total_users"
+							]
+						}
+					},
+					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Gas Price",
@@ -560,15 +628,17 @@
 					"name": "gasprice/send_message",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"simulate\": true\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/gasprice/send_message",
@@ -593,7 +663,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
+							"raw": "{\n    \"simulate\":true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -623,7 +693,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
+							"raw": "{\n    \"simulate\":true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -653,7 +723,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
+							"raw": "{\n    \"simulate\":true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -683,7 +753,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
+							"raw": "{\n    \"simulate\":true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -706,7 +776,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "ENS Domain",
@@ -715,18 +786,20 @@
 					"name": "ensdomain/send_message",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"simulate\": true\n}"
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/gasprice/send_message",
+							"raw": "localhost:5432/apis/showrunners/ensdomain/send_message",
 							"host": [
 								"localhost"
 							],
@@ -734,7 +807,7 @@
 							"path": [
 								"apis",
 								"showrunners",
-								"gasprice",
+								"ensdomain",
 								"send_message"
 							]
 						}
@@ -745,15 +818,17 @@
 					"name": "ensdomain/check_expiry",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\",\n    \"triggerThresholdInSecs\": 3,\n    \"simulate\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"address\": \"0xb59cdc85cacd15097ece4c77ed9d225014b4d56d\",\n    \"network\": \"mainnet\",\n    \"triggerThresholdInSecs\": 1623066505,\n    \"simulate\": true\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/ensdomain/check_expiry",
@@ -770,8 +845,41 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "ensdomain/domain_Info",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"address\": \"0xb59cdc85cacd15097ece4c77ed9d225014b4d56d\",\n    \"ensUrl\": \"https://api.thegraph.com/subgraphs/name/ensdomains/ens\",\n    \"network\": \"mainnet\",\n    \"triggerThresholdInSecs\": 1623066505,\n    \"simulate\": true\n}"
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/ensdomain/domain_info",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"ensdomain",
+								"domain_info"
+							]
+						}
+					},
+					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "BTC Ticker",
@@ -780,7 +888,18 @@
 					"name": "ethticker/send_message",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/ethticker/send_message",
 							"host": [
@@ -801,15 +920,17 @@
 					"name": "btcticker/get_new_price",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"simulate\": true\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/ethticker/get_new_price",
@@ -827,7 +948,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Everest",
@@ -836,15 +958,17 @@
 					"name": "everest/send_message",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n\t\t\t\"fromBlock\": 11350301,\n\t\t\t\"toBlock\": 11360301\n\t\t},\n\t\t\"txOverride\": {\n\t\t\t\"recipientAddr\": \"0x108C2E758BC771AFF2F7B0B006c9deD1101440AE\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/everest/send_message",
@@ -866,15 +990,17 @@
 					"name": "everest/check_member_challenged_event",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"simulate\": true\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/everest/send_message",
@@ -896,15 +1022,17 @@
 					"name": "everest/get_transaction",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true,\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"simulate\": true,\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\"\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/everest/get_transaction",
@@ -926,15 +1054,17 @@
 					"name": "everest/get_everest_challenge_message",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\"\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/everest/get_transaction",
@@ -952,42 +1082,9 @@
 					},
 					"response": []
 				}
-			]
-		},
-		{
-			"name": "Wallet Monitoring",
-			"item": [
-				{
-					"name": "/check_wallets",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:5432/apis/showrunners/wallet_tracker/send_message",
-							"host": [
-								"localhost"
-							],
-							"port": "5432",
-							"path": [
-								"apis",
-								"showrunners",
-								"wallet_tracker",
-								"send_message"
-							]
-						}
-					},
-					"response": []
-				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		}
-	]
+	],
+	"protocolProfileBehavior": {}
 }

@@ -53,7 +53,7 @@ export default (app: Router) => {
         network: Joi.string().required(),
         address: Joi.string().required(),
         triggerThresholdInSecs: Joi.number().required(),
-        simulate: [Joi.bool(), Joi.object()],
+        simulate: Joi.bool(),
       }),
     }),
     middlewares.onlyLocalhost,
@@ -70,6 +70,45 @@ export default (app: Router) => {
           return handleResponse(res, 500, false, "Expiry data", JSON.stringify(data.err));
         } else {
           return handleResponse(res, 200, true, "Expiry data", data);
+        }
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return handleResponse(res, 500, false, 'error', JSON.stringify(e));
+      }
+    },
+  );
+
+  /**
+   * domain
+   * @description gets the domain info for a particular
+   * @param {boolean} simulate whether to send the actual message or simulate message sending
+   */
+
+  route.post(
+    '/domain_info',
+    celebrate({
+      body: Joi.object({
+        address: Joi.string().required(),
+        ensUrl: Joi.string().required(),
+        triggerThresholdInSecs: Joi.number().required(),
+        network: Joi.string().required(),
+        simulate: Joi.bool(),
+      }),
+    }),
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/ensdomain/domain_info endpoint with body: %o', req.body )
+      try {
+        const { address, ensUrl, triggerThresholdInSecs, network, simulate } = req.body;
+
+        const ensDomain = Container.get(EnsExiprationChannel);
+        const dataInfo = await ensDomain.getDomain(null, null, address, ensUrl, null, triggerThresholdInSecs, network, simulate );
+
+        if (dataInfo.success && dataInfo.success == false) {
+          return handleResponse(res, 500, false, "Data Info", JSON.stringify(dataInfo.err));
+        } else {
+          return handleResponse(res, 200, true, "Data Info", dataInfo);
         }
       } catch (e) {
         Logger.error('🔥 error: %o', e);

@@ -1,6 +1,6 @@
 {
   "name": "epns-showrunnerss-staging",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Server to listen and perform services for EPNS",
   "main": "src/app.ts",
   "scripts": {
@@ -92,6 +92,7 @@
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.2.0",
     "eslint-plugin-prettier": "^3.0.1",
+    "git-json-merge": "0.4.5",
     "jest": "^24.1.0",
     "nodemon": "^2.0.1",
     "prettier": "^1.17.0",
