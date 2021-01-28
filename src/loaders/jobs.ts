@@ -34,25 +34,28 @@ export default ({ logger }) => {
   // const startTime = new Date(Date.now());
   // console.log(startTime, Date.now())
 
-  const sixHourRule = new schedule.RecurrenceRule();
-  sixHourRule.hour = new schedule.Range(0, 23, 6);
-  sixHourRule.minute = 0;
-  sixHourRule.second = 0;
+  const twoAndHalfMinRule = new schedule.RecurrenceRule();
+  twoAndHalfMinRule.minute = new schedule.Range(0, 59, 2);
+  twoAndHalfMinRule.second = 30;
+
+  const tenMinuteRule = new schedule.RecurrenceRule();
+  tenMinuteRule.minute = new schedule.Range(0, 59, 10);
 
   const oneHourRule = new schedule.RecurrenceRule();
   oneHourRule.hour = new schedule.Range(0, 23);
   oneHourRule.minute = 0;
   oneHourRule.second = 0;
 
+  const sixHourRule = new schedule.RecurrenceRule();
+  sixHourRule.hour = new schedule.Range(0, 23, 6);
+  sixHourRule.minute = 0;
+  sixHourRule.second = 0;
+
   const dailyRule = new schedule.RecurrenceRule();
   dailyRule.hour = 0;
   dailyRule.minute = 0;
   dailyRule.second = 0;
   dailyRule.dayOfWeek = new schedule.Range(0, 6);
-
-  const tenMinuteRule = new schedule.RecurrenceRule();
-  tenMinuteRule.minute = new schedule.Range(0, 59, 10);
-
 
   // 1.1 BTC TICKER CHANNEL
   schedule.scheduleJob({ start: startTime, rule: sixHourRule }, async function () {
@@ -167,7 +170,44 @@ export default ({ logger }) => {
     }
   });
 
-  // 1.7 Wallets Monitoring CHANNEL
+  // 1.7 WALLET TRACKER CHANNEL
+  schedule.scheduleJob({ start: startTime, rule: twoAndHalfMinRule }, async function () {
+    logger.info('-- 🛵 Scheduling Showrunner - Everest Channel [on 2.5 Minutes]');
+    const walletTracker = Container.get(WalletTrackerChannel);
+    const taskName = 'Track wallets on every new block mined';
+
+    try {
+      await walletTracker.sendMessageToContract(false);
+      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+    }
+    catch (err) {
+      logger.error(`❌ Cron Task Failed -- ${taskName}`);
+      logger.error(`Error Object: %o`, err);
+    }
+  });
+
+  // 2. EVENT DISPATHER SERVICE
+  const eventDispatcher = Container.get(EventDispatcherInterface);
+  eventDispatcher.on("newBlockMined", async function (data) {
+    // Disabled for now
+    // // 2.1 Wallet Tracker Service
+    // // Added condition to approx it at 10 blocks (150 secs approx)
+    // if (data % 10 == 0) {
+    //   const walletTracker = Container.get(WalletTrackerChannel);
+    //   const taskName = 'Track wallets on every new block mined';
+    //
+    //   try {
+    //     await walletTracker.sendMessageToContract(false);
+    //     logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+    //   }
+    //   catch (err) {
+    //     logger.error(`❌ Cron Task Failed -- ${taskName}`);
+    //     logger.error(`Error Object: %o`, err);
+    //   }
+    // }
+  })
+
+  // 3.1 Wallets Monitoring Service
   schedule.scheduleJob({ start: startTime, rule: oneHourRule }, async function () {
     logger.info('-- 🛵 Scheduling Showrunner - Wallets Monitoring [every Hour]' + new Date(Date.now()));
     const walletMonitoring = Container.get(WalletMonitoring);
@@ -183,7 +223,7 @@ export default ({ logger }) => {
     }
   });
 
-  // 1.7.2 Main Wallet Monitoring CHANNEL
+  // 3.2 Main Wallet Monitoring Service
   schedule.scheduleJob({ start: startTime, rule: oneHourRule }, async function () {
     logger.info('-- 🛵 Scheduling Showrunner - Main Wallets Monitoring [every Hour]' + new Date(Date.now()));
     const walletMonitoring = Container.get(WalletMonitoring);
@@ -198,24 +238,4 @@ export default ({ logger }) => {
       logger.error(`Error Object: %o`, err);
     }
   });
-
-  // // 2. EVENT DISPATHER SERVICE
-  const eventDispatcher = Container.get(EventDispatcherInterface);
-  eventDispatcher.on("newBlockMined", async function (data) {
-    // 2.1 Wallet Tracker Service
-    // Added condition to approx it at 10 blocks (150 secs approx)
-    if (data % 10 == 0) {
-      const walletTracker = Container.get(WalletTrackerChannel);
-      const taskName = 'Track wallets on every new block mined';
-
-      try {
-        await walletTracker.sendMessageToContract(false);
-        logger.info(`🐣 Cron Task Completed -- ${taskName}`);
-      }
-      catch (err) {
-        logger.error(`❌ Cron Task Failed -- ${taskName}`);
-        logger.error(`Error Object: %o`, err);
-      }
-    }
-  })
 };
