@@ -10,3 +10,4 @@ export default async (): Promise<Db> => {
   });
   return connection.connection.db;
 };
+ 
