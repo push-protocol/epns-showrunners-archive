@@ -49,7 +49,7 @@ export default ({ logger }) => {
   dailyRule.minute = 0;
   dailyRule.second = 0;
   dailyRule.dayOfWeek = new schedule.Range(0, 6);
-  
+
   const tenMinuteRule = new schedule.RecurrenceRule();
   tenMinuteRule.minute = new schedule.Range(0, 59, 10);
 
