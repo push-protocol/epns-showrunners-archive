@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "7a7f6831-3a11-47f2-8f92-b041d3726a37",
+		"_postman_id": "154293e3-b9a7-499c-8b35-6deb0840e6fb",
 		"name": "EPNS Showrunners Staging",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -392,8 +392,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "ETH Ticker",
@@ -467,7 +466,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "40fd4125-d639-473b-ab26-d2ebb3720a1d",
+						"id": "d0d4457e-bed8-4abc-8448-0dfc0648e29b",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -477,15 +476,14 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "24714323-c9c2-42dd-81c9-34d5591b1a2a",
+						"id": "d9242791-0931-4a74-b3a0-b63c5e390597",
 						"type": "text/javascript",
 						"exec": [
 							""
 						]
 					}
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Compound",
@@ -504,7 +502,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}"
+							"raw": ""
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/compound/send_message",
@@ -536,7 +534,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"kovan\"\n}"
+							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\"\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/compound/check_liquidity",
@@ -568,10 +566,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"kovan\"\n}"
+							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\"\n}"
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/compound/check_assets",
+							"raw": "localhost:5432/apis/showrunners/compound/check_liquidity",
 							"host": [
 								"localhost"
 							],
@@ -580,7 +578,7 @@
 								"apis",
 								"showrunners",
 								"compound",
-								"check_assets"
+								"check_liquidity"
 							]
 						}
 					},
@@ -600,10 +598,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"kovan\",\n    \"simulate\": true\n}"
+							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\"\n}"
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/compound/total_users",
+							"raw": "localhost:5432/apis/showrunners/compound/check_assets",
 							"host": [
 								"localhost"
 							],
@@ -612,14 +610,13 @@
 								"apis",
 								"showrunners",
 								"compound",
-								"total_users"
+								"check_assets"
 							]
 						}
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Gas Price",
@@ -655,129 +652,8 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "gasprice/update_gasprice_average",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"simulate\":true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:5432/apis/showrunners/gasprice/update_gasprice_average",
-							"host": [
-								"localhost"
-							],
-							"port": "5432",
-							"path": [
-								"apis",
-								"showrunners",
-								"gasprice",
-								"update_gasprice_average"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "gasprice/get_gas_price",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"simulate\":true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:5432/apis/showrunners/gasprice/get_gas_price",
-							"host": [
-								"localhost"
-							],
-							"port": "5432",
-							"path": [
-								"apis",
-								"showrunners",
-								"gasprice",
-								"get_gas_price"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "gasprice/get_average_gas_price",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"simulate\":true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:5432/apis/showrunners/gasprice/get_average_gas_price",
-							"host": [
-								"localhost"
-							],
-							"port": "5432",
-							"path": [
-								"apis",
-								"showrunners",
-								"gasprice",
-								"get_average_gas_price"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "gasprice/clear_gas_price",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"simulate\":true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:5432/apis/showrunners/gasprice/clear_gas_price",
-							"host": [
-								"localhost"
-							],
-							"port": "5432",
-							"path": [
-								"apis",
-								"showrunners",
-								"gasprice",
-								"clear_gas_price"
-							]
-						}
-					},
-					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "ENS Domain",
@@ -799,7 +675,7 @@
 							"raw": "{\n    \"simulate\": true\n}"
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/ensdomain/send_message",
+							"raw": "localhost:5432/apis/showrunners/gasprice/send_message",
 							"host": [
 								"localhost"
 							],
@@ -807,7 +683,7 @@
 							"path": [
 								"apis",
 								"showrunners",
-								"ensdomain",
+								"gasprice",
 								"send_message"
 							]
 						}
@@ -828,7 +704,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"address\": \"0xb59cdc85cacd15097ece4c77ed9d225014b4d56d\",\n    \"network\": \"mainnet\",\n    \"triggerThresholdInSecs\": 1623066505,\n    \"simulate\": true\n}"
+							"raw": "{\n    \"address\": \"0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D\",\n    \"network\": \"mainnet\",\n    \"triggerThresholdInSecs\": 162306650533993,\n    \"simulate\": true\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/ensdomain/check_expiry",
@@ -878,8 +754,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "BTC Ticker",
@@ -948,8 +823,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Everest",
@@ -1082,9 +956,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		}
-	],
-	"protocolProfileBehavior": {}
+	]
 }
