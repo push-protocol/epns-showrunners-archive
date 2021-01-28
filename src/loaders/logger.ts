@@ -1,5 +1,4 @@
 import winston from 'winston';
-import config from '../config';
 
 const moment = require('moment'); // time library
 
@@ -10,28 +9,25 @@ const customLevels = {
     info: 2,
     http: 3,
     simulate: 4,
-    verbose: 5,
-    debug: 6,
-    silly: 7,
+    input: 5,
+    saved: 6,
+    verbose: 7,
+    debug: 8,
+    silly: 9,
   },
   colors: {
     info: 'green',
     simulate: 'white bold dim',
+    input: 'inverse bold',
+    saved: 'italic white',
     debug: 'yellow',
   }
 };
 
-const prettyJson = winston.format.printf(info => {
-  if (info.message.constructor === Object) {
-    info.message = JSON.stringify(info.message, null, 4)
-  }
-  return `${info.level}: ${info.message}`
-})
-
 var options = {
   file: {
-    level: 'info',
-    filename: `${config.staticAppPath}/logs/app.log`,
+    level: 'verbose',
+    filename: `${__dirname}/../../logs/app.log`,
     handleExceptions: true,
     json: true,
     maxsize: 5242880, // 5MB
@@ -47,15 +43,16 @@ const parser = (param: any): string => {
   if (typeof param === 'string') {
     return param;
   }
+
   return Object.keys(param).length ? JSON.stringify(param, undefined, 2) : '';
 };
 
 const formatter = winston.format.combine(
   winston.format.errors({ stack: true }),
-  winston.format.cli(),
   winston.format.splat(),
   winston.format.printf((info) => {
     const { timestamp, level, message, meta } = info;
+
     const ts = moment(timestamp).local().format('HH:MM:ss');
     const metaMsg = meta ? `: ${parser(meta)}` : '';
 
@@ -67,24 +64,15 @@ const formatter = winston.format.combine(
 ),
 
 const transports = [];
-if (process.env.NODE_ENV !== 'development') {
-  transports.push(
-    new winston.transports.Console({
-      format: formatter
-    }),
-    new winston.transports.File(options.file)
-  )
-} else {
-  transports.push(
-    new winston.transports.Console({
-      format: formatter
-    }),
-    new winston.transports.File(options.file)
-  )
-}
+transports.push(
+  new winston.transports.Console({
+    format: formatter
+  }),
+  new winston.transports.File(options.file)
+)
 
 const LoggerInstance = winston.createLogger({
-  level: config.logs.level,
+  level: 'debug',
   levels: customLevels.levels,
   format: winston.format.combine(
     winston.format.timestamp({

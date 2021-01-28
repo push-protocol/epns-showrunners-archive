@@ -1,14 +1,21 @@
 import 'reflect-metadata'; // We need this in order to use @Decorators
 
 import mongoose from 'mongoose';
-
-import config from './config';
-
 import express from 'express';
 
 import Logger from './loaders/logger';
+import EnvVerifierLoader from './loaders/envVerifier';
 
 async function startServer() {
+  // Check environment setup first
+  Logger.info('✌️   Verifying ENV');
+  await EnvVerifierLoader();
+  Logger.info('✔️   ENV Verified / Generated and Loaded!');
+
+  // Continue load
+  const config = (await require('./config/index')).default;
+
+  // load app
   const app = express();
 
   /**
