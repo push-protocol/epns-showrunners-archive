@@ -49,8 +49,10 @@ async function deleteEPNSInstance() {
 export default async (app: Router) => {
   const logger = Container.get('logger');
   const eventDispatcher = Container.get(EventDispatcherInterface);
-  await initializeEPNS(logger, eventDispatcher)
-  //
+
+  // DISABLED FOR NOW
+  // await initializeEPNS(logger, eventDispatcher)
+
   // const thirtyMins = 30 * 60 * 1000; // Thirty mins
   // setInterval(async function(){
   //   await deleteEPNSInstance();
