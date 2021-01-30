@@ -21,7 +21,7 @@ const gr = require('graphql-request')
 const { request, gql } = gr;
 
 const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
-const TRIGGER_THRESHOLD_SECS = 1623066505 //60 * 60 * 24 * 7; // 7 Days
+const TRIGGER_THRESHOLD_SECS = 60 * 60 * 24 * 7; // 7 Days
 
 @Service()
 export default class EnsExpirationChannel {
@@ -127,7 +127,7 @@ export default class EnsExpirationChannel {
           reject(err);
         });
 
-    });    
+    });
   }
 
   public getENSInteractableContract(web3network) {
@@ -175,7 +175,7 @@ export default class EnsExpirationChannel {
       const address = userAddress.toLowerCase();
 
       let data = await this.getData(address,ENS_URL)
-      
+
       if(data.registrations.length == 0){
         resolve({
           success: false,
@@ -185,7 +185,7 @@ export default class EnsExpirationChannel {
       else{
         let loop = data.registrations.length;
         const result =  await this.getDomain(loop,data,address,ENS_URL,ens,triggerThresholdInSecs,networkToMonitor,simulate)
-        
+
         if(result.flag){
         // logic loop, it has 7 days or less to expire but not expired
         this.getENSDomainExpiryPayload(result.ensAddressName, result.dateDiff)
@@ -226,7 +226,7 @@ export default class EnsExpirationChannel {
           });
         }
       }
-     
+
     });
   }
 
@@ -260,11 +260,11 @@ export default class EnsExpirationChannel {
         }`
 
         const dataInfo = await request(ENS_URL, GET_LABEL_NAME)
-        
+
         let ensAddressName = dataInfo.domains[0].labelName;
 
         const expiredDate = await ens.contract.nameExpires(hashedName)
-      
+
         // convert the date returned
         let expiryDate = ethers.utils.formatUnits(expiredDate, 0).split('.')[0];
 
