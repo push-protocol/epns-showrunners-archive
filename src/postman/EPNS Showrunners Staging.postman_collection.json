@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "154293e3-b9a7-499c-8b35-6deb0840e6fb",
+		"_postman_id": "7036f97b-97a6-42a9-a9e3-5b71dd63b47b",
 		"name": "EPNS Showrunners Staging",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -466,7 +466,6 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "d0d4457e-bed8-4abc-8448-0dfc0648e29b",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -476,7 +475,6 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "d9242791-0931-4a74-b3a0-b63c5e390597",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -951,6 +949,71 @@
 								"showrunners",
 								"everest",
 								"get_transaction"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Wallet Monitoring",
+			"item": [
+				{
+					"name": "/check_wallets",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_monitoring/check_wallets",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_monitoring",
+								"check_wallets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/check_main_wallet",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_monitoring/check_main_wallet",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_monitoring",
+								"check_main_wallet"
 							]
 						}
 					},
