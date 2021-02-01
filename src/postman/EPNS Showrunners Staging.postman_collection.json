@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "154293e3-b9a7-499c-8b35-6deb0840e6fb",
+		"_postman_id": "7036f97b-97a6-42a9-a9e3-5b71dd63b47b",
 		"name": "EPNS Showrunners Staging",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -652,6 +652,134 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "gasprice/update_gasprice_average",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}"
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/gasprice/update_gasprice_average",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"gasprice",
+								"update_gasprice_average"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "gasprice/get_gas_price",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/gasprice/get_gas_price",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"gasprice",
+								"get_gas_price"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "gasprice/get_average_gas_price",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/gasprice/get_average_gas_price",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"gasprice",
+								"get_average_gas_price"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "gasprice/clear_gas_price",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/gasprice/clear_gas_price",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"gasprice",
+								"clear_gas_price"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -957,6 +1085,6 @@
 					"response": []
 				}
 			]
-		}
+		}		
 	]
 }
