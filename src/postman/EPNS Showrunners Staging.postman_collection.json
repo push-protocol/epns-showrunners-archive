@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "2a284b59-3c8a-430e-bffc-fdc496b9de64",
+		"_postman_id": "154293e3-b9a7-499c-8b35-6deb0840e6fb",
 		"name": "EPNS Showrunners Staging",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -675,7 +675,7 @@
 							"raw": "{\n    \"simulate\": true\n}"
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/ensdomain/send_message",
+							"raw": "localhost:5432/apis/showrunners/gasprice/send_message",
 							"host": [
 								"localhost"
 							],
@@ -704,7 +704,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"address\": \"0x937Cf6ddC3080d53B3C4067B23687305371C4b3a\",\n    \"network\": \"ropsten\",\n    \"triggerThresholdInSecs\": 1623066505,\n    \"simulate\": true\n}"
+							"raw": "{\n    \"address\": \"0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D\",\n    \"network\": \"mainnet\",\n    \"triggerThresholdInSecs\": 162306650533993,\n    \"simulate\": true\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/ensdomain/check_expiry",

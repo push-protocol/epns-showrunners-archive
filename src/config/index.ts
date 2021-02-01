@@ -96,9 +96,7 @@ export default {
    */
   ensDeployedContract: process.env.ENS_DEPLOYED_CONTRACT,
   ensDeployedContractABI: require('./ens_contract.json'),
-
-  t: process.env.T,
-  b: require('./t.json'),
+  
     /**
    * COMPOUND Related
    */

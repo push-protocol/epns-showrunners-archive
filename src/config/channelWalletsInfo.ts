@@ -35,7 +35,6 @@ const walletsKV = wallets.reduce((initial, value) => {
     Object.keys(value).map(key => initial[key] = value[key])
     return initial;
 }, {})
-console.log({walletsKV})
 
 export default {
     mainWalletPrivateKey: process.env.MASTER_WALLET_PRIVATE_KEY,
