@@ -146,7 +146,7 @@ export default class CompoundLiquidationChannel {
           infuraAPI: config.infuraAPI,
           alchemyAPI: config.alchemyAPI
         },
-        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
+        config.compComptrollerPrivateKey,                                       // Private Key of the Wallet sending Notification
         config.deployedContract,                                                // The contract address which is going to be used
         config.deployedContractABI                                              // The contract abi which is going to be useds
       );
