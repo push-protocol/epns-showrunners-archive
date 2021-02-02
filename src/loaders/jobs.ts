@@ -26,6 +26,7 @@ import CompoundLiquidationChannel from '../showrunners/compoundLiquidationChanne
 import Everest from '../showrunners/everestChannel';
 import WalletTrackerChannel from '../showrunners/walletTrackerChannel';
 import WalletMonitoring from '../helpers/walletMonitoring';
+import HelloWorld from '../showrunners/helloWorldChannel';
 
 
 export default ({ logger }) => {
@@ -178,6 +179,22 @@ export default ({ logger }) => {
 
     try {
       await walletTracker.sendMessageToContract(false);
+      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+    }
+    catch (err) {
+      logger.error(`❌ Cron Task Failed -- ${taskName}`);
+      logger.error(`Error Object: %o`, err);
+    }
+  });
+
+  // 1.8 HELLO WORLD CHANNEL
+  schedule.scheduleJob({ start: startTime, rule: oneHourRule }, async function () {
+    logger.info('-- 🛵 Scheduling Showrunner - HelloWorld Channel [on 1 hour]');
+    const helloTicker = Container.get(HelloWorld);
+    const taskName = 'Hello world demo message and sendMessageToContract()';
+
+    try {
+      await helloTicker.sendMessageToContract(false);
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
