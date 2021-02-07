@@ -181,6 +181,7 @@ export default {
   ethGasStationPrivateKey: process.env.ETH_GAS_STATION_PRIVATE_KEY,
   walletTrackerPrivateKey: process.env.WALLET_TRACKER_PRIVATE_KEY,
   everestPrivateKey: process.env.EVEREST_PRIVATE_KEY,
+  helloWorldPrivateKey: process.env.HELLO_WORLD_PRIVATE_KEY,
 
   /**
    * ETH threshold
