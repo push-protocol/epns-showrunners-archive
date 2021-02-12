@@ -4,6 +4,7 @@
 
 import { Service, Inject } from 'typedi';
 import config from '../config';
+import channelWalletsInfo from '../config/channelWalletsInfo';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import events from '../subscribers/events';
 
@@ -37,7 +38,7 @@ export default class EnsExpirationChannel {
 
     return await new Promise((resolve, reject) => {
       // Preparing to get all subscribers of the channel
-      const ensChannelAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
+      const ensChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['ensDomainExpiryPrivateKey_1']);
 
        // Call Helper function to get interactableContracts
       const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
@@ -153,7 +154,7 @@ export default class EnsExpirationChannel {
           infuraAPI: config.infuraAPI,
           alchemyAPI: config.alchemyAPI
         },
-        config.ensDomainExpiryPrivateKey,                                       // Private Key of the Wallet sending Notification
+        channelWalletsInfo.walletsKV['ensDomainExpiryPrivateKey_1'],            // Private Key of the Wallet sending Notification
         config.deployedContract,                                                // The contract address which is going to be used
         config.deployedContractABI                                              // The contract abi which is going to be useds
       );
@@ -193,7 +194,7 @@ export default class EnsExpirationChannel {
             epnsNotify.uploadToIPFS(payload, logger, simulate)
               .then(async (ipfshash) => {
                 // Sign the transaction and send it to chain
-                const walletAddress = ethers.utils.computeAddress(config.ensDomainExpiryPrivateKey);
+                const walletAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['ensDomainExpiryPrivateKey_1']);
                 logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, walletAddress);
 
                 resolve({

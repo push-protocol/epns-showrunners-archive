@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { Container } from 'typedi';
-import walletMonitoringHelper from '../../helpers/walletMonitoring';
+import walletMonitoringHelper from '../../services/walletMonitoring';
 import middlewares from '../middlewares';
 import { celebrate, Joi } from 'celebrate';
 

@@ -1,10 +1,75 @@
 {
 	"info": {
-		"_postman_id": "7193f356-2690-4fe4-b129-c06e2f04c017",
+		"_postman_id": "48615bce-19f9-4acd-9334-63832d102691",
 		"name": "EPNS Showrunners Staging",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
+		{
+			"name": "Wallet Monitoring",
+			"item": [
+				{
+					"name": "/check_wallets",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_monitoring/check_wallets",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_monitoring",
+								"check_wallets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/check_main_wallet",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/wallet_monitoring/check_main_wallet",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"wallet_monitoring",
+								"check_main_wallet"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
 		{
 			"name": "Wallet Tracker",
 			"item": [
@@ -392,8 +457,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "ETH Ticker",
@@ -467,7 +531,6 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "f9091f91-316d-41a0-aafb-f9f72a9266ad",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -477,15 +540,13 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "e9fc41f2-6e2b-4ce5-9bec-6d944ab5f27d",
 						"type": "text/javascript",
 						"exec": [
 							""
 						]
 					}
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Compound",
@@ -618,8 +679,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Gas Price",
@@ -784,8 +844,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "ENS Domain",
@@ -886,8 +945,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "BTC Ticker",
@@ -956,8 +1014,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Everest",
@@ -1090,8 +1147,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Hello World",
@@ -1126,9 +1182,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		}
-	],
-	"protocolProfileBehavior": {}
+	]
 }

@@ -4,6 +4,7 @@
 
 import { Service, Inject, Container } from 'typedi';
 import config from '../config';
+import channelWalletsInfo from '../config/channelWalletsInfo';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import events from '../subscribers/events';
 
@@ -57,7 +58,7 @@ export default class GasStationChannel {
               epnsNotify.uploadToIPFS(payload, logger, simulate)
                 .then(async (ipfshash) => {
                   // Sign the transaction and send it to chain
-                  const walletAddress = ethers.utils.computeAddress(config.ethGasStationPrivateKey);
+                  const walletAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['ethGasStationPrivateKey_1']);
 
                   // Call Helper function to get interactableContracts
                   const epns = epnsNotify.getInteractableContracts(
@@ -67,7 +68,7 @@ export default class GasStationChannel {
                       infuraAPI: config.infuraAPI,
                       alchemyAPI: config.alchemyAPI
                     },
-                    config.ethGasStationPrivateKey,                                         // Private Key of the Wallet sending Notification
+                    channelWalletsInfo.walletsKV['ethGasStationPrivateKey_1'],                                         // Private Key of the Wallet sending Notification
                     config.deployedContract,                                                // The contract address which is going to be used
                     config.deployedContractABI                                              // The contract abi which is going to be useds
                   );
