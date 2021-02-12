@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "7036f97b-97a6-42a9-a9e3-5b71dd63b47b",
+		"_postman_id": "7193f356-2690-4fe4-b129-c06e2f04c017",
 		"name": "EPNS Showrunners Staging",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -392,7 +392,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "ETH Ticker",
@@ -466,6 +467,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
+						"id": "f9091f91-316d-41a0-aafb-f9f72a9266ad",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -475,13 +477,15 @@
 				{
 					"listen": "test",
 					"script": {
+						"id": "e9fc41f2-6e2b-4ce5-9bec-6d944ab5f27d",
 						"type": "text/javascript",
 						"exec": [
 							""
 						]
 					}
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Compound",
@@ -614,7 +618,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Gas Price",
@@ -650,8 +655,137 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "gasprice/update_gasprice_average",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}"
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/gasprice/update_gasprice_average",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"gasprice",
+								"update_gasprice_average"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "gasprice/get_gas_price",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/gasprice/get_gas_price",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"gasprice",
+								"get_gas_price"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "gasprice/get_average_gas_price",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/gasprice/get_average_gas_price",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"gasprice",
+								"get_average_gas_price"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "gasprice/clear_gas_price",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/gasprice/clear_gas_price",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"gasprice",
+								"clear_gas_price"
+							]
+						}
+					},
+					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "ENS Domain",
@@ -673,7 +807,7 @@
 							"raw": "{\n    \"simulate\": true\n}"
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/gasprice/send_message",
+							"raw": "localhost:5432/apis/showrunners/ensdomain/send_message",
 							"host": [
 								"localhost"
 							],
@@ -681,7 +815,7 @@
 							"path": [
 								"apis",
 								"showrunners",
-								"gasprice",
+								"ensdomain",
 								"send_message"
 							]
 						}
@@ -752,7 +886,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "BTC Ticker",
@@ -821,7 +956,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Everest",
@@ -954,19 +1090,20 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
-			"name": "Wallet Monitoring",
+			"name": "Hello World",
 			"item": [
 				{
-					"name": "/check_wallets",
+					"name": "helloWorld/send_message",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
+							"raw": "{\n    \"simulate\":true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -974,7 +1111,7 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/wallet_monitoring/check_wallets",
+							"raw": "localhost:5432/apis/showrunners/helloticker/send_message",
 							"host": [
 								"localhost"
 							],
@@ -982,44 +1119,16 @@
 							"path": [
 								"apis",
 								"showrunners",
-								"wallet_monitoring",
-								"check_wallets"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "/check_main_wallet",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:5432/apis/showrunners/wallet_monitoring/check_main_wallet",
-							"host": [
-								"localhost"
-							],
-							"port": "5432",
-							"path": [
-								"apis",
-								"showrunners",
-								"wallet_monitoring",
-								"check_main_wallet"
+								"helloticker",
+								"send_message"
 							]
 						}
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		}
-	]
+	],
+	"protocolProfileBehavior": {}
 }
