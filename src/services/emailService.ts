@@ -5,7 +5,14 @@ import events from '../subscribers/events';
 
 // Load the AWS SDK for Node.js
 var AWS = require('aws-sdk');
+const SES_CONFIG = {
+    accessKeyId: config.accessKeyId,
+    secretAccessKey: config.secretAccessKey,
+    region: 'us-east-1',
+    apiVersion: '2010-12-01'
+};
 
+const AWS_SES = new AWS.SES(SES_CONFIG);
 // Set the region
 AWS.config.update({region: 'us-east-1'});
 
@@ -58,7 +65,7 @@ export default class AuthService {
       };
 
       // Create the promise and SES service object
-      var sendPromise = new AWS.SES({apiVersion: '2010-12-01'}).sendEmail(params).promise();
+      var sendPromise = AWS_SES.sendEmail(params).promise();
 
       // Handle promise's fulfilled/rejected states
       sendPromise.then(function(data) {
