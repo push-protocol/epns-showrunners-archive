@@ -187,5 +187,11 @@ export default {
   supportMailAddress: process.env.SUPPORT_MAIL_ADDRESS,
   supportMailName: process.env.SUPPORT_MAIL_NAME,
   sourceMailAddress: process.env.SOURCE_MAIL_ADDRESS,
-  sourceMailName: process.env.SOURCE_MAIL_NAME
+  sourceMailName: process.env.SOURCE_MAIL_NAME,
+
+  /**
+   * AWS Config
+   */
+  accessKeyId: process.env.ACCESS_KEY_ID,
+  secretAccessKey: process.env.SECRET_ACCESS_KEY
 };
