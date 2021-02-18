@@ -4,6 +4,7 @@
 
 import { Service, Inject } from 'typedi';
 import config from '../config';
+import channelWalletsInfo from '../config/channelWalletsInfo';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import events from '../subscribers/events';
 
@@ -41,7 +42,7 @@ export default class EverestChannel {
         infuraAPI: config.infuraAPI,
         alchemyAPI: config.alchemyAPI
       },
-      config.everestPrivateKey,                                               // Private Key of the Wallet sending Notification
+      channelWalletsInfo.walletsKV['everestPrivateKey_1'],                   // Private Key of the Wallet sending Notification
       config.deployedContract,                                                // The contract address which is going to be used
       config.deployedContractABI                                              // The contract abi which is going to be useds
     );

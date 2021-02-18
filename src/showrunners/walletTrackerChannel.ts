@@ -1,5 +1,6 @@
 import { Service, Inject, Container } from 'typedi';
 import config from '../config';
+import channelWalletsInfo from '../config/channelWalletsInfo';
 import mongoose from 'mongoose';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import events from '../subscribers/events';
@@ -64,7 +65,7 @@ export default class WalletTrackerChannel {
           infuraAPI: config.infuraAPI,
           alchemyAPI: config.alchemyAPI
       },
-      config.walletTrackerPrivateKey,                                          // Private Key of the Wallet sending Notification
+      channelWalletsInfo.walletsKV['walletTrackerPrivateKey_1'],                                          // Private Key of the Wallet sending Notification
       config.deployedContract,                                                // The contract address which is going to be used
       config.deployedContractABI                                              // The contract abi which is going to be useds
     );
@@ -110,7 +111,7 @@ export default class WalletTrackerChannel {
 
     return await new Promise((resolve, reject) => {
 
-      const walletTrackerChannel = ethers.utils.computeAddress(config.walletTrackerPrivateKey);
+      const walletTrackerChannel = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['walletTrackerPrivateKey_1']);
 
       // Call Helper function to get interactableContracts
       const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
@@ -270,7 +271,7 @@ export default class WalletTrackerChannel {
   }
 
   public isChannelOwner(user) {
-    if (ethers.utils.computeAddress(config.walletTrackerPrivateKey) == user) {
+    if (ethers.utils.computeAddress(channelWalletsInfo.walletsKV['walletTrackerPrivateKey_1']) == user) {
       return true;
     }
 

@@ -174,20 +174,11 @@ export default {
   cmcSandboxAPIKey: process.env.CMS_SANDBOX_API_KEY,
   cmcSandboxEndpoint: process.env.CMC_SANDBOX_ENDPOINT,
 
-  btcTickerPrivateKey: process.env.BTC_TICKER_PRIVATE_KEY,
-  ethTickerPrivateKey: process.env.ETH_TICKER_PRIVATE_KEY,
-  ensDomainExpiryPrivateKey: process.env.ENS_DOMAIN_EXPIRY_PRIVATE_KEY,
-  compComptrollerPrivateKey: process.env.COMP_COMPTROLLER_PRIVATE_KEY,
-  ethGasStationPrivateKey: process.env.ETH_GAS_STATION_PRIVATE_KEY,
-  walletTrackerPrivateKey: process.env.WALLET_TRACKER_PRIVATE_KEY,
-  everestPrivateKey: process.env.EVEREST_PRIVATE_KEY,
-  helloWorldPrivateKey: process.env.HELLO_WORLD_PRIVATE_KEY,
-
   /**
    * ETH threshold
    */
-  ethThreshold: process.env.ETH_THRESHOLD,
-  ethMainThreshold: process.env.ETH_MAIN_THRESHOLD,
+  ethThreshold: process.env.SHOWRUNNER_WALLET_ETH_THRESHOLD,
+  ethMainThreshold: process.env.MASTER_WALLET_ETH_THRESHOLD,
   etherTransferAmount: process.env.ETHER_TRANSFER_AMOUNT,
 
   /**
