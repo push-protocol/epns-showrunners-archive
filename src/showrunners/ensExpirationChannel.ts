@@ -21,7 +21,7 @@ import { resolve } from 'dns';
 const gr = require('graphql-request')
 const { request, gql } = gr;
 
-const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
+const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
 const TRIGGER_THRESHOLD_SECS = 60 * 60 * 24 * 7; // 7 Days
 
 @Service()
@@ -171,7 +171,7 @@ export default class EnsExpirationChannel {
 
     return new Promise(async (resolve) => {
 
-      const ensRoute = "subgraphs/name/ensdomains/ens"
+      const ensRoute = "subgraphs/name/dev-cnote/ens"
       const ENS_URL = `${config.ensEndpoint}${ensRoute}`;
       const address = userAddress.toLowerCase();
 

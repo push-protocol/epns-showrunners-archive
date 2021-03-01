@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "48615bce-19f9-4acd-9334-63832d102691",
+		"_postman_id": "8de8c40c-e38e-4460-8d9f-1f2390d01469",
 		"name": "EPNS Showrunners Staging",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -68,7 +68,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Wallet Tracker",
@@ -457,7 +458,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "ETH Ticker",
@@ -534,7 +536,8 @@
 						"type": "text/javascript",
 						"exec": [
 							""
-						]
+						],
+						"id": "36e00bf8-0e8f-4ba6-a52a-357378e1bf86"
 					}
 				},
 				{
@@ -543,10 +546,12 @@
 						"type": "text/javascript",
 						"exec": [
 							""
-						]
+						],
+						"id": "55e867d9-6650-4fa9-bc07-19686b4fdf47"
 					}
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Compound",
@@ -679,7 +684,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Gas Price",
@@ -844,7 +850,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "ENS Domain",
@@ -895,7 +902,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"address\": \"0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D\",\n    \"network\": \"mainnet\",\n    \"triggerThresholdInSecs\": 162306650533993,\n    \"simulate\": true\n}"
+							"raw": "{\n    \"address\": \"0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D\",\n    \"network\": \"ropsten\",\n    \"triggerThresholdInSecs\": 162306650533993,\n    \"simulate\": true\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/ensdomain/check_expiry",
@@ -927,7 +934,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"address\": \"0xb59cdc85cacd15097ece4c77ed9d225014b4d56d\",\n    \"ensUrl\": \"https://api.thegraph.com/subgraphs/name/ensdomains/ens\",\n    \"network\": \"mainnet\",\n    \"triggerThresholdInSecs\": 1623066505,\n    \"simulate\": true\n}"
+							"raw": "{\n    \"address\": \"0xb59cdc85cacd15097ece4c77ed9d225014b4d56d\",\n    \"ensUrl\": \"https://api.thegraph.com/subgraphs/name/ensdomains/ens\",\n    \"network\": \"ropsten\",\n    \"triggerThresholdInSecs\": 1623066505,\n    \"simulate\": true\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners/ensdomain/domain_info",
@@ -945,7 +952,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "BTC Ticker",
@@ -1014,7 +1022,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Everest",
@@ -1147,7 +1156,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Hello World",
@@ -1182,7 +1192,9 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		}
-	]
+	],
+	"protocolProfileBehavior": {}
 }
