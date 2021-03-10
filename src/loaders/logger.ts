@@ -1,5 +1,5 @@
 import winston from 'winston';
-
+require ('winston-daily-rotate-file');
 const moment = require('moment'); // time library
 
 const customLevels = {
@@ -30,9 +30,9 @@ var options = {
     filename: `${__dirname}/../../logs/app.log`,
     handleExceptions: true,
     json: true,
-    maxsize: 5242880, // 5MB
-    maxFiles: 5,
-    colorize: true,
+    maxSize: "5m", // 5MB
+    maxFiles: "5d",
+    // colorize: true,
   },
 };
 
@@ -61,14 +61,20 @@ const formatter = winston.format.combine(
   winston.format.colorize({
     all: true,
   }),
-),
+)
+
+var transport = new (winston.transports.DailyRotateFile)(options.file);
+transport.on('rotate', function(oldFilename, newFilename) {
+  // do something fun
+  console.log("login rotated from: %o | %o", oldFilename, newFilename)
+});
 
 const transports = [];
 transports.push(
+  transport,
   new winston.transports.Console({
     format: formatter
   }),
-  new winston.transports.File(options.file)
 )
 
 const LoggerInstance = winston.createLogger({
