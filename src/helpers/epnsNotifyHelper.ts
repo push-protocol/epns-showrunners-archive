@@ -106,9 +106,9 @@ export default {
           hash: "SimulatedTransaction!!!"
         }
 
-        logger.verbose("######## SIMULATED TRANSACTION ########");
-        logger.simulate("\n%o\n", txSimulated);
-        logger.verbose("################################");
+        logger.debug("######## SIMULATED TRANSACTION ########");
+        logger.debug("\n%o\n", txSimulated);
+        logger.debug("################################");
 
         resolve(txSimulated);
 
