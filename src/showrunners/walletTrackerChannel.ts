@@ -9,6 +9,7 @@ import { ethers, logger } from 'ethers';
 import { truncateSync } from 'fs';
 import { reject } from 'lodash';
 const queue = new PQueue();
+let retries = 0
 // await queue.onIdle();
 
 const bent = require('bent'); // Download library
@@ -143,8 +144,9 @@ export default class WalletTrackerChannel {
   }
 
   public async processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s) {
-    const object = await this.checkWalletMovement(user, NETWORK_TO_MONITOR, simulate, interactableERC20s);
-    if (object.success) {
+    try{
+      const object = await this.checkWalletMovement(user, NETWORK_TO_MONITOR, simulate, interactableERC20s);
+      if (object.success) {
         const user = object.user
         let res = await this.getPayloadHash(user, object.changedTokens, simulate)
         logger.info('IPFS Hash: %o', res)
@@ -177,6 +179,15 @@ export default class WalletTrackerChannel {
       else{
         logger.info(object)
       }
+    } catch (error) {
+      logger.debug("Sending notifications failed: ", error)
+      if (retries <=5 ) {
+        retries++
+        this.processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s)
+      } else {
+        retries = 0
+      }
+    }
   }
 
   public async checkWalletMovement(user, networkToMonitor, simulate, interactableERC20s) {
