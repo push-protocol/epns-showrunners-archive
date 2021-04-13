@@ -183,7 +183,7 @@ export default class WalletTrackerChannel {
       logger.debug("Sending notifications failed: ", error)
       if (retries <=5 ) {
         retries++
-        this.processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s)
+        await queue.add(() => this.processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s));
       } else {
         retries = 0
       }
