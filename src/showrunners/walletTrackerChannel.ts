@@ -4,10 +4,13 @@ import channelWalletsInfo from '../config/channelWalletsInfo';
 import mongoose from 'mongoose';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import events from '../subscribers/events';
-
+import PQueue from 'p-queue';
 import { ethers, logger } from 'ethers';
 import { truncateSync } from 'fs';
 import { reject } from 'lodash';
+const queue = new PQueue();
+let retries = 0
+// await queue.onIdle();
 
 const bent = require('bent'); // Download library
 const moment = require('moment'); // time library
@@ -48,12 +51,15 @@ const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
 
 @Service()
 export default class WalletTrackerChannel {
+  running: any;
+  UserTokenModel: any;
   constructor(
     @Inject('logger') private logger,
     @Inject('cached') private cached,
     @EventDispatcher() private eventDispatcher: EventDispatcherInterface,
   ) {
-    var running = false;
+    let running = false;
+    // this.running =  false;
   }
 
   public getEPNSInteractableContract(web3network) {
@@ -98,7 +104,6 @@ export default class WalletTrackerChannel {
   }
 
   public async sendMessageToContract(simulate) {
-
     const cache = this.cached;
     const logger = this.logger;
 
@@ -109,112 +114,80 @@ export default class WalletTrackerChannel {
     }
     this.running = true;
 
-    return await new Promise((resolve, reject) => {
+    const walletTrackerChannel = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['walletTrackerPrivateKey_1']);
 
-      const walletTrackerChannel = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['walletTrackerPrivateKey_1']);
+    // Call Helper function to get interactableContracts
+    const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
+    const interactableERC20s = this.getSupportedERC20sArray(NETWORK_TO_MONITOR);
 
-      // Call Helper function to get interactableContracts
-      const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
-      const interactableERC20s = this.getSupportedERC20sArray(NETWORK_TO_MONITOR);
+    const channelInfo = await epns.contract.channels(walletTrackerChannel);
+    // Get Filter
+    const filter = epns.contract.filters.Subscribe(walletTrackerChannel);
+    const startBlock = channelInfo.channelStartBlock.toNumber();
 
-      epns.contract.channels(walletTrackerChannel)
-        .then(async (channelInfo) => {
-          // Get Filter
-          const filter = epns.contract.filters.Subscribe(walletTrackerChannel)
-          const startBlock = channelInfo.channelStartBlock.toNumber();
+    const eventLog = await epns.contract.queryFilter(filter, startBlock);
+    // Log the event
+    logger.debug("Subscribed Address Found: %o", eventLog.length);
 
-          epns.contract.queryFilter(filter, startBlock)
-            .then(eventLog => {
-              // Log the event
-              logger.debug("Subscribed Address Found: %o", eventLog.length);
+    let allPayloads = []
 
-              let allPayloads = []
-              // Loop through all addresses in the channel and decide who to send notification
-              let promises = eventLog.map(log => {
+    for (let index = 0; index < eventLog.length; index++) {
+      const log = eventLog[index];
+      const user = log.args.user;
+      // logger.info("user: %o", user)
+      await queue.add(() => this.processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s));
+      logger.info(" Added processAndSendNotification for user:%o ", user)
+    }
+    await queue.onIdle();
+    this.running = false;
+    logger.debug("Done for all");
+  }
 
-                return new Promise((resolve) => {
-                  // Get user address
-                  const user = log.args.user;
-                  logger.info("user: %o", user)
+  public async processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s) {
+    try{
+      const object = await this.checkWalletMovement(user, NETWORK_TO_MONITOR, simulate, interactableERC20s);
+      if (object.success) {
+        const user = object.user
+        let res = await this.getPayloadHash(user, object.changedTokens, simulate)
+        logger.info('IPFS Hash: %o', res)
+        logger.info('Object: %o', object)
 
-                  this.checkWalletMovement(user, NETWORK_TO_MONITOR, simulate, interactableERC20s)
-                  .then((result) => {
-                    logger.info(" For User: %o | checkWalletMovement result: :%o ", user, result)
-                    resolve(result)
-                  })
-                });
-              });
-
-              // Wait for all promises to come
-              Promise.all(promises)
-                .then(async (results) => {
-                  logger.debug("All Transactions Loaded: %o", results);
-
-                  for (const object of results) {
-                    if (object.success) {
-                      const user = object.user
-                      let res = await this.getPayloadHash(user, object.changedTokens, simulate)
-                      logger.info('IPFS Hash: %o', res)
-                      logger.info('Object: %o', object)
-
-                        // Send notification
-                        const ipfshash = res.ipfshash;
-                        const payloadType = res.payloadType;
+        // Send notification
+        const ipfshash = res.ipfshash;
+        const payloadType = res.payloadType;
 
 
-                        logger.info("Wallet: %o | Hash: :%o | Sending Data...", user, ipfshash);
+        logger.info("Wallet: %o | Hash: :%o | Sending Data...", user, ipfshash);
 
-                        const storageType = 1; // IPFS Storage Type
-                        const txConfirmWait = 1; // Wait for 0 tx confirmation
+        const storageType = 1; // IPFS Storage Type
+        const txConfirmWait = 1; // Wait for 0 tx confirmation
 
-                        // Send Notification
-                        await epnsNotify.sendNotification(
-                          epns.signingContract,                                           // Contract connected to signing wallet
-                          user,                                           // Recipient to which the payload should be sent
-                          payloadType,                                                    // Notification Type
-                          storageType,                                                    // Notificattion Storage Type
-                          ipfshash,                                                       // Notification Storage Pointer
-                          txConfirmWait,                                                  // Should wait for transaction confirmation
-                          logger,
-                          simulate                                                         // Logger instance (or console.log) to pass
-                        ).then ((tx) => {
-                          logger.info("Transaction successful: %o | Notification Sent", tx.hash);
-                          logger.info("🙌 Wallet Tracker Channel Logic Completed!");
-                          resolve(tx);
-                        })
-                        .catch (err => {
-                          logger.error("🔥Error --> sendNotification(): %o", err);
-                          reject(err);
-                        });
-                    }
-                    else{
-                      resolve({
-                        success: false,
-                        data: "No Wallet Movement"
-                      })
-                    }
-                  }
-
-                  this.running = false;
-                })
-                .catch(err => {
-                  logger.error("Error retreiving all promises", err);
-                  this.running = false;
-                  reject(err);
-                });
-            })
-            .catch(err => {
-              logger.error("Error retreiving Subscriber event log: %o", err);
-              this.running = false;
-              reject(err);
-            });
-        })
-        .catch(err => {
-            logger.error("Error retreiving channel info: %o", err);
-            this.running = false;
-            reject(err);
-        });
-    })
+        
+        const tx = await epnsNotify.sendNotification(
+          epns.signingContract,                                           // Contract connected to signing wallet
+          user,                                           // Recipient to which the payload should be sent
+          payloadType,                                                    // Notification Type
+          storageType,                                                    // Notificattion Storage Type
+          ipfshash,                                                       // Notification Storage Pointer
+          txConfirmWait,                                                  // Should wait for transaction confirmation
+          logger,
+          simulate                                                         // Logger instance (or console.log) to pass
+        )
+        logger.info("Transaction successful: %o | Notification Sent", tx.hash);
+        logger.info("🙌 Wallet Tracker Channel Logic Completed!");
+      }
+      else{
+        logger.info(object)
+      }
+    } catch (error) {
+      logger.debug("Sending notifications failed: ", error)
+      if (retries <=5 ) {
+        retries++
+        await queue.add(() => this.processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s));
+      } else {
+        retries = 0
+      }
+    }
   }
 
   public async checkWalletMovement(user, networkToMonitor, simulate, interactableERC20s) {
@@ -222,12 +195,10 @@ export default class WalletTrackerChannel {
 
     // check and return if the wallet is the channel owner
     if (this.isChannelOwner(user)) {
-      return new Promise((resolve) => {
-        resolve({
-          success: false,
-          data: "Channel Owner User: " + user
-        });
-      });
+      return {
+        success: false,
+        data: "Channel Owner User: " + user
+      };
     }
 
     // check and recreate provider mostly for routes
@@ -240,34 +211,28 @@ export default class WalletTrackerChannel {
 
     let changedTokens = [];
 
-    return new Promise((resolve) => {
-      // let promises = SUPPORTED_TOKENS.map(token => {
-      let promises = [];
-      for (const ticker in SUPPORTED_TOKENS) {
-        promises.push(this.checkTokenMovement(user, networkToMonitor, ticker, interactableERC20s, simulate))
+    // let promises = SUPPORTED_TOKENS.map(token => {
+    let promises = [];
+    for (const ticker in SUPPORTED_TOKENS) {
+      promises.push(this.checkTokenMovement(user, networkToMonitor, ticker, interactableERC20s, simulate))
+    }
+
+    const results = await Promise.all(promises)
+    changedTokens = results.filter(token => token.resultToken.changed === true)
+    // logger.info('changedTokens: %o', changedTokens)
+    if(changedTokens.length>0){
+      return {
+        success: true,
+        user,
+        changedTokens
       }
-
-      Promise.all(promises)
-      .then(results=> {
-        // logger.info('results: %o', results)
-        changedTokens = results.filter(token => token.resultToken.changed ===true)
-        // logger.info('changedTokens: %o', changedTokens)
-        if(changedTokens.length>0){
-          resolve({
-            success: true,
-            user,
-            changedTokens
-          })
-        }
-        else{
-          resolve({
-            success: false,
-            data: "No token movement for wallet: " + user
-          })
-        }
-
-      })
-    })
+    }
+    else{
+      return {
+        success: false,
+        data: "No token movement for wallet: " + user
+      }
+    }
   }
 
   public isChannelOwner(user) {
