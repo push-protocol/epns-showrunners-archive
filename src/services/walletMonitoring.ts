@@ -1,7 +1,7 @@
 import { Service, Inject, Container } from 'typedi';
 import config from '../config';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
-import EmailService from '../services/emailService';
+import EmailService from './emailService';
 import { BigNumber, ethers, logger, Wallet } from 'ethers';
 
 const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
