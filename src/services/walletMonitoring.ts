@@ -14,7 +14,7 @@ const provider = ethers.getDefaultProvider(NETWORK_TO_MONITOR, {
       alchemy: (config.alchemyAPI ? config.alchemyAPI : null),
 });
 
-const MAIN = new Wallet(config.ensDomainExpiryPrivateKey, provider)
+const MAIN = new Wallet(config.mainWalletPrivateKey, provider)
 const WALLLETS = {
   'ens':{
     wallet: new Wallet(config.ensDomainExpiryPrivateKey, provider)
