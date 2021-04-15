@@ -174,7 +174,6 @@ export default {
   cmcSandboxAPIKey: process.env.CMS_SANDBOX_API_KEY,
   cmcSandboxEndpoint: process.env.CMC_SANDBOX_ENDPOINT,
 
-  mainWalletPrivateKey: process.env.MASTER_WALLET_PRIVATE_KEY,
   btcTickerPrivateKey: process.env.BTC_TICKER_PRIVATE_KEY,
   ethTickerPrivateKey: process.env.ETH_TICKER_PRIVATE_KEY,
   ensDomainExpiryPrivateKey: process.env.ENS_DOMAIN_EXPIRY_PRIVATE_KEY,
