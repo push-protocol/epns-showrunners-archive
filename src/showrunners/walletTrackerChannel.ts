@@ -47,7 +47,7 @@ const CUSTOMIZABLE_SETTINGS = {
   'ticker': 5,
 }
 
-const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
+const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
 
 @Service()
 export default class WalletTrackerChannel {
@@ -117,7 +117,7 @@ export default class WalletTrackerChannel {
     const walletTrackerChannel = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['walletTrackerPrivateKey_1']);
 
     // Call Helper function to get interactableContracts
-    const epns = this.getEPNSInteractableContract(config.web3MainnetNetwork);
+    const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
     const interactableERC20s = this.getSupportedERC20sArray(NETWORK_TO_MONITOR);
 
     const channelInfo = await epns.contract.channels(walletTrackerChannel);
