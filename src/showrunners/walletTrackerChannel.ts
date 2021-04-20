@@ -47,7 +47,7 @@ const CUSTOMIZABLE_SETTINGS = {
   'ticker': 5,
 }
 
-const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
+const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
 
 @Service()
 export default class WalletTrackerChannel {
