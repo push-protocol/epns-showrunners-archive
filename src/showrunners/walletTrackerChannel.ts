@@ -117,7 +117,7 @@ export default class WalletTrackerChannel {
     const walletTrackerChannel = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['walletTrackerPrivateKey_1']);
 
     // Call Helper function to get interactableContracts
-    const epns = this.getEPNSInteractableContract(config.web3MainnetNetwork);
+    const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
     const interactableERC20s = this.getSupportedERC20sArray(NETWORK_TO_MONITOR);
 
     const channelInfo = await epns.contract.channels(walletTrackerChannel);
