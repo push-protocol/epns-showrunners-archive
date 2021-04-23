@@ -78,7 +78,7 @@ export default class WalletTrackerChannel {
       const email = Container.get(EmailService);
       logger.info(`You've got mail: Main ETH Wallet: ${MAIN.address} balance is below threshold at ${balance}`); 
       if(simulate) return result
-      result = await email.sendMailSES(config.supportMailAddress, "Wallet Monitoring Bot", "Wallet Expiry", "Low Wallet Balance", `Main ETH Wallet balance is below threshold at ${balance}`);
+      result = await email.sendMailSES(config.supportMailAddress, "Wallet Monitoring Bot", "Wallet Expiry", "Low Wallet Balance", `Main ETH Wallet: ${MAIN.address} balance is below threshold at ${balance}`);
     } 
     return result
   }
