@@ -143,6 +143,12 @@ export default {
   everestDeployedContractABI: require('./everest.json'),
 
   /**
+   * AAVE Related
+   */
+  aaveLendingPoolDeployedContract: process.env.AAVE_LENDINGPOOL_DEPLOYED_CONTRACT,
+  aaveLendingPoolDeployedContractABI: require('./aave_LendingPool.json'),
+
+  /**
    * WALLET TRACKER related
    */
   erc20DeployedContractABI: require('./erc20.json'),

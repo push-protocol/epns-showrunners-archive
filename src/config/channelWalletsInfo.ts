@@ -28,7 +28,10 @@ const wallets = [
         },
         {
             everestPrivateKey_1: process.env.EVEREST_PRIVATE_KEY
-        }
+        },
+        {
+            aavePrivateKey_1: process.env.AAVE_PRIVATE_KEY
+        },
 ]
     
 const walletsKV = wallets.reduce((initial, value) => {

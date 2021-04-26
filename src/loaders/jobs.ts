@@ -27,6 +27,7 @@ import Everest from '../showrunners/everestChannel';
 import WalletTrackerChannel from '../showrunners/walletTrackerChannel';
 import WalletMonitoring from '../services/walletMonitoring';
 import HelloWorld from '../showrunners/helloWorldChannel';
+import AaveChannel from '../showrunners/aaveChannel';
 
 export default ({ logger }) => {
   // 1. SHOWRUNNERS SERVICE
@@ -194,6 +195,22 @@ export default ({ logger }) => {
 
     try {
       await helloTicker.sendMessageToContract(false);
+      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+    }
+    catch (err) {
+      logger.error(`❌ Cron Task Failed -- ${taskName}`);
+      logger.error(`Error Object: %o`, err);
+    }
+  });
+
+  // 1.9 AAVE CHANNEL
+  schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
+    logger.info('-- 🛵 Scheduling Showrunner - Aave Channel [on 24 Hours]');
+    const aaveTicker = Container.get(AaveChannel);
+    const taskName = 'Aave users address checks and sendMessageToContract()';
+
+    try {
+      await aaveTicker.sendMessageToContract(false);
       logger.info(`🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
