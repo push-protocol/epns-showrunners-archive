@@ -8,6 +8,7 @@ import gasPrice from './routes/showrunners_gasprice';
 import wallet_tracker from './routes/showrunners_wallet_tracker';
 import wallet_monitoring from './routes/showrunners_wallet_monitoring';
 import everest from './routes/showrunners_everest';
+import truefi from './routes/showrunners_truefi';
 import socketWeb3 from './routes/sockets/socketWeb3';
 import helloWorld from './routes/showrunners_helloWorld';
 
@@ -25,6 +26,7 @@ export default () => {
 	gasPrice(app);
 	wallet_tracker(app);
 	everest(app);
+	truefi(app);
 	wallet_monitoring(app);
 	helloWorld(app);
 
