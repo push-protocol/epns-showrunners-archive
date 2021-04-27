@@ -115,6 +115,8 @@ export default {
   truefiLoanFactoryDeployedContract: process.env.TRUEFI_LOAN_FACTORY_CONTRACT,
   truefiLoanFactoryDeployedContractABI: require('./truefiLoanFactory.json'),
 
+  truefiLoanTokenDeployedContractABI: require('./truefiLoanToken.json'),
+
   cDaiDeployedContract:process.env.CDAI,
   cDaiDeployedContractABI: require('./cDai.json'),
 

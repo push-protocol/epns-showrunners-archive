@@ -18,7 +18,8 @@ const queue = new PQueue();
 
 // const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
 // SET CONSTANTS
-const BLOCK_NUMBER = 'block_number';
+const BLOCK_NUMBER = 'truefi_block_number';
+const LOANS = 'truefi_loans';
 
 const NOTIFICATION_TYPE = Object.freeze({
   RATE: "rate_changed",
@@ -34,6 +35,7 @@ export default class TruefiChannel {
     @EventDispatcher() private eventDispatcher: EventDispatcherInterface,
   ) {
     this.cached.setCache(BLOCK_NUMBER, 0);
+    this.cached.removeCache(LOANS)
   }
 
   public getTruefiRatingAgencyInteractableContract(web3network) {
@@ -92,6 +94,23 @@ export default class TruefiChannel {
         config.deployedContractABI                                              // The contract abi which is going to be useds
       );
   }
+
+  public async getContracts(address, abi, web3network){
+    return new Promise((resolve, reject) => {
+    const setUp = epnsNotify.getInteractableContracts(
+      web3network,                                              // Network for which the interactable contract is req
+      {                                                                        // API Keys
+        etherscanAPI: config.etherscanAPI,
+        infuraAPI: config.infuraAPI,
+        alchemyAPI: config.alchemyAPI
+      },
+      null,            // Private Key of the Wallet sending Notification
+      address,                                                                // The contract address which is going to be used
+      abi                                                                     // The contract abi which is going to be useds
+    );
+    resolve(setUp);
+    })
+  }
   
   public async getSubscribedUsers(epns, simulate) {
     const logger = this.logger;
@@ -124,25 +143,34 @@ export default class TruefiChannel {
     const truefiNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("truefiNetwork") ? simulate.logicOverride.truefiNetwork : config.web3MainnetNetwork;
     logger.debug('Checking for truefi address... ');
     const users = await this.getSubscribedUsers(epns, simulate);
-    // const loans = await this.checkNewLoans(epns, users, truefiNetwork, simulate)
-    await this.checkDueLoans(epns, users, truefiNetwork, simulate)
+    const loans = await this.checkNewLoans(epns, users, truefiNetwork, simulate)
+    await this.checkActiveLoans(loans, truefiNetwork, simulate)
     await queue.onIdle();
     const block = await epns.provider.getBlockNumber();
     await cache.setCache(BLOCK_NUMBER, block);
   }
 
-  public async checkDueLoans(epns, users, networkToMonitor, simulate) {
-    const truefi = this.getTruefiLenderDeployedInteractableContract(networkToMonitor)
-    const logger = this.logger;
+  public async checkActiveLoans(loans, truefiNetwork, simulate) {
+    try {      
+      const loanPromise = loans.map(loan => this.getContracts(loan, config.truefiLoanTokenDeployedContractABI, truefiNetwork))
+      const loanObj = await Promise.all(loanPromise)
+      const checkStatusPromise = loanObj.map(loan => this.checkStatus(loan))
+      await Promise.all(checkStatusPromise)
+    } catch (error) {
+      console.log("error: %o", error)
+    }
+  }
+  // check borrower, if they're in users and ehrn expiry, send message
+  public async checkExpiry() {
     const cache = this.cached;
-    // get and store last checked block number to run filter
-    const loans = await truefi.contract.functions.loans()
-    logger.debug("loans: %o", loans)
-    // for (let index = 0; index < users.length; index++) {
-    //   await queue.add(() => this.sendNotification(epns, users[index], {loans}, NOTIFICATION_TYPE.NEW_LOAN, simulate));
-    //   logger.info(" Added processAndSendNotification for user:%o ", users[index])
-    // }
-    return loans;
+    const loans = await cache.getLCache(LOANS)
+
+  }
+
+  public async checkStatus(loan) {
+    const status = await loan.contract.status()
+    if (status == 3) return this.cached.pushLCache(LOANS, loan.contract.address);
+    return null
   }
 
   public async checkNewLoans(epns, users, networkToMonitor, simulate) {
