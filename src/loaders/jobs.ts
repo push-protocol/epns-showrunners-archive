@@ -42,7 +42,7 @@ export default ({ logger }) => {
   tenMinuteRule.minute = new schedule.Range(0, 59, 10);
 
   const thirtyMinuteRule = new schedule.RecurrenceRule();
-  tenMinuteRule.minute = new schedule.Range(0, 59, 30);
+  thirtyMinuteRule.minute = new schedule.Range(0, 59, 30);
 
   const oneHourRule = new schedule.RecurrenceRule();
   oneHourRule.hour = new schedule.Range(0, 23);
