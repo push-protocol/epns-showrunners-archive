@@ -5,7 +5,7 @@ import { Service, Inject } from 'typedi';
 import config from '../config';
 import channelWalletsInfo from '../config/channelWalletsInfo';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
-
+import PQueue from 'p-queue';
 import { ethers } from 'ethers';
 
 const bent = require('bent'); // Download library
@@ -14,15 +14,16 @@ const moment = require('moment'); // time library
 const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
 import epnsNotify from '../helpers/epnsNotifyHelper';
+const queue = new PQueue();
 
-const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
+// const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
 // SET CONSTANTS
 const BLOCK_NUMBER = 'block_number';
 
 const NOTIFICATION_TYPE = Object.freeze({
   RATE: "rate_changed",
-  LOAN: "loan_due",
-  NEW: "new_loan",
+  DUE_LOAN: "loan_due",
+  NEW_LOAN: "new_loan",
 });
 
 @Service()
@@ -35,7 +36,7 @@ export default class TruefiChannel {
     this.cached.setCache(BLOCK_NUMBER, 0);
   }
 
-  public getTruefiInteractableContract(web3network) {
+  public getTruefiRatingAgencyInteractableContract(web3network) {
     return epnsNotify.getInteractableContracts(
         web3network,                                              // Network for which the interactable contract is req
         {                                                                       // API Keys
@@ -43,9 +44,37 @@ export default class TruefiChannel {
           infuraAPI: config.infuraAPI,
           alchemyAPI: config.alchemyAPI
         },
-        channelWalletsInfo.walletsKV['compComptrollerPrivateKey_1'],                       // Private Key of the Wallet sending Notification
+        null,                       // Private Key of the Wallet sending Notification
         config.truefiRatingAgencyDeployedContract,                                             // The contract address which is going to be used
         config.truefiRatingAgencyDeployedContractABI                                           // The contract abi which is going to be useds
+      );
+  }
+
+  public getTruefiLoanFactoryInteractableContract(web3network) {
+    return epnsNotify.getInteractableContracts(
+        web3network,                                              // Network for which the interactable contract is req
+        {                                                                       // API Keys
+          etherscanAPI: config.etherscanAPI,
+          infuraAPI: config.infuraAPI,
+          alchemyAPI: config.alchemyAPI
+        },
+        null,                       // Private Key of the Wallet sending Notification
+        config.truefiLoanFactoryDeployedContract,                                             // The contract address which is going to be used
+        config.truefiLoanFactoryDeployedContractABI                                           // The contract abi which is going to be useds
+      );
+  }
+
+  public getTruefiLenderDeployedInteractableContract(web3network) {
+    return epnsNotify.getInteractableContracts(
+        web3network,                                              // Network for which the interactable contract is req
+        {                                                                       // API Keys
+          etherscanAPI: config.etherscanAPI,
+          infuraAPI: config.infuraAPI,
+          alchemyAPI: config.alchemyAPI
+        },
+        null,                       // Private Key of the Wallet sending Notification
+        config.truefiLenderDeployedContract,                                             // The contract address which is going to be used
+        config.truefiLenderDeployedContractABI                                           // The contract abi which is going to be useds
       );
   }
 
@@ -58,17 +87,15 @@ export default class TruefiChannel {
           infuraAPI: config.infuraAPI,
           alchemyAPI: config.alchemyAPI
         },
-        channelWalletsInfo.walletsKV['compComptrollerPrivateKey_1'],            // Private Key of the Wallet sending Notification
+        channelWalletsInfo.walletsKV['walletTrackerPrivateKey_1'],            // Private Key of the Wallet sending Notification
         config.deployedContract,                                                // The contract address which is going to be used
         config.deployedContractABI                                              // The contract abi which is going to be useds
       );
   }
   
-  public async getSubscribedUsers(simulate) {
+  public async getSubscribedUsers(epns, simulate) {
     const logger = this.logger;
-    const truefiChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['compComptrollerPrivateKey_1']);
-    // Call Helper function to get interactableContracts
-    const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
+    const truefiChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['walletTrackerPrivateKey_1']);
     const channelInfo = await epns.contract.channels(truefiChannelAddress)
     const filter = epns.contract.filters.Subscribe(truefiChannelAddress)
     let startBlock = channelInfo.channelStartBlock.toNumber();
@@ -76,7 +103,7 @@ export default class TruefiChannel {
     //Function to get all the addresses in the channel
     const eventLog = await epns.contract.queryFilter(filter, startBlock)
     // Log the event
-    logger.debug("Event log returned %o", eventLog);
+    // logger.debug("Event log returned %o", eventLog);
     // Loop through all addresses in the channel and decide who to send notification
     const users = eventLog.map(log => log.args.user)
     return users
@@ -87,62 +114,120 @@ export default class TruefiChannel {
   // To form and write to smart contract
   public async sendMessageToContract(simulate) {
     const logger = this.logger;
-    const truefi = this.getTruefiInteractableContract(config.web3MainnetNetwork);
+    const cache = this.cached;
+    // Call Helper function to get interactableContracts
+    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
+    const epnsNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("epnsNetwork") ? simulate.logicOverride.epnsNetwork : config.web3RopstenNetwork;
+    // -- End Override logic
+    // Call Helper function to get interactableContracts
+    const epns = this.getEPNSInteractableContract(epnsNetwork);
+    const truefiNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("truefiNetwork") ? simulate.logicOverride.truefiNetwork : config.web3MainnetNetwork;
     logger.debug('Checking for truefi address... ');
-    const users = await this.getSubscribedUsers(simulate);
-    console.log("users: %o", users)
-    await this.checkNewLoans(truefi, users, NETWORK_TO_MONITOR)
+    const users = await this.getSubscribedUsers(epns, simulate);
+    // const loans = await this.checkNewLoans(epns, users, truefiNetwork, simulate)
+    await this.checkDueLoans(epns, users, truefiNetwork, simulate)
+    await queue.onIdle();
+    const block = await epns.provider.getBlockNumber();
+    await cache.setCache(BLOCK_NUMBER, block);
   }
 
-  
-
-
-  public async checkNewLoans(truefi, users,  networkToMonitor) {
-    if(!truefi){
-      truefi = this.getTruefiInteractableContract(networkToMonitor)
-    }
+  public async checkDueLoans(epns, users, networkToMonitor, simulate) {
+    const truefi = this.getTruefiLenderDeployedInteractableContract(networkToMonitor)
     const logger = this.logger;
     const cache = this.cached;
     // get and store last checked block number to run filter
-    const filter = truefi.contract.filters.LoanSubmitted();
-    console.log("filters: %o", filter)
-    let startBlock = await cache.getCache(BLOCK_NUMBER);
-    if (!startBlock) startBlock = 0
-
-    //Function to get all the addresses in the channel
-    // const eventLog = await epns.contract.queryFilter(filter, startBlock)
-
+    const loans = await truefi.contract.functions.loans()
+    logger.debug("loans: %o", loans)
+    // for (let index = 0; index < users.length; index++) {
+    //   await queue.add(() => this.sendNotification(epns, users[index], {loans}, NOTIFICATION_TYPE.NEW_LOAN, simulate));
+    //   logger.info(" Added processAndSendNotification for user:%o ", users[index])
+    // }
+    return loans;
   }
 
-  // public async checkLoans(compound, networkToMonitor, userAddress) {
-  //   if(!compound){
-  //     compound = this.getTruefiInteractableContract(networkToMonitor)
-  //   }
-  //   const logger = this.logger;
-  //   return new Promise((resolve, reject) => {
-  //     compound.contract.getAccountLiquidity(userAddress)
-  //     .then(result => {
-  //       let {1:liq} = result;
-  //       liq = ethers.utils.formatEther(liq).toString();
+  public async checkNewLoans(epns, users, networkToMonitor, simulate) {
+    const truefi = this.getTruefiLoanFactoryInteractableContract(networkToMonitor)
+    const logger = this.logger;
+    const cache = this.cached;
+    // get and store last checked block number to run filter
+    const filter = truefi.contract.filters.LoanTokenCreated();
+    let startBlock = await cache.getCache(BLOCK_NUMBER);
+    if (!startBlock || startBlock == null) startBlock = 0
+    startBlock = Number(startBlock)
+    const eventLog = await truefi.contract.queryFilter(filter, startBlock)
+    const loans = eventLog.map((log) => log.args.contractAddress)
+    logger.debug("loans: %o, startBlock: %o", loans, startBlock)
+    for (let index = 0; index < users.length; index++) {
+      await queue.add(() => this.sendNotification(epns, users[index], {loans}, NOTIFICATION_TYPE.NEW_LOAN, simulate));
+      logger.info(" Added processAndSendNotification for user:%o ", users[index])
+    }
+    return loans;
+  }
 
-  //         resolve({
-  //           liquidity: liq,
-  //           name: userAddress
-  //         })
+  public async sendNotification(epns, user, data, notificationType, simulate) {
+    const logger = this.logger;
+    try{
+      let res = await this.getPayloadHash(user, data, notificationType, simulate)
+      logger.info('IPFS Hash: %o', res)
 
-        
-  //     })
-  //     .catch(err => {
-  //       logger.error("Error occurred on Compound Liquidation for Address Liquidation amount: %s: %o", userAddress, err);
-  //       resolve({
-  //         success: false,
-  //         err: err
-  //       });
-  //     })
-  //   })
-  // }
+      // Send notification
+      const ipfshash = res.ipfshash;
+      const payloadType = res.payloadType;
 
-  public async getTruefiLiquidityPayload(addressName, data, notificationType) {
+
+      logger.info("Wallet: %o | Hash: :%o | Sending Data...", user, ipfshash);
+
+      const storageType = 1; // IPFS Storage Type
+      const txConfirmWait = 1; // Wait for 0 tx confirmation
+
+      
+      const tx = await epnsNotify.sendNotification(
+        epns.signingContract,                                           // Contract connected to signing wallet
+        user,                                           // Recipient to which the payload should be sent
+        payloadType,                                                    // Notification Type
+        storageType,                                                    // Notificattion Storage Type
+        ipfshash,                                                       // Notification Storage Pointer
+        txConfirmWait,                                                  // Should wait for transaction confirmation
+        logger,
+        simulate                                                         // Logger instance (or console.log) to pass
+      )
+      logger.info("Transaction successful: %o | Notification Sent", tx.hash);
+      logger.info("🙌 TrueFi Channel Logic Completed!");
+    } catch (error) {
+      logger.debug("Sending notifications failed: ", error)
+      // if (retries <=5 ) {
+      //   retries++
+      //   await queue.add(() => this.processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s));
+      // } else {
+      //   retries = 0
+      // }
+    }
+  }
+
+  public async getPayloadHash(user, data, notificationType, simulate) {
+    const logger = this.logger;
+    try {
+      const payload = await this.getTruefiLiquidityPayload(data, notificationType)
+      const ipfshash = await epnsNotify.uploadToIPFS(payload, logger, simulate)
+      // Sign the transaction and send it to chain
+      logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, user);
+
+      return {
+        success: true,
+        user,
+        ipfshash,
+        payloadType: parseInt(payload.data.type)
+      };
+    } catch (error) {
+      logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", user, error)
+      return {
+        success: false,
+        data: "Unable to obtain ipfshash for wallet: " + user + " | error: " + error
+      };
+    }
+  }
+
+  public async getTruefiLiquidityPayload(data, notificationType) {
     const logger = this.logger;
     logger.debug('Preparing payload...');
     return await new Promise(async(resolve, reject) => {
@@ -154,16 +239,16 @@ export default class TruefiChannel {
           payloadMsg = "Truefi loan rate has been changed to " + data.rate;
           payloadTitle = "Truefi Rate Change";
           break;
-        case NOTIFICATION_TYPE.LOAN:
+        case NOTIFICATION_TYPE.DUE_LOAN:
           title = "Truefi Loan Due";
           message = "Your Truefi loan is due in " + data.date + " days";
           payloadMsg = "Your Truefi loan is due in " + data.date + " days";
           payloadTitle = "Truefi Loan Due";
           break;
-        case NOTIFICATION_TYPE.NEW:
+        case NOTIFICATION_TYPE.NEW_LOAN:
           title = "Truefi New Loan";
-          message = "A new loan has been posted on truefi, visit to vote";
-          payloadMsg = "A new loan has been posted on truefi, visit to vote";
+          message = data.loans?.length > 1?  "New loans has been posted on truefi, visit to vote" : "A new loan has been posted on truefi, visit to vote";
+          payloadMsg = data.loans?.length > 1?  "New loans has been posted on truefi, visit to vote" : "A new loan has been posted on truefi, visit to vote";
           payloadTitle = "Truefi New Loan";
           break;
         default:

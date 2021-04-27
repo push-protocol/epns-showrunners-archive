@@ -112,6 +112,9 @@ export default {
   truefiRatingAgencyDeployedContract: process.env.TRUEFI_RATING_AGENCY_V2_CONTRACT,
   truefiRatingAgencyDeployedContractABI: require('./TrueRatingAgencyV2.json'),
 
+  truefiLoanFactoryDeployedContract: process.env.TRUEFI_LOAN_FACTORY_CONTRACT,
+  truefiLoanFactoryDeployedContractABI: require('./truefiLoanFactory.json'),
+
   cDaiDeployedContract:process.env.CDAI,
   cDaiDeployedContractABI: require('./cDai.json'),
 
