@@ -28,6 +28,9 @@ const wallets = [
         },
         {
             everestPrivateKey_1: process.env.EVEREST_PRIVATE_KEY
+        },
+        {
+            truefiPrivateKey_1: process.env.TRUEFI_PRIVATE_KEY
         }
 ]
     

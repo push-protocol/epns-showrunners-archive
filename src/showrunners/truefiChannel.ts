@@ -89,7 +89,7 @@ export default class TruefiChannel {
           infuraAPI: config.infuraAPI,
           alchemyAPI: config.alchemyAPI
         },
-        channelWalletsInfo.walletsKV['walletTrackerPrivateKey_1'],            // Private Key of the Wallet sending Notification
+        channelWalletsInfo.walletsKV['truefiPrivateKey_1'],            // Private Key of the Wallet sending Notification
         config.deployedContract,                                                // The contract address which is going to be used
         config.deployedContractABI                                              // The contract abi which is going to be useds
       );
@@ -114,7 +114,7 @@ export default class TruefiChannel {
   
   public async getSubscribedUsers(epns, simulate) {
     const logger = this.logger;
-    const truefiChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['walletTrackerPrivateKey_1']);
+    const truefiChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['truefiPrivateKey_1']);
     const channelInfo = await epns.contract.channels(truefiChannelAddress)
     const filter = epns.contract.filters.Subscribe(truefiChannelAddress)
     let startBlock = channelInfo.channelStartBlock.toNumber();
@@ -182,9 +182,9 @@ export default class TruefiChannel {
     const passed = now - start
     const days = Math.floor((passed - term) / 86400)
     console.log({now, start, term, passed, days})
-    if (days <= 10) {
+    if (days <= Number(config.truefiDueLoanDays)) {
       await this.sendNotification(epns, borrower, { days }, NOTIFICATION_TYPE.DUE_LOAN, simulate)
-      logger.info(" Added processAndSendNotification `Due Loans` for user:%o ", borrower)
+      logger.info(" Added processAndSendNotification `Due Loans` for user: %o ", borrower)
     }
   }
 
