@@ -121,14 +121,9 @@ export default class TruefiChannel {
 
     //Function to get all the addresses in the channel
     const eventLog = await epns.contract.queryFilter(filter, startBlock)
-    // Log the event
-    // logger.debug("Event log returned %o", eventLog);
-    // Loop through all addresses in the channel and decide who to send notification
     const users = eventLog.map(log => log.args.user)
     return users
   }
-
-
 
   // To form and write to smart contract
   public async sendMessageToContract(simulate) {
@@ -145,6 +140,7 @@ export default class TruefiChannel {
     const users = await this.getSubscribedUsers(epns, simulate);
     const loans = await this.checkNewLoans(epns, users, truefiNetwork, simulate)
     await this.checkActiveLoans(loans, truefiNetwork, simulate)
+    await this.checkExpiry(epns, users, truefiNetwork, simulate)
     await queue.onIdle();
     const block = await epns.provider.getBlockNumber();
     await cache.setCache(BLOCK_NUMBER, block);
@@ -160,11 +156,36 @@ export default class TruefiChannel {
       console.log("error: %o", error)
     }
   }
-  // check borrower, if they're in users and ehrn expiry, send message
-  public async checkExpiry() {
+
+  public async checkExpiry(epns, users, truefiNetwork, simulate) {
     const cache = this.cached;
     const loans = await cache.getLCache(LOANS)
+    const checkBorrowerPromise = loans.map(loan => this.checkBorrower(epns, users, loan, truefiNetwork, simulate))
+    await Promise.all(checkBorrowerPromise)
+  }
 
+  public async checkBorrower(epns, users, loan, truefiNetwork, simulate) {
+    const loanContract = await this.getContracts(loan, config.truefiLoanTokenDeployedContractABI, truefiNetwork)
+    const borrower = await loanContract.contract.borrower()
+    this.checkLoanExpiry(epns, borrower, loanContract, simulate)
+    if (users.includes(borrower)) {
+      console.log({users, borrower})
+    }
+  }
+
+  public async checkLoanExpiry(epns, borrower, loanContract, simulate) {
+    const logger = this.logger;
+    let [start, term] = await Promise.all([loanContract.contract.start(), loanContract.contract.term()])
+    start = Number(start.toString())
+    term = Number(term.toString())
+    const now = parseInt(Date.now()/1000);
+    const passed = now - start
+    const days = Math.floor((passed - term) / 86400)
+    console.log({now, start, term, passed, days})
+    if (days <= 10) {
+      await this.sendNotification(epns, borrower, { days }, NOTIFICATION_TYPE.DUE_LOAN, simulate)
+      logger.info(" Added processAndSendNotification `Due Loans` for user:%o ", borrower)
+    }
   }
 
   public async checkStatus(loan) {
@@ -187,7 +208,7 @@ export default class TruefiChannel {
     logger.debug("loans: %o, startBlock: %o", loans, startBlock)
     for (let index = 0; index < users.length; index++) {
       await queue.add(() => this.sendNotification(epns, users[index], {loans}, NOTIFICATION_TYPE.NEW_LOAN, simulate));
-      logger.info(" Added processAndSendNotification for user:%o ", users[index])
+      logger.info(" Added processAndSendNotification `New Loans` for user:%o ", users[index])
     }
     return loans;
   }
@@ -269,8 +290,8 @@ export default class TruefiChannel {
           break;
         case NOTIFICATION_TYPE.DUE_LOAN:
           title = "Truefi Loan Due";
-          message = "Your Truefi loan is due in " + data.date + " days";
-          payloadMsg = "Your Truefi loan is due in " + data.date + " days";
+          message = "Your Truefi loan is due in " + data.days + " days";
+          payloadMsg = "Your Truefi loan is due in " + data.days + " days";
           payloadTitle = "Truefi Loan Due";
           break;
         case NOTIFICATION_TYPE.NEW_LOAN:
