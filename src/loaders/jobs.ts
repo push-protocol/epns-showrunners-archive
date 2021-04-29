@@ -27,6 +27,7 @@ import Everest from '../showrunners/everestChannel';
 import WalletTrackerChannel from '../showrunners/walletTrackerChannel';
 import WalletMonitoring from '../services/walletMonitoring';
 import HelloWorld from '../showrunners/helloWorldChannel';
+import TruefiChannel from '../showrunners/truefiChannel';
 
 export default ({ logger }) => {
   // 1. SHOWRUNNERS SERVICE
@@ -202,6 +203,22 @@ export default ({ logger }) => {
     }
   });
 
+  // 1.9 TrueFI CHANNEL
+  schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
+    logger.info('-- 🛵 Scheduling Showrunner - Everest Channel [on 24 Hours]');
+    const truefiTicker = Container.get(TruefiChannel);
+    const taskName = 'Truefi event checks and sendMessageToContract()';
+
+    try {
+      await truefiTicker.sendMessageToContract(false);
+      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+    }
+    catch (err) {
+      logger.error(`❌ Cron Task Failed -- ${taskName}`);
+      logger.error(`Error Object: %o`, err);
+    }
+  });
+
   // 2. EVENT DISPATHER SERVICE
   const eventDispatcher = Container.get(EventDispatcherInterface);
   eventDispatcher.on("newBlockMined", async function (data) {
@@ -254,4 +271,5 @@ export default ({ logger }) => {
       logger.error(`Error Object: %o`, err);
     }
   });
+  
 };
