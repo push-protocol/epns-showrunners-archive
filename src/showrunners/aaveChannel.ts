@@ -5,15 +5,7 @@ import { Service, Inject } from 'typedi';
 import config from '../config';
 import channelWalletsInfo from '../config/channelWalletsInfo';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
-import events from '../subscribers/events';
-
-import { BigNumber, ethers } from 'ethers';
-
-const bent = require('bent'); // Download library
-const moment = require('moment'); // time library
-
-const db = require('../helpers/dbHelper');
-const utils = require('../helpers/utilsHelper');
+import { ethers } from 'ethers';
 import epnsNotify from '../helpers/epnsNotifyHelper';
 
 const NETWORK_TO_MONITOR = config.web3KovanNetwork;
@@ -157,62 +149,103 @@ export default class AaveChannel {
     })
   }
 
-  public async checkHealthFactor(aave, networkToMonitor, userAddress, simulate) {
+  public async getHealthFactor(aave, networkToMonitor, userAddress, simulate){
+    // Check simulate object
+    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
+    const simulateApplyToAddr = logicOverride && simulate.logicOverride.hasOwnProperty("applyToAddr") ? simulate.logicOverride.applyToAddr : false;
+    const simulateAaveNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("aaveNetwork") ? simulate.logicOverride.aaveNetwork : false;
+
+    if(simulateApplyToAddr){
+      userAddress = simulateApplyToAddr
+    }
+    if(simulateAaveNetwork){
+      networkToMonitor = simulateAaveNetwork
+    }
+
     if(!aave){
       aave = this.getAaveInteractableContract(networkToMonitor)
     }
     const logger = this.logger;
-    return new Promise((resolve, reject) => {
-      aave.contract.getUserAccountData(userAddress)
-      .then(async (info)=> {
-        let healthFactor = ethers.utils.formatEther(info.healthFactor)
-        if(Number(healthFactor) <= HEALTH_FACTOR_THRESHOLD){
-          this.getPayload(userAddress, healthFactor)
-          .then(payload => {
-            epnsNotify.uploadToIPFS(payload, logger, simulate)
-            .then(async (ipfshash) => {
-              resolve({
-                success: true,
-                wallet: userAddress,
-                ipfshash: ipfshash,
-                payloadType: parseInt(payload.data.type)
-              });
-            })
-            .catch(err => {
-              logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", userAddress, err)
-              resolve({
-                success: false,
-                err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
-              });
+    const userData = await aave.contract.getUserAccountData(userAddress)
+    let  healthFactor = ethers.utils.formatEther(userData.healthFactor)
+    logger.debug("For wallet: %s, Health Factor: %o", userAddress, healthFactor);
+    return {
+      success: true,
+      healthFactor
+    }
+  }
+
+  public async checkHealthFactor(aave, networkToMonitor, userAddress, simulate) {
+    const logger = this.logger;
+
+    // Check simulate object
+    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
+    const simulateApplyToAddr = logicOverride && simulate.logicOverride.hasOwnProperty("applyToAddr") ? simulate.logicOverride.applyToAddr : false;
+    const simulateAaveNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("aaveNetwork") ? simulate.logicOverride.aaveNetwork : false;
+
+    if(simulateApplyToAddr){
+      userAddress = simulateApplyToAddr
+    }
+    if(simulateAaveNetwork){
+      networkToMonitor = simulateAaveNetwork
+    }
+
+    if(!aave){
+      aave = this.getAaveInteractableContract(networkToMonitor)
+    }
+    return new Promise(async(resolve, reject) => {
+      const res = await this.getHealthFactor(aave, networkToMonitor, userAddress, simulate)
+      if(Number(res.healthFactor) <= HEALTH_FACTOR_THRESHOLD){
+        this.getPayload(userAddress, res.healthFactor, simulate)
+        .then(payload => {
+          epnsNotify.uploadToIPFS(payload, logger, simulate)
+          .then(async (ipfshash) => {
+            resolve({
+              success: true,
+              wallet: userAddress,
+              ipfshash: ipfshash,
+              payloadType: parseInt(payload.data.type)
             });
           })
           .catch(err => {
-            logger.error("Unable to proceed with Aave Liquidation Alert!Function for wallet: %s, error: %o", userAddress, err);
+            logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", userAddress, err)
             resolve({
               success: false,
-              err: "Unable to proceed with Aave Liquidation Alert! Function for wallet: " + userAddress + " | error: " + err
+              err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
             });
           });
-        }
-        else {
+        })
+        .catch(err => {
+          logger.error("Unable to proceed with Aave Liquidation Alert!Function for wallet: %s, error: %o", userAddress, err);
           resolve({
             success: false,
-            err: "Aave Liquiditaion condition unmet for wallet: " + userAddress
+            err: "Unable to proceed with Aave Liquidation Alert! Function for wallet: " + userAddress + " | error: " + err
           });
-        }
-      })
-      .catch(err => {
-        logger.error("Unable to obtain user data from contract for wallet: %s, error: %o", userAddress, err)
+        });
+      }
+      else {
         resolve({
           success: false,
-          err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
+          err: "Aave Liquiditaion condition unmet for wallet: " + userAddress
         });
-      });
+      }
+      
     })
   }
 
-  public async getPayload(userAddress, healthFactor) {
+
+  public async getPayload(userAddress, healthFactor, simulate) {
     const logger = this.logger;
+    // Check simulate object
+    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
+    const simulateApplyToAddr = logicOverride && simulate.logicOverride.hasOwnProperty("applyToAddr") ? simulate.logicOverride.applyToAddr : false;
+    const simulateHealthFactor = logicOverride && simulate.logicOverride.hasOwnProperty("healthFactor") ? simulate.logicOverride.healthFactor : false;
+    if(simulateApplyToAddr){
+      userAddress = simulateApplyToAddr
+    }
+    if(simulateHealthFactor){
+      healthFactor = simulateHealthFactor
+    }
     const precision = CUSTOMIZABLE_SETTINGS.precision;
     logger.debug('Preparing payload...');
     return await new Promise(async(resolve, reject) => {

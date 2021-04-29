@@ -38,5 +38,74 @@ export default (app: Router) => {
     },
   );
 
+  route.post(
+    '/checkHealthFactor',
+    celebrate({
+      body: Joi.object({
+        simulate: [Joi.bool(), Joi.object()],
+      }),
+    }),
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/aave/send_message endpoint with body: %o', req.body )
+      try {
+        const aave = Container.get(aaveChannel);
+        const { success,  data } = await aave.checkHealthFactor(null, null, null, req.body.simulate);
+
+        return handleResponse(res, 201, true, success, data);
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return handleResponse(res, 500, false, 'error', JSON.stringify(e));
+      }
+    },
+  );
+
+  route.post(
+    '/getHealthFactor',
+    celebrate({
+      body: Joi.object({
+        simulate: [Joi.bool(), Joi.object()],
+      }),
+    }),
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/aave/send_message endpoint with body: %o', req.body )
+      try {
+        const aave = Container.get(aaveChannel);
+        const { success,  data } = await aave.getHealthFactor(null, null, null, req.body.simulate);
+
+        return handleResponse(res, 201, true, success, data);
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return handleResponse(res, 500, false, 'error', JSON.stringify(e));
+      }
+    },
+  );
+
+  route.post(
+    '/getPayload',
+    celebrate({
+      body: Joi.object({
+        simulate: [Joi.bool(), Joi.object()],
+      }),
+    }),
+    middlewares.onlyLocalhost,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const Logger = Container.get('logger');
+      Logger.debug('Calling /showrunners/aave/send_message endpoint with body: %o', req.body )
+      try {
+        const aave = Container.get(aaveChannel);
+        const { success,  data } = await aave.getPayload(null, null, req.body.simulate);
+
+        return handleResponse(res, 201, true, success, data);
+      } catch (e) {
+        Logger.error('🔥 error: %o', e);
+        return handleResponse(res, 500, false, 'error', JSON.stringify(e));
+      }
+    },
+  );
+
   
 };
