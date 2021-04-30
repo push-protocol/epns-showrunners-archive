@@ -84,7 +84,7 @@ export default class AaveChannel {
           eventLog.map((log) => {
             // Get user address
             const userAddress = log.args.user;
-            console.log("🚀 ~ file: aaveChannel.ts ~ line 91 ~ AaveChannel ~ eventLog.map ~ userAddress", userAddress)
+            logger.debug("🚀 ~ file: aaveChannel.ts ~ line 91 ~ AaveChannel ~ eventLog.map ~ userAddress", userAddress)
             allTransactions.push(
               this.checkHealthFactor(aave, NETWORK_TO_MONITOR, userAddress, simulate)
                 .then( (results) => {
@@ -152,15 +152,18 @@ export default class AaveChannel {
   public async getHealthFactor(aave, networkToMonitor, userAddress, simulate){
     // Check simulate object
     const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
+    const mode = logicOverride && simulate.logicOverride.mode ? simulate.logicOverride.mode : false;
     const simulateApplyToAddr = logicOverride && simulate.logicOverride.hasOwnProperty("applyToAddr") ? simulate.logicOverride.applyToAddr : false;
     const simulateAaveNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("aaveNetwork") ? simulate.logicOverride.aaveNetwork : false;
-
-    if(simulateApplyToAddr){
-      userAddress = simulateApplyToAddr
+    if(mode){
+      if(simulateApplyToAddr){
+        userAddress = simulateApplyToAddr
+      }
+      if(simulateAaveNetwork){
+        networkToMonitor = simulateAaveNetwork
+      }
     }
-    if(simulateAaveNetwork){
-      networkToMonitor = simulateAaveNetwork
-    }
+    
 
     if(!aave){
       aave = this.getAaveInteractableContract(networkToMonitor)
@@ -180,15 +183,19 @@ export default class AaveChannel {
 
     // Check simulate object
     const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
+    const mode = logicOverride && simulate.logicOverride.mode ? simulate.logicOverride.mode : false;
     const simulateApplyToAddr = logicOverride && simulate.logicOverride.hasOwnProperty("applyToAddr") ? simulate.logicOverride.applyToAddr : false;
     const simulateAaveNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("aaveNetwork") ? simulate.logicOverride.aaveNetwork : false;
 
-    if(simulateApplyToAddr){
-      userAddress = simulateApplyToAddr
+    if(mode){
+      if(simulateApplyToAddr){
+        userAddress = simulateApplyToAddr
+      }
+      if(simulateAaveNetwork){
+        networkToMonitor = simulateAaveNetwork
+      }
     }
-    if(simulateAaveNetwork){
-      networkToMonitor = simulateAaveNetwork
-    }
+    
 
     if(!aave){
       aave = this.getAaveInteractableContract(networkToMonitor)
@@ -226,7 +233,7 @@ export default class AaveChannel {
       else {
         resolve({
           success: false,
-          err: "Aave Liquiditaion condition unmet for wallet: " + userAddress
+          err: userAddress + " is not about to get liquidated"
         });
       }
       
@@ -238,14 +245,19 @@ export default class AaveChannel {
     const logger = this.logger;
     // Check simulate object
     const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
+    const mode = logicOverride && simulate.logicOverride.mode ? simulate.logicOverride.mode : false;
     const simulateApplyToAddr = logicOverride && simulate.logicOverride.hasOwnProperty("applyToAddr") ? simulate.logicOverride.applyToAddr : false;
     const simulateHealthFactor = logicOverride && simulate.logicOverride.hasOwnProperty("healthFactor") ? simulate.logicOverride.healthFactor : false;
-    if(simulateApplyToAddr){
-      userAddress = simulateApplyToAddr
+    
+    if(mode){
+      if(simulateApplyToAddr){
+        userAddress = simulateApplyToAddr
+      }
+      if(simulateHealthFactor){
+        healthFactor = simulateHealthFactor
+      }
     }
-    if(simulateHealthFactor){
-      healthFactor = simulateHealthFactor
-    }
+    
     const precision = CUSTOMIZABLE_SETTINGS.precision;
     logger.debug('Preparing payload...');
     return await new Promise(async(resolve, reject) => {
