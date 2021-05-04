@@ -145,7 +145,8 @@ export default {
   /**
    * AAVE Related
    */
-  aaveLendingPoolDeployedContract: process.env.AAVE_LENDINGPOOL_DEPLOYED_CONTRACT,
+  aaveLendingPoolDeployedContractKovan: process.env.AAVE_LENDINGPOOL_DEPLOYED_CONTRACT_KOVAN,
+  aaveLendingPoolDeployedContractMainnet: process.env.AAVE_LENDINGPOOL_DEPLOYED_CONTRACT_MAINNET,
   aaveLendingPoolDeployedContractABI: require('./aave_LendingPool.json'),
 
   /**

@@ -27,6 +27,14 @@ export default class AaveChannel {
 
 
   public getAaveInteractableContract(web3network) {
+    let aaveLendingPoolDeployedContract
+    if(web3network == config.web3KovanNetwork){
+      aaveLendingPoolDeployedContract = config.aaveLendingPoolDeployedContractKovan
+    }
+    else if(web3network == config.web3MainnetNetwork){
+      aaveLendingPoolDeployedContract = config.aaveLendingPoolDeployedContractMainnet
+    }
+    
     return epnsNotify.getInteractableContracts(
         web3network,                                              // Network for which the interactable contract is req
         {                                                                       // API Keys
@@ -35,7 +43,7 @@ export default class AaveChannel {
           alchemyAPI: config.alchemyAPI
         },
         channelWalletsInfo.walletsKV['aavePrivateKey_1'],                       // Private Key of the Wallet sending Notification
-        config.aaveLendingPoolDeployedContract,                                             // The contract address which is going to be used
+        aaveLendingPoolDeployedContract,                                             // The contract address which is going to be used
         config.aaveLendingPoolDeployedContractABI                                           // The contract abi which is going to be useds
     );
   }
@@ -58,12 +66,25 @@ export default class AaveChannel {
   // To form and write to smart contract
   public async sendMessageToContract(simulate) {
     const logger = this.logger;
+    let networkToMonitor = NETWORK_TO_MONITOR;
+
+    // Check simulate object
+    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
+    const mode = logicOverride && simulate.logicOverride.mode ? simulate.logicOverride.mode : false;
+    const simulateAaveNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("aaveNetwork") ? simulate.logicOverride.aaveNetwork : false;
+
+    if(mode){
+      if(simulateAaveNetwork){
+        networkToMonitor = simulateAaveNetwork
+        console.log("🚀 ~ file: aaveChannel.ts ~ line 79 ~ AaveChannel ~ sendMessageToContract ~ networkToMonitor", networkToMonitor)
+      }
+    }
     logger.debug('Checking for aave addresses... ');
     return await new Promise((resolve, reject) => {
       const aaveChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['aavePrivateKey_1']);
        // Call Helper function to get interactableContracts
       const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
-      const aave = this.getAaveInteractableContract(config.web3KovanProvider);
+      const aave = this.getAaveInteractableContract(networkToMonitor);
 
       epns.contract.channels(aaveChannelAddress)
       .then(async (channelInfo) => {
@@ -84,7 +105,7 @@ export default class AaveChannel {
           eventLog.map((log) => {
             // Get user address
             const userAddress = log.args.user;
-            logger.debug("🚀 ~ file: aaveChannel.ts ~ line 91 ~ AaveChannel ~ eventLog.map ~ userAddress", userAddress)
+            logger.debug("🚀 ~ file: aaveChannel.ts ~ line 91 ~ AaveChannel ~ eventLog.map ~ userAddress %o", userAddress)
             allTransactions.push(
               this.checkHealthFactor(aave, NETWORK_TO_MONITOR, userAddress, simulate)
                 .then( (results) => {
