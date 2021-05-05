@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8de8c40c-e38e-4460-8d9f-1f2390d01469",
+		"_postman_id": "b136c78f-01eb-4b1a-967f-f593cfb9db36",
 		"name": "EPNS Showrunners Staging",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -68,8 +68,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Wallet Tracker",
@@ -458,8 +457,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "ETH Ticker",
@@ -536,8 +534,7 @@
 						"type": "text/javascript",
 						"exec": [
 							""
-						],
-						"id": "36e00bf8-0e8f-4ba6-a52a-357378e1bf86"
+						]
 					}
 				},
 				{
@@ -546,12 +543,10 @@
 						"type": "text/javascript",
 						"exec": [
 							""
-						],
-						"id": "55e867d9-6650-4fa9-bc07-19686b4fdf47"
+						]
 					}
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Compound",
@@ -684,8 +679,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Gas Price",
@@ -850,8 +844,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "ENS Domain",
@@ -952,8 +945,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "BTC Ticker",
@@ -1022,8 +1014,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Everest",
@@ -1156,8 +1147,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Hello World",
@@ -1192,9 +1182,72 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
+		},
+		{
+			"name": "Truefi",
+			"item": [
+				{
+					"name": "truefi/send_message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/truefi/send_message",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"truefi",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "truefi/get_subscribed_users",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"simulate\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/truefi/get_subscribed_users",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"truefi",
+								"get_subscribed_users"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
-	],
-	"protocolProfileBehavior": {}
+	]
 }
