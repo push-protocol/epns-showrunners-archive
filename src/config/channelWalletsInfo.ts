@@ -28,6 +28,9 @@ const wallets = [
         },
         {
             everestPrivateKey_1: process.env.EVEREST_PRIVATE_KEY
+        },
+        {
+            helloWorldPrivateKey_1: process.env.HELLO_WORLD_PRIVATE_KEY
         }
 ]
     
