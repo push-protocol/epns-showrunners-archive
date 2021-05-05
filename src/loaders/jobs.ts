@@ -42,6 +42,9 @@ export default ({ logger }) => {
   const tenMinuteRule = new schedule.RecurrenceRule();
   tenMinuteRule.minute = new schedule.Range(0, 59, 10);
 
+  const thirtyMinuteRule = new schedule.RecurrenceRule();
+  thirtyMinuteRule.minute = new schedule.Range(0, 59, 30);
+
   const oneHourRule = new schedule.RecurrenceRule();
   oneHourRule.hour = new schedule.Range(0, 23);
   oneHourRule.minute = 0;
@@ -172,7 +175,7 @@ export default ({ logger }) => {
   });
 
   // 1.7 WALLET TRACKER CHANNEL
-  schedule.scheduleJob({ start: startTime, rule: twoAndHalfMinRule }, async function () {
+  schedule.scheduleJob({ start: startTime, rule: thirtyMinuteRule }, async function () {
     logger.info('-- 🛵 Scheduling Showrunner - Everest Channel [on 2.5 Minutes]');
     const walletTracker = Container.get(WalletTrackerChannel);
     const taskName = 'Track wallets on every new block mined';
