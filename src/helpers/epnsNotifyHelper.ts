@@ -77,7 +77,7 @@ export default {
     const enableLogs = 0;
 
     // SIMULATE OBJECT CHECK
-    if (simulate && typeof simulate == 'object' && simulate.hasOwnProperty("txOverride")) {
+    if (simulate && typeof simulate == 'object' && simulate.hasOwnProperty("txOverride") && simulate.txOverride.mode) {
       if (simulate.txOverride.hasOwnProperty("recipientAddr")) recipientAddr = simulate.txOverride.recipientAddr;
       if (simulate.txOverride.hasOwnProperty("notificationType")) notificationType = simulate.txOverride.notificationType;
       if (simulate.txOverride.hasOwnProperty("notificationStorageType")) notificationStorageType = simulate.txOverride.notificationStorageType;
