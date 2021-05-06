@@ -114,12 +114,7 @@ export default class TruefiChannel {
   
   public async getSubscribedUsers(epns, simulate) {
     const logger = this.logger;
-    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
-    const epnsNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("epnsNetwork") ? simulate.logicOverride.epnsNetwork : config.web3RopstenNetwork;
-    if(!epns){
-      epns = this.getEPNSInteractableContract(epnsNetwork)
-    }
-    const truefiChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['ensDomainExpiryPrivateKey_1']);
+    const truefiChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['truefiPrivateKey_1']);
     const channelInfo = await epns.contract.channels(truefiChannelAddress)
     const filter = epns.contract.filters.Subscribe(truefiChannelAddress)
     let startBlock = channelInfo.channelStartBlock.toNumber();
@@ -127,7 +122,6 @@ export default class TruefiChannel {
     //Function to get all the addresses in the channel
     const eventLog = await epns.contract.queryFilter(filter, startBlock)
     const users = eventLog.map(log => log.args.user)
-    console.log({users})
     return users
   }
 
@@ -136,13 +130,12 @@ export default class TruefiChannel {
     const logger = this.logger;
     const cache = this.cached;
     // Call Helper function to get interactableContracts
-    // Check simulate object
     const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
     const epnsNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("epnsNetwork") ? simulate.logicOverride.epnsNetwork : config.web3RopstenNetwork;
-    const truefiNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("truefiNetwork") ? simulate.logicOverride.truefiNetwork : config.web3MainnetNetwork;
     // -- End Override logic
     // Call Helper function to get interactableContracts
     const epns = this.getEPNSInteractableContract(epnsNetwork);
+    const truefiNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("truefiNetwork") ? simulate.logicOverride.truefiNetwork : config.web3MainnetNetwork;
     logger.debug('Checking for truefi address... ');
     const users = await this.getSubscribedUsers(epns, simulate);
     const loans = await this.checkNewLoans(epns, users, truefiNetwork, simulate)
@@ -154,9 +147,6 @@ export default class TruefiChannel {
   }
 
   public async checkActiveLoans(loans, truefiNetwork, simulate) {
-    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
-    if(!loans) loans = logicOverride && simulate.logicOverride.hasOwnProperty("loans") ? simulate.logicOverride.loans : [];
-    if(!truefiNetwork) truefiNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("truefiNetwork") ? simulate.logicOverride.truefiNetwork : config.web3MainnetNetwork;
     try {      
       const loanPromise = loans.map(loan => this.getContracts(loan, config.truefiLoanTokenDeployedContractABI, truefiNetwork))
       const loanObj = await Promise.all(loanPromise)
@@ -168,55 +158,22 @@ export default class TruefiChannel {
   }
 
   public async checkExpiry(epns, users, truefiNetwork, simulate) {
-    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
-    if (!users) users = logicOverride && simulate.logicOverride.hasOwnProperty("users") ? simulate.logicOverride.users : [];
-    const epnsNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("epnsNetwork") ? simulate.logicOverride.epnsNetwork : config.web3RopstenNetwork;
-    if(!truefiNetwork) truefiNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("truefiNetwork") ? simulate.logicOverride.truefiNetwork : config.web3MainnetNetwork;
-    if(!epns){
-      epns = this.getEPNSInteractableContract(epnsNetwork)
-    }
     const cache = this.cached;
     const loans = await cache.getLCache(LOANS)
     const checkBorrowerPromise = loans.map(loan => this.checkBorrower(epns, users, loan, truefiNetwork, simulate))
-    return await Promise.all(checkBorrowerPromise)
+    await Promise.all(checkBorrowerPromise)
   }
 
   public async checkBorrower(epns, users, loan, truefiNetwork, simulate) {
-    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
-    if (!users) users = logicOverride && simulate.logicOverride.hasOwnProperty("users") ? simulate.logicOverride.users : [];
-    if (!loan) loan = logicOverride && simulate.logicOverride.hasOwnProperty("loans") ? simulate.logicOverride.loan[0] : "";
-    const epnsNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("epnsNetwork") ? simulate.logicOverride.epnsNetwork : config.web3RopstenNetwork;
-    if(!truefiNetwork) truefiNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("truefiNetwork") ? simulate.logicOverride.truefiNetwork : config.web3MainnetNetwork;
-    if(!epns){
-      epns = this.getEPNSInteractableContract(epnsNetwork)
-    }
     const loanContract = await this.getContracts(loan, config.truefiLoanTokenDeployedContractABI, truefiNetwork)
     const borrower = await loanContract.contract.borrower()
+    this.checkLoanExpiry(epns, borrower, loanContract, simulate)
     if (users.includes(borrower)) {
       console.log({users, borrower})
     }
-    return this.checkLoanExpiry(epns, borrower, loanContract, simulate)
   }
 
   public async checkLoanExpiry(epns, borrower, loanContract, simulate) {
-    let loan
-    let users
-    let truefiNetwork
-    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
-    const epnsNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("epnsNetwork") ? simulate.logicOverride.epnsNetwork : config.web3RopstenNetwork;
-    if(!truefiNetwork) truefiNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("truefiNetwork") ? simulate.logicOverride.truefiNetwork : config.web3MainnetNetwork;
-    if(!epns){
-      epns = this.getEPNSInteractableContract(epnsNetwork)
-    }
-    if (!users) {
-      users = logicOverride && simulate.logicOverride.hasOwnProperty("users") ? simulate.logicOverride.users : [];
-      borrower = users[0]
-    }
-    if (!loanContract) {
-      loan = logicOverride && simulate.logicOverride.hasOwnProperty("loans") ? simulate.logicOverride.loan[0] : "";
-      loanContract = await this.getContracts(loan, config.truefiLoanTokenDeployedContractABI, truefiNetwork)
-    }
-    
     const logger = this.logger;
     let [start, term] = await Promise.all([loanContract.contract.start(), loanContract.contract.term()])
     start = Number(start.toString())
@@ -229,7 +186,6 @@ export default class TruefiChannel {
       await this.sendNotification(epns, borrower, { days }, NOTIFICATION_TYPE.DUE_LOAN, simulate)
       logger.info(" Added processAndSendNotification `Due Loans` for user: %o ", borrower)
     }
-    return {expiringDays: days, benchmark: config.truefiDueLoanDays}
   }
 
   public async checkStatus(loan) {
@@ -238,15 +194,8 @@ export default class TruefiChannel {
     return null
   }
 
-  public async checkNewLoans(epns, users, truefiNetwork, simulate) {
-    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
-    if (!users) users = logicOverride && simulate.logicOverride.hasOwnProperty("users") ? simulate.logicOverride.users : [];
-    const epnsNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("epnsNetwork") ? simulate.logicOverride.epnsNetwork : config.web3RopstenNetwork;
-    if(!truefiNetwork) truefiNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("truefiNetwork") ? simulate.logicOverride.truefiNetwork : config.web3MainnetNetwork;
-    if(!epns){
-      epns = this.getEPNSInteractableContract(epnsNetwork)
-    }
-    const truefi = this.getTruefiLoanFactoryInteractableContract(truefiNetwork)
+  public async checkNewLoans(epns, users, networkToMonitor, simulate) {
+    const truefi = this.getTruefiLoanFactoryInteractableContract(networkToMonitor)
     const logger = this.logger;
     const cache = this.cached;
     // get and store last checked block number to run filter
