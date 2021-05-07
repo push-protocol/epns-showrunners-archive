@@ -288,7 +288,7 @@ export default class AaveChannel {
       const message =  userAddress + " your account has healthFactor "+ newHealthFactor + ". Maintain it above 1 to avoid liquidation.";
 
       const payloadTitle = "Aave Liquidity Alert!";
-      const payloadMsg = "Dear [d:" + userAddress + "] your account has healthFactor "+ newHealthFactor + ". Maintain it above 1 to avoid liquidation.";
+      const payloadMsg = `Dear [d:${userAddress}] your account has healthFactor ${newHealthFactor} . Maintain it above 1 to avoid liquidation.[timestamp: ${Math.floor(new Date() / 1000)}]`;
 
       const payload = await epnsNotify.preparePayload(
         null,                                                               // Recipient Address | Useful for encryption
