@@ -62,7 +62,7 @@ export default ({ logger }) => {
 
   // 1.1 BTC TICKER CHANNEL
   schedule.scheduleJob({ start: startTime, rule: sixHourRule }, async function () {
-    logger.info('-- 🛵 Scheduling Showrunner - BTC Ticker Channel [on 6 Hours]');
+    logger.info('-- 🛵 Scheduling Showrunner - BTC Ticker Channel [on 6 Hours]' + new Date(Date.now()));
     const btcTicker = Container.get(BtcTickerChannel);
     const taskName = 'BTC Ticker Fetch and sendMessageToContract()';
 
@@ -78,7 +78,7 @@ export default ({ logger }) => {
 
   // 1.2 ETH TICKER CHANNEL
   schedule.scheduleJob({ start: startTime, rule: sixHourRule }, async function () {
-    logger.info('-- 🛵 Scheduling Showrunner - ETH Ticker Channel [on 6 Hours]');
+    logger.info('-- 🛵 Scheduling Showrunner - ETH Ticker Channel [on 6 Hours]' + new Date(Date.now()));
     const ethTicker = Container.get(EthTickerChannel);
     const taskName = 'ETH Ticker Fetch and sendMessageToContract()';
 
@@ -95,7 +95,7 @@ export default ({ logger }) => {
 
   //1.3 ENS TICKER CHANNEL
   schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
-    logger.info('-- 🛵 Scheduling Showrunner - ENS Domain Expiry Channel [on 24 Hours]');
+    logger.info('-- 🛵 Scheduling Showrunner - ENS Domain Expiry Channel [on 24 Hours]' + new Date(Date.now()));
     const ensTicker = Container.get(EnsExpirationChannel);
     const taskName = 'ENS Domain Expiry and sendMessageToContract()';
 
@@ -127,7 +127,7 @@ export default ({ logger }) => {
 
   // 1.4.2 GAS CHANNEL
   schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
-    logger.info('-- 🛵 Scheduling Showrunner - Gas Average Update [on 24 hours]');
+    logger.info('-- 🛵 Scheduling Showrunner - Gas Average Update [on 24 hours]' + new Date(Date.now()));
     const gasDbTicker = Container.get(EthGasStationChannel);
     const taskName = 'updated mongoDb';
 
@@ -143,7 +143,7 @@ export default ({ logger }) => {
 
   // 1.5 COMPOUND LIQUIDATION CHANNEL
   schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
-    logger.info('-- 🛵 Scheduling Showrunner - Compound Liquidation Channel [on 24 Hours]');
+    logger.info('-- 🛵 Scheduling Showrunner - Compound Liquidation Channel [on 24 Hours]' + new Date(Date.now()));
     const compoundTicker = Container.get(CompoundLiquidationChannel);
     const taskName = 'Compound Liquidation address checks and sendMessageToContract()';
 
@@ -159,7 +159,7 @@ export default ({ logger }) => {
 
   // 1.6 EVEREST CHANNEL
   schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
-    logger.info('-- 🛵 Scheduling Showrunner - Everest Channel [on 24 Hours]');
+    logger.info('-- 🛵 Scheduling Showrunner - Everest Channel [on 24 Hours]' + new Date(Date.now()));
     const everestTicker = Container.get(Everest);
     const taskName = 'Everest event checks and sendMessageToContract()';
 
@@ -175,7 +175,7 @@ export default ({ logger }) => {
 
   // 1.7 WALLET TRACKER CHANNEL
   schedule.scheduleJob({ start: startTime, rule: thirtyMinuteRule }, async function () {
-    logger.info('-- 🛵 Scheduling Showrunner - Everest Channel [on 2.5 Minutes]');
+    logger.info('-- 🛵 Scheduling Showrunner - Wallet Tracker Channel [on 2.5 Minutes]' + new Date(Date.now()));
     const walletTracker = Container.get(WalletTrackerChannel);
     const taskName = 'Track wallets on every new block mined';
 
