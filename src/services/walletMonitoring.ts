@@ -39,7 +39,7 @@ export default class WalletTrackerChannel {
 
     for (const [name, value] of Object.entries(WALLETS)) {
       logger.info(`checking balance for ${name} wallet..`); 
-      const balance = ethers.utils.formatEther(await value.wallet.getBalance())
+      const balance = ethers.utils.formatEther(await provider.getBalance(value.wallet.address))
       logger.info(`balance for ${name} wallet is ${balance.toString()}: threshold is ${ETH_THRESHOLD}..`); 
       if (Number(balance.toString()) < ETH_THRESHOLD) {
         TransferPromise.push(this.transfertoWallet(simulate, name, value.wallet))
@@ -73,7 +73,7 @@ export default class WalletTrackerChannel {
     const cache = this.cached;
     const logger = this.logger;
     logger.info(`checking balance for main ETH wallet..`); 
-    const balance = ethers.utils.formatEther(await MAIN.getBalance())
+    const balance = ethers.utils.formatEther(await provider.getBalance(MAIN.address))
     let result = null;
     if (Number(balance.toString()) < ETH_MAIN_THRESHOLD) {
       const email = Container.get(EmailService);

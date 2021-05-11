@@ -31,6 +31,7 @@ import WalletMonitoring from '../services/walletMonitoring';
 export default ({ logger }) => {
   // 1. SHOWRUNNERS SERVICE
   const startTime = new Date(new Date().setHours(0, 0, 0, 0));
+  // console.log
   // const startTime = new Date(Date.now());
   // console.log(startTime, Date.now())
 
@@ -175,7 +176,7 @@ export default ({ logger }) => {
 
   // 1.7 WALLET TRACKER CHANNEL
   schedule.scheduleJob({ start: startTime, rule: thirtyMinuteRule }, async function () {
-    logger.info('-- 🛵 Scheduling Showrunner - Everest Channel [on 2.5 Minutes]');
+    logger.info('-- 🛵 Scheduling Showrunner - Wallet tracker Channel [on 30 Minutes]');
     const walletTracker = Container.get(WalletTrackerChannel);
     const taskName = 'Track wallets on every new block mined';
 
