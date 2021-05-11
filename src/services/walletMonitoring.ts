@@ -6,7 +6,7 @@ import { BigNumber, ethers, logger, Wallet } from 'ethers';
 import walletConfig from '../config/channelWalletsInfo';
 
 
-const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
+const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
 const ETHER_TRANSFER_AMOUNT = String(config.etherTransferAmount);
 const ETH_THRESHOLD = Number(config.ethThreshold);
 const ETH_MAIN_THRESHOLD = Number(config.ethMainThreshold);
