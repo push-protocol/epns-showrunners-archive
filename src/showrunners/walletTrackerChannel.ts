@@ -109,7 +109,7 @@ export default class WalletTrackerChannel {
 
     // Ignore call if this is already running
     if (this.running) {
-      logger.debug("Wallet Tracker instance is already running! Skipping...");
+      logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- Wallet Tracker instance is already running! Skipping...`);
       return;
     }
     this.running = true;
@@ -127,7 +127,7 @@ export default class WalletTrackerChannel {
 
     const eventLog = await epns.contract.queryFilter(filter, startBlock);
     // Log the event
-    logger.debug("Subscribed Address Found: %o", eventLog.length);
+    logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- Subscribed Address Found: %o`, eventLog.length);
 
     let allPayloads = []
 
@@ -136,11 +136,11 @@ export default class WalletTrackerChannel {
       const user = log.args.user;
       // logger.info("user: %o", user)
       await queue.add(() => this.processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s));
-      logger.info(" Added processAndSendNotification for user:%o ", user)
+      logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Added processAndSendNotification for user:%o `, user)
     }
     await queue.onIdle();
     this.running = false;
-    logger.debug("Done for all");
+    logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- Done for all`);
   }
 
   public async processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s) {
@@ -149,15 +149,15 @@ export default class WalletTrackerChannel {
       if (object.success) {
         const user = object.user
         let res = await this.getPayloadHash(user, object.changedTokens, simulate)
-        logger.info('IPFS Hash: %o', res)
-        logger.info('Object: %o', object)
+        logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- IPFS Hash: %o`, res)
+        logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Object: %o`, object)
 
         // Send notification
         const ipfshash = res.ipfshash;
         const payloadType = res.payloadType;
 
 
-        logger.info("Wallet: %o | Hash: :%o | Sending Data...", user, ipfshash);
+        logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Wallet: %o | Hash: :%o | Sending Data...`, user, ipfshash);
 
         const storageType = 1; // IPFS Storage Type
         const txConfirmWait = 1; // Wait for 0 tx confirmation
@@ -173,14 +173,14 @@ export default class WalletTrackerChannel {
           logger,
           simulate                                                         // Logger instance (or console.log) to pass
         )
-        logger.info("Transaction successful: %o | Notification Sent", tx.hash);
-        logger.info("🙌 Wallet Tracker Channel Logic Completed!");
+        logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Transaction successful: %o | Notification Sent`, tx.hash);
+        logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- 🙌 Wallet Tracker Channel Logic Completed for user : %o`, user);
       }
       else{
-        logger.info(object)
+        logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- No wallet movement: %o`, object)
       }
     } catch (error) {
-      logger.debug("Sending notifications failed to user: %o | error: %o", user, error)
+      logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- Sending notifications failed to user: %o | error: %o`, user, error)
       if (retries <=5 ) {
         retries++
         await queue.add(() => this.processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s));
@@ -203,10 +203,10 @@ export default class WalletTrackerChannel {
 
     // check and recreate provider mostly for routes
     if (!interactableERC20s) {
-      logger.info("Mostly coming from routes... rebuilding interactable erc20s");
+      logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Mostly coming from routes... rebuilding interactable erc20s`);
       //need token address
       interactableERC20s = this.getSupportedERC20sArray(networkToMonitor);
-      logger.info("Rebuilt interactable erc20s --> %o", interactableERC20s);
+      logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Rebuilt interactable erc20s --> %o`, interactableERC20s);
     }
 
     let changedTokens = [];
@@ -248,10 +248,10 @@ export default class WalletTrackerChannel {
 
     // check and recreate provider mostly for routes
     if (!interactableERC20s) {
-      logger.info("Mostly coming from routes... rebuilding interactable erc20s");
+      logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Mostly coming from routes... rebuilding interactable erc20s`);
       //need token address
       interactableERC20s = this.getSupportedERC20sArray(networkToMonitor);
-      logger.info("Rebuilt interactable erc20s --> %o", interactableERC20s);
+      logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Rebuilt interactable erc20s --> %o`, interactableERC20s);
     }
 
     return new Promise((resolve) => {
@@ -315,7 +315,7 @@ export default class WalletTrackerChannel {
         epnsNotify.uploadToIPFS(payload, logger, simulate)
         .then(async (ipfshash) => {
           // Sign the transaction and send it to chain
-          logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, user);
+          logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- ipfs hash generated: %o for Wallet: %s, sending it back...`, ipfshash, user);
 
           resolve({
             success: true,
@@ -325,7 +325,7 @@ export default class WalletTrackerChannel {
           });
         })
         .catch (err => {
-          logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", user, err)
+          logger.error(`[${new Date(Date.now())}]-[Wallet Tracker]- Unable to obtain ipfshash for wallet: %s, error: %o`, user, err)
           resolve({
             success: false,
             data: "Unable to obtain ipfshash for wallet: " + user + " | error: " + err
@@ -357,7 +357,7 @@ export default class WalletTrackerChannel {
 
           if (simulateRandomEthBal) {
             balance = ethers.utils.parseEther((Math.random() * 100001 / 100).toString());
-            logger.info("Simulating Random Ether Balance: %s" + ethers.utils.formatEther(balance));
+            logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Simulating Random Ether Balance: %s` + ethers.utils.formatEther(balance));
           }
 
           // balance is a BigNumber (in wei); format is as a string (in ether)
@@ -384,7 +384,7 @@ export default class WalletTrackerChannel {
             const random = ethers.BigNumber.from(Math.floor(Math.random() * 10000));
             const randBal = ethers.BigNumber.from(10).pow(SUPPORTED_TOKENS[ticker].decimals - 2);
             res = random.mul(randBal);
-            logger.info("Simulating Random Token Balance [%s]: %s", SUPPORTED_TOKENS[ticker].ticker, res.toString());
+            logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Simulating Random Token Balance [%s]: %s`, SUPPORTED_TOKENS[ticker].ticker, res.toString());
           }
 
           let rawBalance = Number(Number(res));
@@ -437,7 +437,7 @@ export default class WalletTrackerChannel {
   public async getWalletTrackerPayload(changedTokens) {
     const logger = this.logger;
 
-    logger.debug('Preparing payload...');
+    logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- Preparing payload...`);
 
     return await new Promise(async (resolve) => {
       const title = "Wallet Tracker Alert!";
@@ -456,7 +456,7 @@ export default class WalletTrackerChannel {
         null,                                                               // Internal Call to Action Link
         null,                                                               // internal img of youtube link
       );
-      logger.debug('Payload Prepared: %o', payload);
+      logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- Payload Prepared: %o`, payload);
 
       resolve(payload);
     });
@@ -493,7 +493,7 @@ export default class WalletTrackerChannel {
     })
 
     const prettyFormat = `${h1}\n${body}[timestamp: ${Math.floor(new Date() / 1000)}]`;
-    logger.info('Pretty Formatted Token Balance \n%o', prettyFormat);
+    logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Pretty Formatted Token Balance \n%o`, prettyFormat);
 
     return prettyFormat;
   }
@@ -513,7 +513,7 @@ export default class WalletTrackerChannel {
       // logger.info('userTokenDataDB: %o', userTokenData)
       return userTokenData
     } catch (error) {
-      logger.debug('getTokenBalanceFromDB Error: %o', error);
+      logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- getTokenBalanceFromDB Error: %o`, error);
     }
   }
 
@@ -530,7 +530,7 @@ export default class WalletTrackerChannel {
       // logger.info('addUserTokenToDB: %o', userToken)
       return userToken;
     } catch (error) {
-      logger.debug('addUserTokenToDB Error: %o', error);
+      logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- addUserTokenToDB Error: %o`, error);
     }
   }
 
@@ -544,10 +544,10 @@ export default class WalletTrackerChannel {
         { balance },
         { safe: true, new: true }
       );
-      logger.info('updatedUserToken: %o', userToken)
+      logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- updatedUserToken: %o`, userToken)
       return userToken;
     } catch (error) {
-      logger.debug('updateUserTokenBalance Error: %o', error);
+      logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- updateUserTokenBalance Error: %o`, error);
     }
   }
 
@@ -559,7 +559,7 @@ export default class WalletTrackerChannel {
       await this.UserTokenModel.deleteMany({})
       return true;
     } catch (error) {
-      logger.debug('clearUserTokenDB Error: %o', error);
+      logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- clearUserTokenDB Error: %o`, error);
     }
   }
 }
