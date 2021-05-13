@@ -9,6 +9,7 @@ import wallet_tracker from './routes/showrunners_wallet_tracker';
 import wallet_monitoring from './routes/showrunners_wallet_monitoring';
 import everest from './routes/showrunners_everest';
 import socketWeb3 from './routes/sockets/socketWeb3';
+import debug from './routes/services_debug';
 
 import mailing from './routes/mailing';
 
@@ -32,6 +33,9 @@ export default () => {
 	// -- HELPERS
 	// For mailing route
 	mailing(app);
+
+	//For debugging routes
+	debug(app);
 
 	// Finally return app
 	return app;
