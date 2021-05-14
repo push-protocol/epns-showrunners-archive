@@ -29,11 +29,11 @@ export default {
       ipfs
         .add(jsonizedPayload)
         .then(ipfshash => {
-          if (enableLogs) logger.info("Success --> uploadToIPFS(): ", ipfshash);
+          if (enableLogs) logger.info("Success --> uploadToIPFS(): %o", ipfshash);
           resolve(ipfshash);
         })
         .catch (err => {
-          if (enableLogs) logger.error("!!!Error --> uploadToIPFS(): ", err);
+          if (enableLogs) logger.error("!!!Error --> uploadToIPFS(): %o", err);
           reject(err);
         });
     });
