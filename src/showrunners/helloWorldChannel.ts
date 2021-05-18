@@ -4,6 +4,7 @@
 
 import { Service, Inject } from 'typedi';
 import config from '../config';
+import channelWalletsInfo from '../config/channelWalletsInfo';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import events from '../subscribers/events';
 
@@ -35,7 +36,7 @@ export default class HelloWorldChannel {
         infuraAPI: config.infuraAPI,
         alchemyAPI: config.alchemyAPI
       },
-      config.helloWorldPrivateKey,                                               // Private Key of the Wallet sending Notification
+      channelWalletsInfo.walletsKV['helloWorldPrivateKey_1'],                                               // Private Key of the Wallet sending Notification
       config.deployedContract,                                                // The contract address which is going to be used
       config.deployedContractABI                                              // The contract abi which is going to be useds
     );
@@ -54,6 +55,7 @@ export default class HelloWorldChannel {
           epnsNotify.uploadToIPFS(payload, logger, simulate)
             .then(async (ipfshash) => {
               logger.info("Success --> uploadToIPFS(): %o", ipfshash);
+              const walletAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['helloWorldPrivateKey_1']);
 
                  // Call Helper function to get interactableContracts
               const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
@@ -64,7 +66,7 @@ export default class HelloWorldChannel {
               // Send Notification
               await epnsNotify.sendNotification(
                 epns.signingContract,                                           // Contract connected to signing wallet
-                ethers.utils.computeAddress(config.helloWorldPrivateKey),       // Recipient to which the payload should be sent
+                walletAddress,                                                  // Recipient to which the payload should be sent
                 parseInt(payload.data.type),                                    // Notification Type
                 storageType,                                                    // Notificattion Storage Type
                 ipfshash,                                                       // Notification Storage Pointer
