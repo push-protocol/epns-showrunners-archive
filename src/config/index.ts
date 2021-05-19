@@ -85,6 +85,12 @@ export default {
   web3KovanNetwork: process.env.KOVAN_WEB3_NETWORK,
   web3KovanSocket: process.env.KOVAN_WEB3_SOCKET,
 
+  web3PolygonMainnetProvider: process.env.POLYGON_MAINNET_WEB3_PROVIDER,
+  web3PolygonMainnetRPC: process.env.POLYGON_MAINNET_RPC,
+  
+  web3PolygonMumbaiProvider: process.env.POLYGON_MUMBAI_WEB3_PROVIDER,
+  web3PolygonMumbaiRPC: process.env.POLYGON_MUMBAI_RPC,
+
   /**
    * EPNS Related
    */
@@ -147,6 +153,8 @@ export default {
    */
   aaveLendingPoolDeployedContractKovan: process.env.AAVE_LENDINGPOOL_DEPLOYED_CONTRACT_KOVAN,
   aaveLendingPoolDeployedContractMainnet: process.env.AAVE_LENDINGPOOL_DEPLOYED_CONTRACT_MAINNET,
+  aaveLendingPoolDeployedContractPolygonMainnet: process.env.AAVE_LENDINGPOOL_DEPLOYED_CONTRACT_POLYGON_MAINNET,
+  aaveLendingPoolDeployedContractPolygonMumbai: process.env.AAVE_LENDINGPOOL_DEPLOYED_CONTRACT_POLYGON_MUMBAI,
   aaveLendingPoolDeployedContractABI: require('./aave_LendingPool.json'),
 
   /**
