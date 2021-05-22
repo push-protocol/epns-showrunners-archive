@@ -119,7 +119,7 @@ export default class TruefiChannel {
     if(!epns){
       epns = this.getEPNSInteractableContract(epnsNetwork)
     }
-    const truefiChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['ensDomainExpiryPrivateKey_1']);
+    const truefiChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['truefiPrivateKey_1']);
     const channelInfo = await epns.contract.channels(truefiChannelAddress)
     const filter = epns.contract.filters.Subscribe(truefiChannelAddress)
     let startBlock = channelInfo.channelStartBlock.toNumber();

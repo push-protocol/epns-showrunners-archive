@@ -3,14 +3,14 @@ import epnsNotify from '../helpers/epnsNotifyHelper';
 import config from '../config';
 import { ethers } from 'ethers';
 
-function getEPNSInteractableContract(web3network: String, channelKey: String) {
+function getEPNSInteractableContract(channelKey: String) {
     // Get Contract
     return epnsNotify.getInteractableContracts(
-        web3network,                                              // Network for which the interactable contract is req
+        config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
         {                                                                       // API Keys
-        etherscanAPI: config.etherscanAPI,
-        infuraAPI: config.infuraAPI,
-        alchemyAPI: config.alchemyAPI
+            etherscanAPI: config.etherscanAPI,
+            infuraAPI: config.infuraAPI,
+            alchemyAPI: config.alchemyAPI
         },
         channelKey,            // Private Key of the Wallet sending Notification
         config.deployedContract,                                                // The contract address which is going to be used
@@ -19,23 +19,29 @@ function getEPNSInteractableContract(web3network: String, channelKey: String) {
 }
 
 export default class NotificationHelper {
-    // private channelKey;
-    // private web3network;
+    private channelKey;
+    private web3network;
     private epns;
+    /**
+     * 
+     * @param web3network Network
+     * @param channelKey Channel private key
+     */
     constructor(web3network: String, channelKey: String) {
-        // this.channelKey = channelKey;
-        // this.web3network = web3network;
-        this.epns = getEPNSInteractableContract(web3network, channelKey);
+        this.channelKey = channelKey;
+        this.web3network = web3network;
+        this.epns = getEPNSInteractableContract(channelKey);
     }
+
+    public advanced = epnsNotify;
 
     /**
      * Get Subscribed Users
      * @description gets users subscribed to a channel
-     * @param channelKey 
      * @returns 
      */
-    async getSubscribedUsers (channelKey: string) {
-        const channelAddress = ethers.utils.computeAddress(channelKey);
+    async getSubscribedUsers () {
+        const channelAddress = ethers.utils.computeAddress(this.channelKey);
         const channelInfo = await this.epns.contract.channels(channelAddress)
         const filter = this.epns.contract.filters.Subscribe(channelAddress)
         let startBlock = channelInfo.channelStartBlock.toNumber();
@@ -44,6 +50,20 @@ export default class NotificationHelper {
         const eventLog = await this.epns.contract.queryFilter(filter, startBlock)
         const users = eventLog.map(log => log.args.user)
         return users
+    }
+
+    async getContract(address: string, abi: string){
+        return epnsNotify.getInteractableContracts(
+            this.web3network,                                              // Network for which the interactable contract is req
+            {                                                                        // API Keys
+                etherscanAPI: config.etherscanAPI,
+                infuraAPI: config.infuraAPI,
+                alchemyAPI: config.alchemyAPI
+            },
+            null,            // Private Key of the Wallet sending Notification
+            address,                                                                // The contract address which is going to be used
+            abi                                                                     // The contract abi which is going to be useds
+        );
     }
 
     /**
