@@ -26,6 +26,7 @@ import CompoundLiquidationChannel from '../showrunners/compoundLiquidationChanne
 import Everest from '../showrunners/everestChannel';
 import WalletTrackerChannel from '../showrunners/walletTrackerChannel';
 import WalletMonitoring from '../services/walletMonitoring';
+import AaveChannel from '../showrunners/aaveChannel';
 
 
 export default ({ logger }) => {
@@ -186,6 +187,22 @@ export default ({ logger }) => {
     catch (err) {
       logger.error(`[${new Date(Date.now())}] ❌ Cron Task Failed -- ${taskName}`);
       logger.error(`[${new Date(Date.now())}] Error Object: %o`, err);
+    }
+  });
+
+  // 1.8 AAVE CHANNEL
+  schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
+    logger.info('-- 🛵 Scheduling Showrunner - Aave Channel [on 24 Hours]');
+    const aaveTicker = Container.get(AaveChannel);
+    const taskName = 'Aave users address checks and sendMessageToContract()';
+
+    try {
+      await aaveTicker.sendMessageToContract(false);
+      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+    }
+    catch (err) {
+      logger.error(`❌ Cron Task Failed -- ${taskName}`);
+      logger.error(`Error Object: %o`, err);
     }
   });
 
