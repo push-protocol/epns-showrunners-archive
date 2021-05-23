@@ -8,7 +8,7 @@ import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDi
 import { ethers } from 'ethers';
 import epnsNotify from '../helpers/epnsNotifyHelper';
 
-const NETWORK_TO_MONITOR = config.web3KovanNetwork;
+const NETWORK_TO_MONITOR = config.web3PolygonMumbaiRPC;
 const HEALTH_FACTOR_THRESHOLD = 1.1;
 const CUSTOMIZABLE_SETTINGS = {
   'precision': 3,
@@ -28,23 +28,34 @@ export default class AaveChannel {
 
   public getAaveInteractableContract(web3network) {
     let aaveLendingPoolDeployedContract
-    if(web3network == config.web3KovanNetwork){
-      aaveLendingPoolDeployedContract = config.aaveLendingPoolDeployedContractKovan
+   
+    switch (web3network) {
+      case config.web3KovanNetwork:
+        aaveLendingPoolDeployedContract = config.aaveLendingPoolDeployedContractKovan
+        break;
+      case config.web3MainnetNetwork:
+        aaveLendingPoolDeployedContract = config.aaveLendingPoolDeployedContractMainnet
+        break;
+      case config.web3PolygonMumbaiRPC:
+        aaveLendingPoolDeployedContract = config.aaveLendingPoolDeployedContractPolygonMumbai
+        break;
+      case config.web3PolygonMainnetRPC:
+        aaveLendingPoolDeployedContract = config.aaveLendingPoolDeployedContractPolygonMainnet
+        break;
+      default:
+        break;
     }
-    else if(web3network == config.web3MainnetNetwork){
-      aaveLendingPoolDeployedContract = config.aaveLendingPoolDeployedContractMainnet
-    }
-    
+
     return epnsNotify.getInteractableContracts(
-        web3network,                                              // Network for which the interactable contract is req
-        {                                                                       // API Keys
-          etherscanAPI: config.etherscanAPI,
-          infuraAPI: config.infuraAPI,
-          alchemyAPI: config.alchemyAPI
-        },
-        channelWalletsInfo.walletsKV['aavePrivateKey_1'],                       // Private Key of the Wallet sending Notification
-        aaveLendingPoolDeployedContract,                                             // The contract address which is going to be used
-        config.aaveLendingPoolDeployedContractABI                                           // The contract abi which is going to be useds
+      web3network,                                              // Network for which the interactable contract is req
+      {                                                                       // API Keys
+        etherscanAPI: config.etherscanAPI,
+        infuraAPI: config.infuraAPI,
+        alchemyAPI: config.alchemyAPI
+      },
+      channelWalletsInfo.walletsKV['aavePrivateKey_1'],                       // Private Key of the Wallet sending Notification
+      aaveLendingPoolDeployedContract,                                             // The contract address which is going to be used
+      config.aaveLendingPoolDeployedContractABI                                           // The contract abi which is going to be useds
     );
   }
 
@@ -76,7 +87,6 @@ export default class AaveChannel {
     if(mode){
       if(simulateAaveNetwork){
         networkToMonitor = simulateAaveNetwork
-        console.log("🚀 ~ file: aaveChannel.ts ~ line 79 ~ AaveChannel ~ sendMessageToContract ~ networkToMonitor", networkToMonitor)
       }
     }
     logger.debug('Checking for aave addresses... ');
@@ -85,88 +95,89 @@ export default class AaveChannel {
        // Call Helper function to get interactableContracts
       const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
       const aave = this.getAaveInteractableContract(networkToMonitor);
+      
 
-      epns.contract.channels(aaveChannelAddress)
-      .then(async (channelInfo) => {
+      // epns.contract.channels(aaveChannelAddress)
+      // .then(async (channelInfo) => {
 
-        const filter = epns.contract.filters.Subscribe(aaveChannelAddress)
+      //   const filter = epns.contract.filters.Subscribe(aaveChannelAddress)
 
-        let startBlock = channelInfo.channelStartBlock.toNumber();
+      //   let startBlock = channelInfo.channelStartBlock.toNumber();
 
-        //Function to get all the addresses in the channel
-        epns.contract.queryFilter(filter, startBlock)
-        .then(async (eventLog) => {
-          // Log the event
-          logger.debug("Event log returned %o", eventLog);
+      //   //Function to get all the addresses in the channel
+      //   epns.contract.queryFilter(filter, startBlock)
+      //   .then(async (eventLog) => {
+      //     // Log the event
+      //     logger.debug("Event log returned %o", eventLog);
 
-          // Loop through all addresses in the channel and decide who to send notification
-          let allTransactions = [];
+      //     // Loop through all addresses in the channel and decide who to send notification
+      //     let allTransactions = [];
 
-          eventLog.map((log) => {
-            // Get user address
-            const userAddress = log.args.user;
-            logger.debug("🚀 ~ file: aaveChannel.ts ~ line 91 ~ AaveChannel ~ eventLog.map ~ userAddress %o", userAddress)
-            allTransactions.push(
-              this.checkHealthFactor(aave, NETWORK_TO_MONITOR, userAddress, simulate)
-                .then( (results) => {
-                  return results;
-                })
-            );
-          })
+      //     eventLog.map((log) => {
+      //       // Get user address
+      //       const userAddress = log.args.user;
+      //       logger.debug("🚀 ~ file: aaveChannel.ts ~ line 91 ~ AaveChannel ~ eventLog.map ~ userAddress %o", userAddress)
+      //       allTransactions.push(
+      //         this.checkHealthFactor(aave, NETWORK_TO_MONITOR, userAddress, simulate)
+      //           .then( (results) => {
+      //             return results;
+      //           })
+      //       );
+      //     })
 
-          // resolve all transactions
-          Promise.all(allTransactions)
-          .then(async (results) => {
-            logger.debug("All Transactions Loaded: %o", results);
-            for (const object of results) {
-              if (object.success) {
-                // Send notification
-                const wallet = object.wallet;
-                const ipfshash = object.ipfshash;
-                const payloadType = object.payloadType;
+      //     // resolve all transactions
+      //     Promise.all(allTransactions)
+      //     .then(async (results) => {
+      //       logger.debug("All Transactions Loaded: %o", results);
+      //       for (const object of results) {
+      //         if (object.success) {
+      //           // Send notification
+      //           const wallet = object.wallet;
+      //           const ipfshash = object.ipfshash;
+      //           const payloadType = object.payloadType;
 
-              logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
+      //         logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
 
-              const storageType = 1; // IPFS Storage Type
-              const txConfirmWait = 1; // Wait for 0 tx confirmation
+      //         const storageType = 1; // IPFS Storage Type
+      //         const txConfirmWait = 1; // Wait for 0 tx confirmation
 
-              // Send Notification
-              await epnsNotify.sendNotification(
-                epns.signingContract,                                           // Contract connected to signing wallet
-                wallet,                                                         // Recipient to which the payload should be sent
-                payloadType,                                                    // Notification Type
-                storageType,                                                    // Notificattion Storage Type
-                ipfshash,                                                       // Notification Storage Pointer
-                txConfirmWait,                                                  // Should wait for transaction confirmation
-                logger,                                                        // Logger instance (or console.log) to pass
-                simulate                                                        // Passing true will not allow sending actual notification
-              ).then ((tx) => {
-                logger.info("Transaction mined: %o | Notification Sent", tx.hash);
-                resolve(tx);
-              })
-              .catch (err => {
-                logger.error("🔥Error --> sendNotification(): %o", err);
-                reject(err);
-              });
-              }
-            }
-            logger.debug("Aave Liquidation Alert! logic completed!");
-          })
-          .catch(err => {
-            logger.error("Error occurred sending transactions: %o", err);
-            reject(err);
-          });
-          resolve("Processing Aave Liquidation Alert! logic completed!");
-        })
-        .catch(err => {
-          logger.error("Error occurred while looking at event log: %o", err);
-          reject(err);
-        })
-      })
-      .catch(err => {
-        logger.error("Error retreiving channel start block: %o", err);
-        reject(err);
-      });
+      //         // Send Notification
+      //         await epnsNotify.sendNotification(
+      //           epns.signingContract,                                           // Contract connected to signing wallet
+      //           wallet,                                                         // Recipient to which the payload should be sent
+      //           payloadType,                                                    // Notification Type
+      //           storageType,                                                    // Notificattion Storage Type
+      //           ipfshash,                                                       // Notification Storage Pointer
+      //           txConfirmWait,                                                  // Should wait for transaction confirmation
+      //           logger,                                                        // Logger instance (or console.log) to pass
+      //           simulate                                                        // Passing true will not allow sending actual notification
+      //         ).then ((tx) => {
+      //           logger.info("Transaction mined: %o | Notification Sent", tx.hash);
+      //           resolve(tx);
+      //         })
+      //         .catch (err => {
+      //           logger.error("🔥Error --> sendNotification(): %o", err);
+      //           reject(err);
+      //         });
+      //         }
+      //       }
+      //       logger.debug("Aave Liquidation Alert! logic completed!");
+      //     })
+      //     .catch(err => {
+      //       logger.error("Error occurred sending transactions: %o", err);
+      //       reject(err);
+      //     });
+      //     resolve("Processing Aave Liquidation Alert! logic completed!");
+      //   })
+      //   .catch(err => {
+      //     logger.error("Error occurred while looking at event log: %o", err);
+      //     reject(err);
+      //   })
+      // })
+      // .catch(err => {
+      //   logger.error("Error retreiving channel start block: %o", err);
+      //   reject(err);
+      // });
     })
   }
 
@@ -288,7 +299,7 @@ export default class AaveChannel {
       const message =  userAddress + " your account has healthFactor "+ newHealthFactor + ". Maintain it above 1 to avoid liquidation.";
 
       const payloadTitle = "Aave Liquidity Alert!";
-      const payloadMsg = "Dear [d:" + userAddress + "] your account has healthFactor "+ newHealthFactor + ". Maintain it above 1 to avoid liquidation.";
+      const payloadMsg = `Dear [d:${userAddress}] your account has healthFactor ${newHealthFactor} . Maintain it above 1 to avoid liquidation.[timestamp: ${Math.floor(new Date() / 1000)}]`;
 
       const payload = await epnsNotify.preparePayload(
         null,                                                               // Recipient Address | Useful for encryption
