@@ -10,6 +10,7 @@ import wallet_monitoring from './routes/showrunners_wallet_monitoring';
 import everest from './routes/showrunners_everest';
 import socketWeb3 from './routes/sockets/socketWeb3';
 import helloWorld from './routes/showrunners_helloWorld';
+import aave from './routes/showrunners_aave';
 
 import mailing from './routes/mailing';
 
@@ -27,6 +28,7 @@ export default () => {
 	everest(app);
 	wallet_monitoring(app);
 	helloWorld(app);
+	aave(app);
 
 	// SOCKETS
 	socketWeb3(app);

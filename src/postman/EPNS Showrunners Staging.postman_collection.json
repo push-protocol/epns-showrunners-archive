@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8de8c40c-e38e-4460-8d9f-1f2390d01469",
+		"_postman_id": "50a84f71-04a1-467d-8210-5ea49334902a",
 		"name": "EPNS Showrunners Staging",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -68,8 +68,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Wallet Tracker",
@@ -458,8 +457,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "ETH Ticker",
@@ -536,8 +534,7 @@
 						"type": "text/javascript",
 						"exec": [
 							""
-						],
-						"id": "36e00bf8-0e8f-4ba6-a52a-357378e1bf86"
+						]
 					}
 				},
 				{
@@ -546,12 +543,10 @@
 						"type": "text/javascript",
 						"exec": [
 							""
-						],
-						"id": "55e867d9-6650-4fa9-bc07-19686b4fdf47"
+						]
 					}
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Compound",
@@ -684,8 +679,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Gas Price",
@@ -850,8 +844,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "ENS Domain",
@@ -952,8 +945,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "BTC Ticker",
@@ -1022,8 +1014,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Everest",
@@ -1156,8 +1147,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Hello World",
@@ -1192,9 +1182,132 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
+		},
+		{
+			"name": "Aave",
+			"item": [
+				{
+					"name": "/send_message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Simulated\",\n\t\t\"txMode\": \"Simulated\",\n\t\t\"logicOverride\": {\n            \"mode\": false,\n\t\t\t\"aaveNetwork\": \"kovan\",\n\t\t\t\"applyToAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\"\n\t\t},\n\t\t\"txOverride\": {\n\t\t\t\"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/aave/send_message",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"aave",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/checkHealthFactor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n            \"mode\":true,\n\t\t\t\"aaveNetwork\": \"kovan\",\n\t\t\t\"applyToAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\"\n\t\t}\n\t}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/aave/checkHealthFactor",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"aave",
+								"checkHealthFactor"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/getHealthFactor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n            \"mode\":true,\n\t\t\t\"aaveNetwork\": \"kovan\",\n\t\t\t\"applyToAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\"\n\t\t}\n\t\t\n\t}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/aave/getHealthFactor",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"aave",
+								"getHealthFactor"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/getPayload",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"logicOverride\": {\n            \"mode\":true,\n\t\t\t\"applyToAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"healthFactor\": 1.05\n\t\t}\n\t}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/aave/getPayload",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"aave",
+								"getPayload"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
-	],
-	"protocolProfileBehavior": {}
+	]
 }
