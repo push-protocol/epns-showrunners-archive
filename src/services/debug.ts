@@ -72,7 +72,7 @@ export default class Debug {
       // logger.info('balance: %o ', balance);
 
 
-        const channel = await ethers.utils.computeAddress(channelWalletsInfo.walletsKV['compComptrollerPrivateKey_1']);
+        const channel = await ethers.utils.computeAddress(channelWalletsInfo.walletsKV['btcTickerPrivateKey_1']);
         const startBlock = await epns.contract.channels(channel)
         .then(channelInfo =>{
           const start = channelInfo.channelStartBlock.toNumber();
@@ -104,8 +104,8 @@ export default class Debug {
           // await logs.sort((a,b)=>a.timestamp - b.timestamp)
           await logs.forEach(log => {
             // logger.info('channelAddress: %o | recipient: %o', log.channelAddress, log.recipientAddress);
-            logger.info("transactionHash: %o | blockNumber: %o", log.transactionHash, log.blockNumber);
-            // logger.info("transactionHash: %o | time: %o", log.transactionHash, log.time);
+            // logger.info("transactionHash: %o | blockNumber: %o", log.transactionHash, log.blockNumber);
+            logger.info("transactionHash: %o | time: %o", log.transactionHash, log.time);
             // logger.info("transactionHash: %o | timestamp: %o | time: %o", log.transactionHash, log.timestamp, log.time);
           })
           resolve('success!')
@@ -118,7 +118,7 @@ export default class Debug {
 
   public async extractEventData(log, simulate) {
     const logger = this.logger;
-    logger.info("log: %o", log);
+    // logger.info("log: %o", log);
 
     return await new Promise(async(resolve, reject) => {
 
@@ -126,49 +126,49 @@ export default class Debug {
       const recipientAddress = log.args.recipient;
       const identity = log.args.identity;
 
+        // resolve({
+        //   channelAddress,
+        //   recipientAddress,
+        //   blockNumber: log.blockNumber,
+        //   transactionHash: log.transactionHash
+        // })
+      
+      const getTransactionReceipt = log.getTransactionReceipt();
+      const getBlock = log.getBlock();
+
+      log.getBlock()
+      .then(block => {
+
+        var a = new Date(block.timestamp * 1000);
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var year = a.getFullYear();
+        var month = months[a.getMonth()];
+        var date = a.getDate();
+        var hour = a.getHours();
+        var min = a.getMinutes();
+        var sec = a.getSeconds();
+        var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+
         resolve({
           channelAddress,
           recipientAddress,
-          blockNumber: log.blockNumber,
+          timestamp: block.timestamp,
+          time,
           transactionHash: log.transactionHash
         })
-      
-      // const getTransactionReceipt = log.getTransactionReceipt();
-      // const getBlock = log.getBlock();
 
-      // log.getBlock()
-      // .then(block => {
+        // logger.info('Transaction Hash: %o | Time: %o', log.transactionHash, time);
+        // logger.info("channelAddress: %o | recipientAddress: %o | timestamp: %o", channelAddress, recipientAddress, block.timestamp);
 
-      //   var a = new Date(block.timestamp * 1000);
-      //   var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      //   var year = a.getFullYear();
-      //   var month = months[a.getMonth()];
-      //   var date = a.getDate();
-      //   var hour = a.getHours();
-      //   var min = a.getMinutes();
-      //   var sec = a.getSeconds();
-      //   var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
-
-      //   resolve({
-      //     channelAddress,
-      //     recipientAddress,
-      //     timestamp: block.timestamp,
-      //     time,
-      //     transactionHash: log.transactionHash
-      //   })
-
-      //   // logger.info('Transaction Hash: %o | Time: %o', log.transactionHash, time);
-      //   // logger.info("channelAddress: %o | recipientAddress: %o | timestamp: %o", channelAddress, recipientAddress, block.timestamp);
-
-      // })
-      // .catch(err => {
-      //   // logger.error('🔥 Error : No getBlock()');
-      //   resolve({
-      //     channelAddress,
-      //     recipientAddress,
-      //     transactionHash: log.transactionHash
-      //   })
-      // })
+      })
+      .catch(err => {
+        // logger.error('🔥 Error : No getBlock()');
+        resolve({
+          channelAddress,
+          recipientAddress,
+          transactionHash: log.transactionHash
+        })
+      })
      
     });
   }
