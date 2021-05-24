@@ -49,6 +49,7 @@ export default class AlphaHomoraChannel {
     // -- End Override logic
     const channelKey = channelWalletsInfo.walletsKV['btcTickerPrivateKey_1']
     const sdk = new epnsHelper(config.web3MainnetNetwork, channelKey)
-    const users = sdk.getSubscribedUsers(channelKey)
+    const users = sdk.getSubscribedUsers()
+    console.log({users})
   }
 }
