@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "154293e3-b9a7-499c-8b35-6deb0840e6fb",
-		"name": "EPNS Showrunners Staging",
+		"_postman_id": "46f5217d-8553-4835-b90b-cd009ce67429",
+		"name": "EPNS Showrunners PROD",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -466,7 +466,6 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "d0d4457e-bed8-4abc-8448-0dfc0648e29b",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -476,7 +475,6 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "d9242791-0931-4a74-b3a0-b63c5e390597",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -951,6 +949,131 @@
 								"showrunners",
 								"everest",
 								"get_transaction"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Aave",
+			"item": [
+				{
+					"name": "/send_message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Simulated\",\n\t\t\"txMode\": \"Simulated\",\n\t\t\"logicOverride\": {\n            \"mode\": false,\n\t\t\t\"aaveNetwork\": \"kovan\",\n\t\t\t\"applyToAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\"\n\t\t},\n\t\t\"txOverride\": {\n\t\t\t\"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/aave/send_message",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"aave",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/checkHealthFactor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n            \"mode\":true,\n\t\t\t\"aaveNetwork\": \"kovan\",\n\t\t\t\"applyToAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\"\n\t\t}\n\t}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/aave/checkHealthFactor",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"aave",
+								"checkHealthFactor"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/getHealthFactor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n            \"mode\":true,\n\t\t\t\"aaveNetwork\": \"kovan\",\n\t\t\t\"applyToAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\"\n\t\t}\n\t\t\n\t}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/aave/getHealthFactor",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"aave",
+								"getHealthFactor"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/getPayload",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"logicOverride\": {\n            \"mode\":true,\n\t\t\t\"applyToAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"healthFactor\": 1.05\n\t\t}\n\t}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/aave/getPayload",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"aave",
+								"getPayload"
 							]
 						}
 					},
