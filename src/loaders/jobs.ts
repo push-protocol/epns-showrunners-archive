@@ -192,17 +192,17 @@ export default ({ logger }) => {
 
   // 1.8 AAVE CHANNEL
   schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
-    logger.info('-- 🛵 Scheduling Showrunner - Aave Channel [on 24 Hours]');
+    logger.info(`[${new Date(Date.now())}] -- 🛵 Scheduling Showrunner - Aave Channel [on 24 Hours]`);
     const aaveTicker = Container.get(AaveChannel);
     const taskName = 'Aave users address checks and sendMessageToContract()';
 
     try {
       await aaveTicker.sendMessageToContract(false);
-      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+      logger.info(`[${new Date(Date.now())}] 🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {
-      logger.error(`❌ Cron Task Failed -- ${taskName}`);
-      logger.error(`Error Object: %o`, err);
+      logger.error(`[${new Date(Date.now())}] ❌ Cron Task Failed -- ${taskName}`);
+      logger.error(`[${new Date(Date.now())}] Error Object: %o`, err);
     }
   });
 

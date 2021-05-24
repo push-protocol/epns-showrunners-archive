@@ -8,7 +8,7 @@ import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDi
 import { ethers } from 'ethers';
 import epnsNotify from '../helpers/epnsNotifyHelper';
 
-const NETWORK_TO_MONITOR = config.web3PolygonMumbaiRPC;
+const NETWORK_TO_MONITOR = config.web3PolygonMainnetRPC;
 const HEALTH_FACTOR_THRESHOLD = 1.4;
 const CUSTOMIZABLE_SETTINGS = {
   'precision': 3,
@@ -89,7 +89,7 @@ export default class AaveChannel {
         networkToMonitor = simulateAaveNetwork
       }
     }
-    logger.debug('Checking for aave addresses... ');
+    logger.debug(`[${new Date(Date.now())}]-[Aave Channel]-Checking for aave addresses... `);
     return await new Promise((resolve, reject) => {
       const aaveChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['aavePrivateKey_1']);
        // Call Helper function to get interactableContracts
@@ -120,7 +120,7 @@ export default class AaveChannel {
     const logger = this.logger;
     const userData = await aave.contract.getUserAccountData(userAddress)
     let  healthFactor = ethers.utils.formatEther(userData.healthFactor)
-    logger.debug("For wallet: %s, Health Factor: %o", userAddress, healthFactor);
+    logger.debug(`[${new Date(Date.now())}]-[Aave Channel]-For wallet: %s, Health Factor: %o`, userAddress, healthFactor);
     return {
       success: true,
       healthFactor
@@ -164,7 +164,7 @@ export default class AaveChannel {
             });
           })
           .catch(err => {
-            logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", userAddress, err)
+            logger.error(`[${new Date(Date.now())}]-[Aave Channel]-Unable to obtain ipfshash for wallet: %s, error: %o`, userAddress, err)
             resolve({
               success: false,
               err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
@@ -172,7 +172,7 @@ export default class AaveChannel {
           });
         })
         .catch(err => {
-          logger.error("Unable to proceed with Aave Liquidation Alert!Function for wallet: %s, error: %o", userAddress, err);
+          logger.error(`[${new Date(Date.now())}]-[Aave Channel]-Unable to proceed with Aave Liquidation Alert!Function for wallet: %s, error: %o`, userAddress, err);
           resolve({
             success: false,
             err: "Unable to proceed with Aave Liquidation Alert! Function for wallet: " + userAddress + " | error: " + err
@@ -208,7 +208,7 @@ export default class AaveChannel {
     }
     
     const precision = CUSTOMIZABLE_SETTINGS.precision;
-    logger.debug('Preparing payload...');
+    logger.debug(`[${new Date(Date.now())}]-[Aave Channel]-Preparing payload...`);
     return await new Promise(async(resolve, reject) => {
       let newHealthFactor = parseFloat(healthFactor).toFixed(precision);
 
@@ -229,7 +229,7 @@ export default class AaveChannel {
         null,                                                               // internal img of youtube link
       );
 
-      logger.debug('Payload Prepared: %o', payload);
+      logger.debug(`[${new Date(Date.now())}]-[Aave Channel]-Payload Prepared: %o`, payload);
 
       resolve(payload);
     });
