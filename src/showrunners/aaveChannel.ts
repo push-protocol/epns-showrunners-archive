@@ -94,7 +94,89 @@ export default class AaveChannel {
       const aaveChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['aavePrivateKey_1']);
        // Call Helper function to get interactableContracts
       const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
-      const aave = this.getAaveInteractableContract(networkToMonitor);      
+      const aave = this.getAaveInteractableContract(networkToMonitor);
+      
+      epns.contract.channels(aaveChannelAddress)
+      .then(async (channelInfo) => {
+
+        const filter = epns.contract.filters.Subscribe(aaveChannelAddress)
+
+        let startBlock = channelInfo.channelStartBlock.toNumber();
+
+        //Function to get all the addresses in the channel
+        epns.contract.queryFilter(filter, startBlock)
+        .then(async (eventLog) => {
+          // Log the event
+          logger.debug(`[${new Date(Date.now())}]-[Aave Channel]-Event log returned %o`, eventLog);
+
+          // Loop through all addresses in the channel and decide who to send notification
+          let allTransactions = [];
+
+          eventLog.map((log) => {
+            // Get user address
+            const userAddress = log.args.user;
+            logger.debug(`[${new Date(Date.now())}]-[Aave Channel]-userAddress %o`, userAddress)
+            allTransactions.push(
+              this.checkHealthFactor(aave, NETWORK_TO_MONITOR, userAddress, simulate)
+                .then( (results) => {
+                  return results;
+                })
+            );
+          })
+
+          // resolve all transactions
+          Promise.all(allTransactions)
+          .then(async (results) => {
+            logger.debug(`[${new Date(Date.now())}]-[Aave Channel]-All Transactions Loaded: %o`, results);
+            for (const object of results) {
+              if (object.success) {
+                // Send notification
+                const wallet = object.wallet;
+                const ipfshash = object.ipfshash;
+                const payloadType = object.payloadType;
+
+              logger.info(`[${new Date(Date.now())}]-[Aave Channel]-Wallet: %o | Hash: :%o | Sending Data...`, wallet, ipfshash);
+
+              const storageType = 1; // IPFS Storage Type
+              const txConfirmWait = 1; // Wait for 0 tx confirmation
+
+              // Send Notification
+              await epnsNotify.sendNotification(
+                epns.signingContract,                                           // Contract connected to signing wallet
+                wallet,                                                         // Recipient to which the payload should be sent
+                payloadType,                                                    // Notification Type
+                storageType,                                                    // Notificattion Storage Type
+                ipfshash,                                                       // Notification Storage Pointer
+                txConfirmWait,                                                  // Should wait for transaction confirmation
+                logger,                                                        // Logger instance (or console.log) to pass
+                simulate                                                        // Passing true will not allow sending actual notification
+              ).then ((tx) => {
+                logger.info(`[${new Date(Date.now())}]-[Aave Channel]-Transaction mined: %o | Notification Sent`, tx.hash);
+                resolve(tx);
+              })
+              .catch (err => {
+                logger.error(`[${new Date(Date.now())}]-[Aave Channel]-🔥Error --> sendNotification(): %o`, err);
+                reject(err);
+              });
+              }
+            }
+            logger.debug(`[${new Date(Date.now())}]-[Aave Channel]-Aave Liquidation Alert! logic completed!`);
+          })
+          .catch(err => {
+            logger.error(`[${new Date(Date.now())}]-[Aave Channel]-Error occurred sending transactions: %o`, err);
+            reject(err);
+          });
+          resolve("Processing Aave Liquidation Alert! logic completed!");
+        })
+        .catch(err => {
+          logger.error(`[${new Date(Date.now())}]-[Aave Channel]-Error occurred while looking at event log: %o`, err);
+          reject(err);
+        })
+      })
+      .catch(err => {
+        logger.error(`[${new Date(Date.now())}]-[Aave Channel]-Error retreiving channel start block: %o`, err);
+        reject(err);
+      });
     })
   }
 
