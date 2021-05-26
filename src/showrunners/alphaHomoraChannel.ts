@@ -6,7 +6,7 @@ import config from '../config';
 import channelWalletsInfo from '../config/channelWalletsInfo';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import PQueue from 'p-queue';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import epnsHelper from '../helpers/notificationHelper'
 
 const bent = require('bent'); // Download library
@@ -16,6 +16,8 @@ const db = require('../helpers/dbHelper');
 const utils = require('../helpers/utilsHelper');
 import epnsNotify from '../helpers/epnsNotifyHelper';
 const queue = new PQueue();
+const channelKey = channelWalletsInfo.walletsKV['btcTickerPrivateKey_1']
+const sdk = new epnsHelper(config.web3MainnetNetwork, channelKey)
 
 // const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
 // SET CONSTANTS
@@ -47,9 +49,28 @@ export default class AlphaHomoraChannel {
     const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
     const epnsNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("epnsNetwork") ? simulate.logicOverride.epnsNetwork : config.web3RopstenNetwork;
     // -- End Override logic
-    const channelKey = channelWalletsInfo.walletsKV['btcTickerPrivateKey_1']
-    const sdk = new epnsHelper(config.web3MainnetNetwork, channelKey)
-    const users = sdk.getSubscribedUsers()
-    console.log({users})
+    const users = await sdk.getSubscribedUsers()
+    const AlphaHomoraContract = await sdk.getContract(config.homoraBankDeployedContract, config.homoraBankDeployedContractABI)
+    let next_pos = await AlphaHomoraContract.contract.functions.nextPositionId()
+    next_pos = Number(next_pos.toString())
+    // for (let index = 1; index < next_pos; index++) {
+    //   const element = array[index];
+      
+    // }
+    await this.processDebtRatio(100, AlphaHomoraContract.contract);
+  }
+
+  public async processDebtRatio(id: number, contract: ethers.Contract) {
+    let [borrowCredit, collateralCredit] = await Promise.all([contract.functions.getBorrowETHValue(id), contract.functions.getCollateralETHValue(id)]);
+    // console.log({borrowCredit, collateralCredit})
+    borrowCredit = Number(ethers.utils.formatEther(borrowCredit[0]))
+    collateralCredit = Number(ethers.utils.formatEther(collateralCredit[0]))
+    const debtRatio = (borrowCredit / collateralCredit) * 100
+    console.log({ debtRatio })
+    if (debtRatio > Number(config.homoraDebtRatioThreshold)) {
+      // sdk.sendNotification("")
+    }
+    
   }
 }
+
