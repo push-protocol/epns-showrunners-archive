@@ -2,6 +2,7 @@
 import epnsNotify from '../helpers/epnsNotifyHelper';
 import config from '../config';
 import { ethers } from 'ethers';
+import logger from '../loaders/logger';
 
 function getEPNSInteractableContract(channelKey: String) {
     // Get Contract
@@ -76,8 +77,8 @@ export default class NotificationHelper {
      * @param payloadTitle Internal Title
      * @param payloadMsg Internal Message
      */
-    public async sendNotification (user: string, title: string, message: string, payloadTitle: string, payloadMsg: string) {
-        const hash = await this.getPayloadHash(user, title, message, payloadTitle, payloadMsg)
+    public async sendNotification (user: string, title: string, message: string, payloadTitle: string, payloadMsg: string, simulate: boolean | Object) {
+        const hash = await this.getPayloadHash(user, title, message, payloadTitle, payloadMsg, simulate)
         // Send notification
         const ipfshash = hash.ipfshash;
         const payloadType = hash.payloadType;
@@ -92,8 +93,8 @@ export default class NotificationHelper {
             storageType,                                                    // Notificattion Storage Type
             ipfshash,                                                       // Notification Storage Pointer
             txConfirmWait,                                                  // Should wait for transaction confirmation
-            null,
-            null                                                            // Logger instance (or console.log) to pass
+            logger,                                                            // Logger instance (or console.log) to pass
+            simulate
         )
         return tx
     }
@@ -108,9 +109,9 @@ export default class NotificationHelper {
      * @param payloadMsg Internal Message 
      * @returns 
      */
-    private async getPayloadHash (user: string, title: string, message: string, payloadTitle: string, payloadMsg: string) {
+    private async getPayloadHash (user: string, title: string, message: string, payloadTitle: string, payloadMsg: string, simulate: boolean | Object) {
         const payload = await this.getLiquidityPayload(title, message, payloadTitle, payloadMsg)
-        const ipfshash = await epnsNotify.uploadToIPFS(payload, null, null)
+        const ipfshash = await epnsNotify.uploadToIPFS(payload, logger, simulate)
         // Sign the transaction and send it to chain
         return {
             success: true,

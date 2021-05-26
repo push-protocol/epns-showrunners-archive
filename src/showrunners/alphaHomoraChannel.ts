@@ -53,22 +53,28 @@ export default class AlphaHomoraChannel {
     const AlphaHomoraContract = await sdk.getContract(config.homoraBankDeployedContract, config.homoraBankDeployedContractABI)
     let next_pos = await AlphaHomoraContract.contract.functions.nextPositionId()
     next_pos = Number(next_pos.toString())
-    // for (let index = 1; index < next_pos; index++) {
-    //   const element = array[index];
-      
-    // }
-    await this.processDebtRatio(100, AlphaHomoraContract.contract);
+    await this.processDebtRatio(users, 100, AlphaHomoraContract.contract, simulate);
   }
 
-  public async processDebtRatio(id: number, contract: ethers.Contract) {
+  public async processDebtRatio(users: Array<string>, id: number, contract: ethers.Contract, simulate: boolean | Object) {
+    const position = await contract.functions.getPositionInfo(id)
+    console.log({ position: position.owner })
+    if (users.includes(position.owner)) {}
     let [borrowCredit, collateralCredit] = await Promise.all([contract.functions.getBorrowETHValue(id), contract.functions.getCollateralETHValue(id)]);
-    // console.log({borrowCredit, collateralCredit})
     borrowCredit = Number(ethers.utils.formatEther(borrowCredit[0]))
     collateralCredit = Number(ethers.utils.formatEther(collateralCredit[0]))
     const debtRatio = (borrowCredit / collateralCredit) * 100
     console.log({ debtRatio })
     if (debtRatio > Number(config.homoraDebtRatioThreshold)) {
-      // sdk.sendNotification("")
+      const tx = await sdk.sendNotification(
+        position.owner,
+        'Position Liquidation',
+        `Your position of id: ${id} is at ${config.homoraDebtRatioThreshold}% debt ratio and is at risk of liquidation`,
+        'Position Liquidation',
+        `Your position of id: ${id} is at ${config.homoraDebtRatioThreshold}% debt ratio and is at risk of liquidation`,
+        simulate
+      )
+      console.log(tx)
     }
     
   }
