@@ -4,14 +4,14 @@ import config from '../config';
 import { ethers } from 'ethers';
 import logger from '../loaders/logger';
 
-function getEPNSInteractableContract(channelKey: String) {
+function getEPNSInteractableContract(channelKey: string, etherscan: string, alchemy: string, infura: InfuraSettings) {
     // Get Contract
     return epnsNotify.getInteractableContracts(
         config.web3RopstenNetwork,                                              // Network for which the interactable contract is req
         {                                                                       // API Keys
-            etherscanAPI: config.etherscanAPI,
-            infuraAPI: config.infuraAPI,
-            alchemyAPI: config.alchemyAPI
+            etherscanAPI: etherscan,
+            infuraAPI: infura,
+            alchemyAPI: alchemy
         },
         channelKey,            // Private Key of the Wallet sending Notification
         config.deployedContract,                                                // The contract address which is going to be used
@@ -19,19 +19,38 @@ function getEPNSInteractableContract(channelKey: String) {
     );
 }
 
+export interface InfuraSettings {
+    projectID: string
+    projectSecret: string
+}
+
+export interface NetWorkSettings {
+    alchemy?: string,
+    infura?: InfuraSettings,
+    etherscan?: string
+}
+
 export default class NotificationHelper {
     private channelKey;
     private web3network;
     private epns;
+    private infura: InfuraSettings
+    private alchemy;
+    private etherscan;
     /**
      * 
      * @param web3network Network
      * @param channelKey Channel private key
      */
-    constructor(web3network: String, channelKey: String) {
+    constructor(web3network: string, channelKey: string, network: NetWorkSettings) {
         this.channelKey = channelKey;
         this.web3network = web3network;
-        this.epns = getEPNSInteractableContract(channelKey);
+        if (network.alchemy) this.alchemy = network.alchemy
+        if (network.infura) this.infura = network.infura
+        if (!this.alchemy && !this.infura) {
+            throw new Error("Initialize using an alchemy key or Infura parameters")
+        }
+        this.epns = getEPNSInteractableContract(channelKey, this.etherscan, this.alchemy, this.infura);
     }
 
     public advanced = epnsNotify;

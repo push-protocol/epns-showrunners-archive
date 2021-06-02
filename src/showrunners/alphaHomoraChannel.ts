@@ -4,12 +4,23 @@
 import { Service, Inject } from 'typedi';
 import config from '../config';
 import channelWalletsInfo from '../config/channelWalletsInfo';
-import PQueue from 'p-queue';
+// import PQueue from 'p-queue';
 import { ethers, logger } from 'ethers';
-import epnsHelper from '../helpers/notificationHelper'
-const queue = new PQueue();
+import epnsHelper, {InfuraSettings, NetWorkSettings} from '../helpers/notificationHelper'
+// import epnsHelper from '@epnsproject/backend-sdk'
+// const queue = new PQueue();
 const channelKey = channelWalletsInfo.walletsKV['btcTickerPrivateKey_1']
-const sdk = new epnsHelper(config.web3MainnetNetwork, channelKey)
+
+const infuraSettings: InfuraSettings = {
+  projectID: config.infuraAPI.projectID,
+  projectSecret: config.infuraAPI.projectSecret
+}
+const settings: NetWorkSettings = {
+  alchemy: config.alchemyAPI,
+  infura: infuraSettings,
+  etherscan: config.etherscanAPI
+}
+const sdk = new epnsHelper(config.web3MainnetNetwork, channelKey, settings)
 
 @Service()
 export default class AlphaHomoraChannel {
@@ -23,7 +34,7 @@ export default class AlphaHomoraChannel {
     await this.processDebtRatio(users, 100, AlphaHomoraContract.contract, simulate);
   }
 
-  public async processDebtRatio(users: Array<string>, id: number, contract: ethers.Contract, simulate: boolean | Object) {
+  public async processDebtRatio(users: Array<string>, id: number, contract, simulate: boolean | Object) {
     const position = await contract.functions.getPositionInfo(id)
     logger.info({ position: position.owner })
     if (users.includes(position.owner)) {}
