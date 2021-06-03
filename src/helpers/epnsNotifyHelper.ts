@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import config from '../config';
 
 export default {
   // Upload to IPFS
@@ -24,43 +25,30 @@ export default {
 
       // Stringify it
       const jsonizedPayload = JSON.stringify(payload);
-
       const { create } = require('ipfs-http-client')
-      // const ipfs = create("https://api.thegraph.com/ipfs/api/v0/")
-      const ipfs = create("/ip4/127.0.0.1/tcp/5001")
+
+      let ipfsURL = config.ipfsLocal? config.ipfsLocal: config.ipfsInfura
+      const ipfs = create(ipfsURL);
 
       ipfs
-      .add(jsonizedPayload)
-      .then(async data => {
-        if (enableLogs) logger.info("Success --> uploadToIPFS(): %o ", data);
-        logger.info("🚀 CID: %o", data.cid.toString())
-        await ipfs.pin.add(data.cid)
-        .then(pinCid => {
-          logger.info("🚀 pinCid: %o", pinCid)
-          resolve(pinCid.toString());
+        .add(jsonizedPayload)
+        .then(async data => {
+          if (enableLogs) logger.info("Success --> uploadToIPFS(): %o ", data);
+          logger.info("🚀 CID: %o", data.cid.toString())
+          await ipfs.pin.add(data.cid)
+          .then(pinCid => {
+            logger.info("🚀 pinCid: %o", pinCid.toString())
+            resolve(pinCid.toString());
+          })
+          .catch (err => {
+            if (enableLogs) logger.error("!!!Error --> ipfs.pin.add(): %o", err);
+            reject(err);
+          });
         })
         .catch (err => {
-          if (enableLogs) logger.error("!!!Error --> ipfs.pin.add(): %o", err);
+          if (enableLogs) logger.error("!!!Error --> ipfs.add(): %o", err);
           reject(err);
         });
-        
-      })
-      .catch (err => {
-        if (enableLogs) logger.error("!!!Error --> ipfs.add(): %o", err);
-        reject(err);
-      });
-
-      // const ipfs = require("nano-ipfs-store").at("https://ipfs.infura.io:5001");
-      // ipfs
-      //   .add(jsonizedPayload)
-      //   .then(ipfshash => {
-      //     if (enableLogs) logger.info("Success --> uploadToIPFS(): %o ", ipfshash);
-      //     resolve(ipfshash);
-      //   })
-      //   .catch (err => {
-      //     if (enableLogs) logger.error("!!!Error --> uploadToIPFS(): %o", err);
-      //     reject(err);
-      //   });
     });
   },
   // Get Interactable Contracts
@@ -71,6 +59,7 @@ export default {
       etherscan: (apiKeys.etherscanAPI ? apiKeys.etherscanAPI : null),
       infura: (apiKeys.infuraAPI ? {projectId: apiKeys.infuraAPI.projectID, projectSecret: apiKeys.infuraAPI.projectSecret} : null),
       alchemy: (apiKeys.alchemyAPI ? apiKeys.alchemyAPI : null),
+      quorum: 1
     });
 
     const contract = new ethers.Contract(deployedContract, deployedContractABI, provider);
