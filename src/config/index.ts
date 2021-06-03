@@ -109,6 +109,21 @@ export default {
   compComptrollerDeployedContract: process.env.COMPOUND_COMPTROLLER_DEPLOYED_CONTRACT,
   compComptrollerDeployedContractABI: require('./comp_comptroller.json'),
 
+  /**
+   * COMPOUND Related
+   */
+  truefiLenderDeployedContract: process.env.TRUEFI_LENDER_DEPLOYED_CONTRACT,
+  truefiLenderDeployedContractABI: require('./truefiLender.json'),
+
+  truefiRatingAgencyDeployedContract: process.env.TRUEFI_RATING_AGENCY_V2_CONTRACT,
+  truefiRatingAgencyDeployedContractABI: require('./TrueRatingAgencyV2.json'),
+
+  truefiLoanFactoryDeployedContract: process.env.TRUEFI_LOAN_FACTORY_CONTRACT,
+  truefiLoanFactoryDeployedContractABI: require('./truefiLoanFactory.json'),
+
+  truefiLoanTokenDeployedContractABI: require('./truefiLoanToken.json'),
+  truefiDueLoanDays: process.env.TRUEFI_DUE_LOAN_DAYS,
+
   cDaiDeployedContract:process.env.CDAI,
   cDaiDeployedContractABI: require('./cDai.json'),
 
