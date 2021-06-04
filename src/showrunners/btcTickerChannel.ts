@@ -27,14 +27,14 @@ export default class BtcTickerChannel {
   // To form and write to smart contract
   public async sendMessageToContract(simulate) {
     const logger = this.logger;
-    logger.debug('Getting btc price, forming and uploading payload and interacting with smart contract...');
+    logger.debug(`[${new Date(Date.now())}]-[BTC Ticker]-Getting btc price, forming and uploading payload and interacting with smart contract...`);
 
     return await new Promise((resolve, reject) => {
       this.getNewPrice()
         .then(async (payload) => {
           epnsNotify.uploadToIPFS(payload, logger, simulate)
             .then(async (ipfshash) => {
-              logger.info("Success --> uploadToIPFS(): %o", ipfshash);
+              logger.info(`[${new Date(Date.now())}]-[BTC Ticker]-Success --> uploadToIPFS(): %o`, ipfshash);
 
               // Call Helper function to get interactableContracts
               const epns = epnsNotify.getInteractableContracts(
@@ -63,31 +63,31 @@ export default class BtcTickerChannel {
                 logger,                                                         // Logger instance (or console.log) to pass
                 simulate                                                        // Passing true will not allow sending actual notification
               ).then ((tx) => {
-                logger.info("Transaction mined: %o | Notification Sent", tx.hash);
-                logger.info("🙌 BTC Ticker Channel Logic Completed!");
+                logger.info(`[${new Date(Date.now())}]-[BTC Ticker]-Transaction mined: %o | Notification Sent`, tx.hash);
+                logger.info(`[${new Date(Date.now())}]-[BTC Ticker]-🙌 BTC Ticker Channel Logic Completed!`);
                 resolve(tx);
               })
               .catch (err => {
-                logger.error("🔥Error --> sendNotification(): %o", err);
+                logger.error(`[${new Date(Date.now())}]-[BTC Ticker]-🔥Error --> sendNotification(): %o`, err);
                 reject(err);
               });
 
             })
             .catch (err => {
-              logger.error("🔥Error --> uploadToIPFS(): %o", err);
+              logger.error(`[${new Date(Date.now())}]-[BTC Ticker]-🔥Error --> uploadToIPFS(): %o`, err);
               reject(err);
             });
         })
         .catch(err => {
-          logger.error(err);
-          reject("🔥Error --> Unable to obtain ipfshash, error: %o", err);
+          logger.error(`[${new Date(Date.now())}]-[BTC Ticker]-🔥Error --> Unable to obtain ipfshash, error: %o`, err);
+          reject(err);
         });
     });
   }
 
   public async getNewPrice() {
     const logger = this.logger;
-    logger.debug('Getting price of btc... ');
+    logger.debug(`[${new Date(Date.now())}]-[BTC Ticker]-Getting price of btc... `);
 
     return await new Promise((resolve, reject) => {
       const getJSON = bent('json');
@@ -98,10 +98,10 @@ export default class BtcTickerChannel {
       getJSON(pollURL)
         .then(async (response) => {
           if (response.status.error_code) {
-            reject("CMC Error: %o", response.status);
+            reject(`[${new Date(Date.now())}]-[BTC Ticker]-CMC Error: %o`, response.status);
           }
 
-          logger.info("CMC Response: %o", response);
+          logger.info(`[${new Date(Date.now())}]-[BTC Ticker]-CMC Response: %o`, response);
 
           // Get data
           const data = response.data["BTC"];

@@ -68,7 +68,7 @@ export default class EverestChannel {
     const logger = this.logger;
     const cache = this.cached;
 
-    logger.debug('Checking for challenged projects addresses...');
+    logger.debug(`[${new Date(Date.now())}]-[Everest]- Checking for challenged projects addresses...`);
 
     return await new Promise(async (resolve, reject) => {
       let allTransactions = [];
@@ -89,16 +89,16 @@ export default class EverestChannel {
       if (!cachedBlock) {
         cachedBlock = 0;
 
-        logger.debug("Initialized flag was not set, first time initalzing, saving latest block of blockchain where everest contract is...");
+        logger.debug(`[${new Date(Date.now())}]-[Everest]- Initialized flag was not set, first time initalzing, saving latest block of blockchain where everest contract is...`);
 
         everest.provider().getBlockNumber().then((blockNumber) => {
-          logger.debug("Current block number is... %s", blockNumber);
+          logger.debug(`[${new Date(Date.now())}]-[Everest]- Current block number is... %s`, blockNumber);
           cache.setCache(BLOCK_NUMBER, blockNumber);
 
           resolve("Initialized Block Number: %s", blockNumber);
         })
         .catch(err => {
-          logger.error("Error occurred while getting Block Number: %o", err);
+          logger.error(`[${new Date(Date.now())}]-[Everest]- Error occurred while getting Block Number: %o`, err);
           reject(err);
         })
 
@@ -134,7 +134,7 @@ export default class EverestChannel {
 
         Promise.all(allTransactions)
         .then(async (results) => {
-          logger.debug("All Transactions Loaded: %o", results);
+          logger.debug(`[${new Date(Date.now())}]-[Everest]- All Transactions Loaded: %o`, results);
 
           for (const object of results) {
             if (object.success) {
@@ -143,7 +143,7 @@ export default class EverestChannel {
               const ipfshash = object.ipfshash;
               const payloadType = object.payloadType;
 
-              logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
+              logger.info(`[${new Date(Date.now())}]-[Everest]- Wallet: %o | Hash: :%o | Sending Data...`, wallet, ipfshash);
               const storageType = 1; // IPFS Storage Type
               const txConfirmWait = 1; // Wait for 0 tx confirmation
 
@@ -158,39 +158,39 @@ export default class EverestChannel {
                 logger,                                                         // Logger instance (or console.log) to pass
                 simulate                                                        // Passing true will not allow sending actual notification
               ).then ((tx) => {
-                logger.info("Transaction mined: %o | Notification Sent", tx.hash);
+                logger.info(`[${new Date(Date.now())}]-[Everest]- Transaction mined: %o | Notification Sent`, tx.hash);
               })
               .catch (err => {
-                logger.error("🔥Error on wallet: %s [SKIPPING] --> sendNotification(): %o", wallet, err);
+                logger.error(`[${new Date(Date.now())}]-[Everest]- 🔥Error on wallet: %s [SKIPPING] --> sendNotification(): %o`, wallet, err);
               });
             }
           }
 
-          logger.info("🙌 Everest Ticker Channel Logic Completed!");
+          logger.info(`[${new Date(Date.now())}]-[Everest]- 🙌 Everest Ticker Channel Logic Completed!`);
           resolve("🙌 Everest Ticker Channel Logic Completed!");
         })
       })
       .catch(err => {
-        logger.error(err);
-        reject("🔥Error --> Unable to obtain challenged members event: %o", err);
+        logger.error(`[${new Date(Date.now())}]-[Everest]- 🔥Error --> Unable to obtain challenged members event: %o`, err);
+        reject(err);
       });
     })
   }
 
   public async checkMemberChallengedEvent(web3network, everest, fromBlock, toBlock, simulate) {
     const logger = this.logger;
-    logger.debug('Getting eventLog, eventCount, blocks...');
+    logger.debug(`[${new Date(Date.now())}]-[Everest]- Getting eventLog, eventCount, blocks...`);
 
     // Check if everest is initialized, if not initialize it
     if (!everest) {
       // check and recreate provider mostly for routes
-      logger.info("Mostly coming from routes... rebuilding interactable erc20s");
+      logger.info(`[${new Date(Date.now())}]-[Everest]- Mostly coming from routes... rebuilding interactable erc20s`);
       everest = this.getEverestInteractableContract(web3network);
-      logger.info("Rebuilt everest --> %o", everest);
+      logger.info(`[${new Date(Date.now())}]-[Everest]- Rebuilt everest --> %o`, everest);
     }
 
     if (!toBlock) {
-      logger.info("Mostly coming from routes... resetting toBlock to latest");
+      logger.info(`[${new Date(Date.now())}]-[Everest]- Mostly coming from routes... resetting toBlock to latest`);
       toBlock = "latest";
     }
 
@@ -198,19 +198,19 @@ export default class EverestChannel {
 
     return await new Promise(async(resolve, reject) => {
       const filter = everest.contract.filters.MemberChallenged();
-      logger.debug("Looking for MemberChallenged() from %d to %s", fromBlock, toBlock);
+      logger.debug(`[${new Date(Date.now())}]-[Everest]- Looking for MemberChallenged() from %d to %s`, fromBlock, toBlock);
 
       everest.contract.queryFilter(filter, fromBlock, toBlock)
         .then(async (eventLog) => {
-          logger.debug("MemberChallenged() --> %o", eventLog);
+          logger.debug(`[${new Date(Date.now())}]-[Everest]- MemberChallenged() --> %o`, eventLog);
 
           // Need to fetch latest block
           try {
             toBlock = await everest.provider.getBlockNumber();
-            logger.debug("Latest block updated to --> %s", toBlock);
+            logger.debug(`[${new Date(Date.now())}]-[Everest]- Latest block updated to --> %s`, toBlock);
           }
           catch (err) {
-            logger.error("!Errored out while fetching Block Number --> %o", err);
+            logger.error(`[${new Date(Date.now())}]-[Everest]- !Errored out while fetching Block Number --> %o`, err);
           }
 
           const info = {
@@ -222,10 +222,10 @@ export default class EverestChannel {
           }
           resolve(info);
 
-          logger.debug('Events retreived for MemberChallenged() call of Everest Contract --> %d Events', eventLog.length);
+          logger.debug(`[${new Date(Date.now())}]-[Everest]- Events retreived for MemberChallenged() call of Everest Contract --> %d Events`, eventLog.length);
         })
         .catch (err => {
-          logger.error("Unable to obtain query filter, error: %o", err)
+          logger.error(`[${new Date(Date.now())}]-[Everest]- Unable to obtain query filter, error: %o`, err)
           resolve({
             success: false,
             err: "Unable to obtain query filter, error: %o" + err
@@ -236,7 +236,7 @@ export default class EverestChannel {
 
   public async getTransaction(userAddress, simulate) {
     const logger = this.logger;
-    logger.debug('Getting all transactions...');
+    logger.debug(`[${new Date(Date.now())}]-[Everest]- Getting all transactions...`);
 
     return await new Promise((resolve, reject) => {
       this.prepareEverestChallengePayload(userAddress, simulate)
@@ -251,7 +251,7 @@ export default class EverestChannel {
             });
           })
           .catch (err => {
-            logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", userAddress, err)
+            logger.error(`[${new Date(Date.now())}]-[Everest]- Unable to obtain ipfshash for wallet: %s, error: %o`, userAddress, err)
             resolve({
               success: false,
               err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
@@ -261,7 +261,7 @@ export default class EverestChannel {
         })
         .catch(err => {
 
-          logger.error("Unable to proceed with Everest transacation Function for wallet: %s, error: %o", userAddress, err);
+          logger.error(`[${new Date(Date.now())}]-[Everest]- Unable to proceed with Everest transacation Function for wallet: %s, error: %o`, userAddress, err);
           resolve({
               success: false,
               err: "Unable to proceed with Everest transacation Function for wallet: " + userAddress + " | error: " + err
@@ -273,7 +273,7 @@ export default class EverestChannel {
 
   public async prepareEverestChallengePayload(userAddress, simulate) {
     const logger = this.logger;
-    logger.debug('Getting payload message... ');
+    logger.debug(`[${new Date(Date.now())}]-[Everest]- Getting payload message... `);
 
     return await new Promise(async(resolve, reject) => {
       const title = 'Challenge made';
@@ -293,7 +293,7 @@ export default class EverestChannel {
           null,                                                               // internal img of youtube link
       );
 
-      logger.debug('Payload Prepared: %o', payload);
+      logger.debug(`[${new Date(Date.now())}]-[Everest]- Payload Prepared: %o`, payload);
 
       resolve(payload);
     })

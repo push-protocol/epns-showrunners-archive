@@ -37,13 +37,13 @@ export default class GasStationChannel {
   public async sendMessageToContract(simulate) {
     const logger = this.logger;
 
-    logger.debug('Getting gas price, forming and uploading payload and interacting with smart contract...');
+    logger.debug(`[${new Date(Date.now())}]-[ETH Gas]-Getting gas price, forming and uploading payload and interacting with smart contract...`);
 
     return await new Promise((resolve, reject) => {
       this.getGasPrice()
       .then(info =>{
         if(!info.changed){
-          const message = "Gas price status not changed";
+          const message = `[${new Date(Date.now())}]-[ETH Gas]- Gas price status not changed`;
 
           resolve({
             success: message
@@ -73,7 +73,7 @@ export default class GasStationChannel {
                     config.deployedContractABI                                              // The contract abi which is going to be useds
                   );
 
-                  logger.info('Payload prepared: %o, ipfs hash generated: %o, sending data to on chain from address %s...', payload, ipfshash, walletAddress);
+                  logger.info(`[${new Date(Date.now())}]-[ETH Gas]- Payload prepared: %o, ipfs hash generated: %o, sending data to on chain from address %s...`, payload, ipfshash, walletAddress);
 
                   const storageType = 1; // IPFS Storage Type
                   const txConfirmWait = 0; // Wait for 0 tx confirmation
@@ -89,23 +89,23 @@ export default class GasStationChannel {
                     logger,                                                         // Logger instance (or console.log) to pass
                     simulate                                                        // Passing true will not allow sending actual notification
                   ).then ((tx) => {
-                    logger.info("Transaction mined: %o | Notification Sent", tx.hash);
-                    logger.info("🙌 ETHGas Tracker Channel Logic Completed!");
+                    logger.info(`[${new Date(Date.now())}]-[ETH Gas]- Transaction mined: %o | Notification Sent`, tx.hash);
+                    logger.info(`[${new Date(Date.now())}]-[ETH Gas]- 🙌 ETHGas Tracker Channel Logic Completed!`);
                     resolve(tx);
                   })
                   .catch (err => {
-                    logger.error("🔥Error --> sendNotification(): %o", err);
+                    logger.error(`[${new Date(Date.now())}]-[ETH Gas]- 🔥Error --> sendNotification(): %o`, err);
                     reject(err);
                   });
                 })
                 .catch (err => {
-                  logger.error("🔥Error --> uploadToIPFS(%o, logger): %o", payload, userAddress, err)
+                  logger.error(`[${new Date(Date.now())}]-[ETH Gas]- 🔥Error --> uploadToIPFS(%o, logger): %o`, payload, err)
                   reject(err);
                 });
             })
             .catch(err => {
-              logger.error(err);
-              reject('Unable to proceed with payload, error: %o', err);
+              logger.error(`[${new Date(Date.now())}]-[ETH Gas]- Unable to proceed with payload, error: %o`, err);
+              reject(err);
               throw err;
             });
         }
@@ -119,7 +119,7 @@ export default class GasStationChannel {
     const logger = this.logger;
     const cache = this.cached;
 
-    logger.debug('Getting gas price from ETH Gas Station');
+    logger.debug(`[${new Date(Date.now())}]-[ETH Gas]- Getting gas price from ETH Gas Station`);
 
     return await new Promise((resolve, reject) => {
       const getJSON = bent('json');
@@ -128,16 +128,16 @@ export default class GasStationChannel {
 
       getJSON(pollURL).then(async result => {
         let averageGas10Mins = result.average / 10;
-        logger.info("average: %o", averageGas10Mins);
+        logger.info(`[${new Date(Date.now())}]-[ETH Gas]- average: %o`, averageGas10Mins);
 
         //adding average gas every 10mins for 24 hrs to get the todaysAverageGasPrice
         cache.addCache(GAS_PRICE_FOR_THE_DAY, averageGas10Mins);
         const getPricee = await cache.getCache(GAS_PRICE_FOR_THE_DAY);
-        logger.info('cache gotten from redis: %o', getPricee);
+        logger.info(`[${new Date(Date.now())}]-[ETH Gas]- cache gotten from redis: %o`, getPricee);
 
         // assigning the average gas price for 90 days to variable
         let movingAverageGasForTheLast90DaysFromMongoDB = await this.getAverageGasPrice();
-        logger.info('moving average gas: %o', movingAverageGasForTheLast90DaysFromMongoDB.average);
+        logger.info(`[${new Date(Date.now())}]-[ETH Gas]- moving average gas: %o`, movingAverageGasForTheLast90DaysFromMongoDB.average);
 
         // assigning the threshold to a variable
         let highPriceFlag = await cache.getCache(HIGH_PRICE_FLAG);
@@ -179,7 +179,7 @@ export default class GasStationChannel {
           resolve(info);
         }
 
-        logger.info('Checking Logic is now: %s', (highPriceFlag ? "High Price coming down" : "Normal Price going up"));
+        logger.info(`[${new Date(Date.now())}]-[ETH Gas]- Checking Logic is now: %s`, (highPriceFlag ? "High Price coming down" : "Normal Price going up"));
       });
     });
   }
@@ -235,7 +235,7 @@ export default class GasStationChannel {
     const logger = this.logger;
     const cache = this.cached;
 
-    logger.debug('updating mongodb');
+    logger.debug(`[${new Date(Date.now())}]-[ETH Gas]- updating mongodb`);
 
     let gasPriceEstimate = await cache.getCache(GAS_PRICE_FOR_THE_DAY);
     if (!gasPriceEstimate || gasPriceEstimate == "0") {
@@ -243,24 +243,24 @@ export default class GasStationChannel {
       gasPriceEstimate = await cache.getCache(GAS_PRICE_FOR_THE_DAY);
     }
 
-    logger.info('todays average gas price before revert: %o', gasPriceEstimate)
+    logger.info(`[${new Date(Date.now())}]-[ETH Gas]- todays average gas price before revert: %o`, gasPriceEstimate)
 
     const todaysAverageGasPrice = gasPriceEstimate;
-    logger.info('todays average gas price: %o', todaysAverageGasPrice);
+    logger.info(`[${new Date(Date.now())}]-[ETH Gas]- todays average gas price: %o`, todaysAverageGasPrice);
 
     await cache.setCache(GAS_PRICE_FOR_THE_DAY, 0);
     const gasPriceAfterRever = await cache.getCache(GAS_PRICE_FOR_THE_DAY)
-    logger.info('todays average gas price after revert: %o', gasPriceAfterRever);
+    logger.info(`[${new Date(Date.now())}]-[ETH Gas]- todays average gas price after revert: %o`, gasPriceAfterRever);
 
     let movingAverageForYesterdayFromMongoDB = await this.getAverageGasPrice();
-    logger.info('last 90 days moving average: %o', movingAverageForYesterdayFromMongoDB.average);
+    logger.info(`[${new Date(Date.now())}]-[ETH Gas]- last 90 days moving average: %o`, movingAverageForYesterdayFromMongoDB.average);
 
     let todaysMovingAverage = Number(todaysAverageGasPrice)
     if (movingAverageForYesterdayFromMongoDB.average != 0) {
       todaysMovingAverage =
       ((movingAverageForYesterdayFromMongoDB.average * 90) + (todaysAverageGasPrice * 1)) / (90 + 1);
     }
-    logger.info('todays moving average: %o', todaysMovingAverage)
+    logger.info(`[${new Date(Date.now())}]-[ETH Gas]- todays moving average: %o`, todaysMovingAverage)
 
     await this.setGasPrice(todaysMovingAverage);
 
@@ -285,7 +285,7 @@ export default class GasStationChannel {
       new_price = Number(gasPrice[0].price) + Number(price)
       new_price = Number(new_price) / 2
     }
-    this.logger.info('gas price set: %o, price: %o', new_price, price);
+    this.logger.info(`[${new Date(Date.now())}]-[ETH Gas]- gas price set: %o, price: %o`, new_price, price);
     let latestGasPrice = await this.GasPriceModel.create({
       price: new_price,
     });
