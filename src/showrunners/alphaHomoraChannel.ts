@@ -6,8 +6,7 @@ import config from '../config';
 import channelWalletsInfo from '../config/channelWalletsInfo';
 // import PQueue from 'p-queue';
 import { ethers, logger } from 'ethers';
-import epnsHelper, {InfuraSettings, NetWorkSettings} from '../helpers/notificationHelper'
-// import epnsHelper from '@epnsproject/backend-sdk'
+import epnsHelper, {InfuraSettings, NetWorkSettings} from '@epnsproject/backend-sdk'
 // const queue = new PQueue();
 const channelKey = channelWalletsInfo.walletsKV['btcTickerPrivateKey_1']
 
