@@ -12,6 +12,7 @@ import socketWeb3 from './routes/sockets/socketWeb3';
 import aave from './routes/showrunners_aave';
 
 import mailing from './routes/mailing';
+import ipfsPinning from './routes/services_ipfsPinning';
 
 // guaranteed to get dependencies
 export default () => {
@@ -34,6 +35,7 @@ export default () => {
 	// -- HELPERS
 	// For mailing route
 	mailing(app);
+	ipfsPinning(app);
 
 	// Finally return app
 	return app;
