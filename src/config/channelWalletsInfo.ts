@@ -33,7 +33,10 @@ const wallets = [
             helloWorldPrivateKey_1: process.env.HELLO_WORLD_PRIVATE_KEY
         },
         {
-            aavePrivateKey_1: process.env.AAVE_PRIVATE_KEY
+            aavePrivateKey_1: process.env.AAVE_PRIVATE_KEY            
+        },
+        {
+            truefiPrivateKey_1: process.env.TRUEFI_PRIVATE_KEY
         }
 ]
     

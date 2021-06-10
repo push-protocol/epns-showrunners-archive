@@ -18,6 +18,27 @@ class CacheInstance {
   };
 
   /**
+   * push lcache
+   * @description adds to a cache like an array
+   * @param {String} key Cache Key
+   * @param {String} value Cache Value
+   * @return {Promise<{ null }>}
+   */
+  public async pushLCache(key: String, value: Number) {
+    return this.ReddisInstance.rpush(key, value);
+  };
+
+  /**
+   * get lcache
+   * @description get all items in a list
+   * @param {String} key Cache Key
+   * @return {Promise<{ null }>}
+   */
+  public async getLCache(key: String) {
+    return this.ReddisInstance.lrange(key, 0, -1);
+  };
+
+  /**
    * Add caches
    * @description adds to already existing value in cache
    * @param {String} key Cache Key

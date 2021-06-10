@@ -34,7 +34,7 @@ export default class EnsExpirationChannel {
   // To form and write to smart contract
   public async sendMessageToContract(simulate) {
     const logger = this.logger;
-    logger.debug('Checking for expired address... ');
+    logger.debug(`[${new Date(Date.now())}]-[ENS]-Checking for expired address... `);
 
     return await new Promise((resolve, reject) => {
       // Preparing to get all subscribers of the channel
@@ -56,7 +56,7 @@ export default class EnsExpirationChannel {
           epns.contract.queryFilter(filter, startBlock)
             .then(eventLog => {
               // Log the event
-              logger.debug("Subscribed Address Found: %o", eventLog.length);
+              logger.debug(`[${new Date(Date.now())}]-[ENS]-Subscribed Address Found: %o`, eventLog.length);
 
               // Loop through all addresses in the channel and decide who to send notification
               let allTransactions = [];
@@ -74,7 +74,7 @@ export default class EnsExpirationChannel {
               // resolve all transactionss
               Promise.all(allTransactions)
                 .then(async (results) => {
-                  logger.debug("All Transactions Loaded: %o", results);
+                  logger.debug(`[${new Date(Date.now())}]-[ENS]-All Transactions Loaded: %o`, results);
 
                   for (const object of results) {
                     if (object.success) {
@@ -83,7 +83,7 @@ export default class EnsExpirationChannel {
                       const ipfshash = object.ipfshash;
                       const payloadType = object.payloadType;
 
-                      logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
+                      logger.info(`[${new Date(Date.now())}]-[ENS]-Wallet: %o | Hash: :%o | Sending Data...`, wallet, ipfshash);
 
                       const storageType = 1; // IPFS Storage Type
                       const txConfirmWait = 1; // Wait for 0 tx confirmation
@@ -99,32 +99,32 @@ export default class EnsExpirationChannel {
                         logger,                                                         // Logger instance (or console.log) to pass
                         simulate                                                        // Passing true will not allow sending actual notification
                       ).then ((tx) => {
-                        logger.info("Transaction mined: %o | Notification Sent", tx.hash);
+                        logger.info(`[${new Date(Date.now())}]-[ENS]-Transaction mined: %o | Notification Sent`, tx.hash);
                         resolve(tx);
                       })
                       .catch (err => {
-                        logger.error("🔥Error --> sendNotification(): %o", err);
+                        logger.error(`[${new Date(Date.now())}]-[ENS]-🔥Error --> sendNotification(): %o`, err);
                         reject(err);
                       });
                     }
                   }
 
-                  logger.debug("🙌 ENS Domain Expiry logic completed!");
+                  logger.debug(`[${new Date(Date.now())}]-[ENS]-🙌 ENS Domain Expiry logic completed!`);
                 })
                 .catch(err => {
-                  logger.error("Error occurred sending transactions: %o", err);
+                  logger.error(`[${new Date(Date.now())}]-[ENS]-Error occurred sending transactions: %o`, err, err);
                   reject(err);
                 });
 
               resolve("Processing ENS Domain Expiry logic completed!");
             })
             .catch(err => {
-              logger.error("Error occurred while looking at event log: %o", err);
+              logger.error(`[${new Date(Date.now())}]-[ENS]-Error occurred while looking at event log: %o`, err);
               reject(err);
             });
         })
         .catch(err => {
-          logger.error("Error retreiving channel start block: %o", err);
+          logger.error(`[${new Date(Date.now())}]-[ENS]-Error retreiving channel start block: %o`, err);
           reject(err);
         });
 
@@ -165,7 +165,7 @@ export default class EnsExpirationChannel {
     const logger = this.logger;
 
     if(!ens){
-      logger.debug("ENS Interactable Contract not set... mostly coming from routes, setting contract for --> %s", networkToMonitor);
+      logger.debug(`[${new Date(Date.now())}]-[ENS]-ENS Interactable Contract not set... mostly coming from routes, setting contract for --> %s`, networkToMonitor);
       ens = this.getENSInteractableContract(networkToMonitor)
     }
 
@@ -195,7 +195,7 @@ export default class EnsExpirationChannel {
               .then(async (ipfshash) => {
                 // Sign the transaction and send it to chain
                 const walletAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['ensDomainExpiryPrivateKey_1']);
-                logger.info("ipfs hash generated: %o for Wallet: %s, sending it back...", ipfshash, walletAddress);
+                logger.info(`[${new Date(Date.now())}]-[ENS]-ipfs hash generated: %o for Wallet: %s, sending it back...`, ipfshash, walletAddress);
 
                 resolve({
                   success: true,
@@ -205,7 +205,7 @@ export default class EnsExpirationChannel {
                 });
               })
               .catch (err => {
-                logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", userAddress, err)
+                logger.error(`[${new Date(Date.now())}]-[ENS]-Unable to obtain ipfshash for wallet: %s, error: %o`, userAddress, err)
                 resolve({
                   success: false,
                   err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
@@ -213,7 +213,7 @@ export default class EnsExpirationChannel {
               });
           })
           .catch(err => {
-            logger.error("Unable to proceed with ENS Name Expiry Function for wallet: %s, error: %o", userAddress, err);
+            logger.error(`[${new Date(Date.now())}]-[ENS]-Unable to proceed with ENS Name Expiry Function for wallet: %s, error: %o`, userAddress, err);
             resolve({
               success: false,
               err: "Unable to proceed with ENS Name Expiry Function for wallet: " + userAddress + " | error: " + err
@@ -277,7 +277,7 @@ export default class EnsExpirationChannel {
 
         // Log it
         logger.debug(
-          "Domain %s exists with Expiry Date: %d | Date Diff: %d | Checking against: %d | %o",
+          `[${new Date(Date.now())}]-[ENS]-Domain %s exists with Expiry Date: %d | Date Diff: %d | Checking against: %d | %o`,
           ensAddressName,
           expiryDate,
           dateDiff,
@@ -321,7 +321,7 @@ export default class EnsExpirationChannel {
 
 	public async getENSDomainExpiryPayload(ensAddressName, dateDiff) {
 			const logger = this.logger;
-      logger.debug('Preparing payload...');
+      logger.debug(`[${new Date(Date.now())}]-[ENS]-Preparing payload...`);
 
       let loop = dateDiff.length;
       let numOfDays = [];
@@ -357,7 +357,7 @@ export default class EnsExpirationChannel {
           null,                                                               // internal img of youtube link
         );
 
-        logger.debug('Payload Prepared: %o', payload);
+        logger.debug(`[${new Date(Date.now())}]-[ENS]-Payload Prepared: %o`, payload);
 
         resolve(payload);
     });
