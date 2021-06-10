@@ -97,6 +97,7 @@ export default {
       etherscan: (apiKeys.etherscanAPI ? apiKeys.etherscanAPI : null),
       infura: (apiKeys.infuraAPI ? {projectId: apiKeys.infuraAPI.projectID, projectSecret: apiKeys.infuraAPI.projectSecret} : null),
       alchemy: (apiKeys.alchemyAPI ? apiKeys.alchemyAPI : null),
+      quorum: 1
     });
 
     const contract = new ethers.Contract(deployedContract, deployedContractABI, provider);
