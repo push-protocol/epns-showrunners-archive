@@ -167,6 +167,8 @@ export default {
    */
   ipfsMaxAttempts: process.env.IPFS_MAX_ATTEMPTS,
   ipfsGateway: process.env.IPFS_GATEWAY,
+  ipfsLocal: process.env.IPFS_LOCAL_ENDPOINT,
+  ipfsInfura: process.env.IPFS_INFURA_ENDPOINT,
 
   /**
    * API configs

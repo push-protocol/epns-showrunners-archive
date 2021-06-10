@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import config from '../config';
 
 export default {
   // Upload to IPFS
@@ -24,18 +25,68 @@ export default {
 
       // Stringify it
       const jsonizedPayload = JSON.stringify(payload);
+      const { create } = require('ipfs-http-client')
 
-      const ipfs = require("nano-ipfs-store").at("https://ipfs.infura.io:5001");
-      ipfs
+      let ipfsURL = config.ipfsLocal? config.ipfsLocal: config.ipfsInfura;
+      let ipfs = null
+      try{
+        ipfs = create(ipfsURL);
+      }
+      catch (err){
+        //eg: when url = abcd (invalid)
+        if (enableLogs) logger.info(`[${new Date(Date.now())}]- Couldn't connect to ipfs url: %o | Error: %o `, ipfsURL, err);
+        ipfsURL = config.ipfsInfura
+        ipfs = create(ipfsURL);
+        if (enableLogs) logger.info(`[${new Date(Date.now())}]-Switching to : %o `, ipfsURL);
+      }
+
+      const ipfsUpload= async() => {
+        await ipfs
         .add(jsonizedPayload)
-        .then(ipfshash => {
-          if (enableLogs) logger.info("Success --> uploadToIPFS(): ", ipfshash);
-          resolve(ipfshash);
+        .then(async data => {
+          if (enableLogs) logger.info(`[${new Date(Date.now())}]-Success --> uploadToIPFS(): %o `, data);
+          if (enableLogs) logger.info(`[${new Date(Date.now())}] - 🚀 CID: %o`, data.cid.toString())
+          await ipfs.pin.add(data.cid)
+          .then(pinCid => {
+            if (enableLogs) logger.info(`[${new Date(Date.now())}]- 🚀 pinCid: %o`, pinCid.toString())
+            resolve(pinCid.toString());
+          })
+          .catch (err => {
+            if (enableLogs) logger.error(`[${new Date(Date.now())}]-!!!Error --> ipfs.pin.add(): %o`, err);
+            reject(err);
+          });
         })
-        .catch (err => {
-          if (enableLogs) logger.error("!!!Error --> uploadToIPFS(): ", err);
-          reject(err);
+        .catch (async err => {
+          //eg: when url = /ip4/0.0.0.0/tcp/5001 and local ipfs node is not running
+          if (enableLogs) logger.info(`[${new Date(Date.now())}]- Couldn't connect to ipfs url: %o | ipfs.add() error: %o`, ipfsURL, err);
+          if(ipfsURL !== config.ipfsInfura){
+            ipfsURL = config.ipfsInfura
+            ipfs = create(ipfsURL);
+            if (enableLogs) logger.info(`[${new Date(Date.now())}]-Switching to : %o `, ipfsURL);
+            await ipfsUpload()
+            .then(cid =>{
+              resolve(cid)
+            })
+            .catch(err => {
+              if (enableLogs) logger.error(`[${new Date(Date.now())}]-!!!Error --> ipfsUpload(): %o`, err);
+              reject(err)
+            })
+          }
+          else{
+            reject(err)
+          }
         });
+      }
+
+      try{
+        const cid = await ipfsUpload()
+        resolve(cid)
+      }
+      catch(err){
+        if (enableLogs) logger.error(`[${new Date(Date.now())}]-!!!Error --> ipfsUpload(): %o`, err);
+        reject(err)
+      }
+      
     });
   },
   // Get Interactable Contracts
