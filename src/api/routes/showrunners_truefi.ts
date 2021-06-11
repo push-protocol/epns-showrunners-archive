@@ -139,7 +139,7 @@ export default (app: Router) => {
         const truefi = Container.get(Truefi);
         const response = await truefi.checkNewLoans(null, null, null, req.body.simulate);
 
-        return res.status(201).json(response);
+        return res.status(200).json(response);
       } catch (e) {
         Logger.error('🔥 error: %o', e);
         return next(e);

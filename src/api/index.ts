@@ -9,6 +9,7 @@ import wallet_tracker from './routes/showrunners_wallet_tracker';
 import wallet_monitoring from './routes/showrunners_wallet_monitoring';
 import everest from './routes/showrunners_everest';
 import truefi from './routes/showrunners_truefi';
+import alphahomora from './routes/showrunners_alphaHomora';
 import socketWeb3 from './routes/sockets/socketWeb3';
 import helloWorld from './routes/showrunners_helloWorld';
 import aave from './routes/showrunners_aave';
@@ -30,8 +31,9 @@ export default () => {
 	truefi(app);
 	wallet_monitoring(app);
 	helloWorld(app);
+	alphahomora(app);
 	aave(app);
-
+  
 	// SOCKETS
 	socketWeb3(app);
 
