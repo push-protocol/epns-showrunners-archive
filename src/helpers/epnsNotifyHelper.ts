@@ -29,11 +29,11 @@ export default {
       ipfs
         .add(jsonizedPayload)
         .then(ipfshash => {
-          if (enableLogs) logger.info("Success --> uploadToIPFS(): ", ipfshash);
+          if (enableLogs) logger.info("Success --> uploadToIPFS(): %o", ipfshash);
           resolve(ipfshash);
         })
         .catch (err => {
-          if (enableLogs) logger.error("!!!Error --> uploadToIPFS(): ", err);
+          if (enableLogs) logger.error("!!!Error --> uploadToIPFS(): %o", err);
           reject(err);
         });
     });
@@ -77,7 +77,7 @@ export default {
     const enableLogs = 0;
 
     // SIMULATE OBJECT CHECK
-    if (simulate && typeof simulate == 'object' && simulate.hasOwnProperty("txOverride")) {
+    if (simulate && typeof simulate == 'object' && simulate.hasOwnProperty("txOverride") && simulate.txOverride.mode) {
       if (simulate.txOverride.hasOwnProperty("recipientAddr")) recipientAddr = simulate.txOverride.recipientAddr;
       if (simulate.txOverride.hasOwnProperty("notificationType")) notificationType = simulate.txOverride.notificationType;
       if (simulate.txOverride.hasOwnProperty("notificationStorageType")) notificationStorageType = simulate.txOverride.notificationStorageType;

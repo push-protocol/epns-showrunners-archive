@@ -12,6 +12,7 @@ import truefi from './routes/showrunners_truefi';
 import alphahomora from './routes/showrunners_alphaHomora';
 import socketWeb3 from './routes/sockets/socketWeb3';
 import helloWorld from './routes/showrunners_helloWorld';
+import aave from './routes/showrunners_aave';
 
 import mailing from './routes/mailing';
 
@@ -31,7 +32,8 @@ export default () => {
 	wallet_monitoring(app);
 	helloWorld(app);
 	alphahomora(app);
-	
+	aave(app);
+  
 	// SOCKETS
 	socketWeb3(app);
 

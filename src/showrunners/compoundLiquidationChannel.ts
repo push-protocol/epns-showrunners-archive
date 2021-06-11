@@ -33,7 +33,7 @@ export default class CompoundLiquidationChannel {
   // To form and write to smart contract
   public async sendMessageToContract(simulate) {
     const logger = this.logger;
-    logger.debug('Checking for liquidated address... ');
+    logger.debug(`[${new Date(Date.now())}]-[Compound]- Checking for liquidated address... `);
     return await new Promise((resolve, reject) => {
       const compoundChannelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['compComptrollerPrivateKey_1']);
        // Call Helper function to get interactableContracts
@@ -51,7 +51,7 @@ export default class CompoundLiquidationChannel {
       epns.contract.queryFilter(filter, startBlock)
       .then(async (eventLog) => {
         // Log the event
-        logger.debug("Event log returned %o", eventLog);
+        logger.debug(`[${new Date(Date.now())}]-[Compound]- Event log returned %o`, eventLog);
 
         // Loop through all addresses in the channel and decide who to send notification
         let allTransactions = [];
@@ -70,7 +70,7 @@ export default class CompoundLiquidationChannel {
           // resolve all transactions
           Promise.all(allTransactions)
           .then(async (results) => {
-            logger.debug("All Transactions Loaded: %o", results);
+            logger.debug(`[${new Date(Date.now())}]-[Compound]- All Transactions Loaded: %o`, results);
 
             for (const object of results) {
               if (object.success) {
@@ -79,7 +79,7 @@ export default class CompoundLiquidationChannel {
                 const ipfshash = object.ipfshash;
                 const payloadType = object.payloadType;
 
-              logger.info("Wallet: %o | Hash: :%o | Sending Data...", wallet, ipfshash);
+              logger.info(`[${new Date(Date.now())}]-[Compound]- Wallet: %o | Hash: :%o | Sending Data...`, wallet, ipfshash);
 
               const storageType = 1; // IPFS Storage Type
               const txConfirmWait = 1; // Wait for 0 tx confirmation
@@ -95,30 +95,30 @@ export default class CompoundLiquidationChannel {
                 logger,                                                        // Logger instance (or console.log) to pass
                 simulate                                                        // Passing true will not allow sending actual notification
               ).then ((tx) => {
-                logger.info("Transaction mined: %o | Notification Sent", tx.hash);
+                logger.info(`[${new Date(Date.now())}]-[Compound]- Transaction mined: %o | Notification Sent`, tx.hash);
                 resolve(tx);
               })
               .catch (err => {
-                logger.error("🔥Error --> sendNotification(): %o", err);
+                logger.error(`[${new Date(Date.now())}]-[Compound]- 🔥Error --> sendNotification(): %o`, err);
                 reject(err);
               });
             }
           }
-          logger.debug("Compound Liquidation Alert! logic completed!");
+          logger.debug(`[${new Date(Date.now())}]-[Compound]- Compound Liquidation Alert! logic completed!`);
         })
         .catch(err => {
-          logger.error("Error occurred sending transactions: %o", err);
+          logger.error(`[${new Date(Date.now())}]-[Compound]- Error occurred sending transactions: %o`, err);
           reject(err);
         });
           resolve("Processing Compound Liquidation Alert! logic completed!");
         })
         .catch(err => {
-          logger.error("Error occurred while looking at event log: %o", err);
+          logger.error(`[${new Date(Date.now())}]-[Compound]- Error occurred while looking at event log: %o`, err);
           reject(err);
         })
       })
       .catch(err => {
-        logger.error("Error retreiving channel start block: %o", err);
+        logger.error(`[${new Date(Date.now())}]-[Compound]- Error retreiving channel start block: %o`, err);
         reject(err);
       });
     })
@@ -189,7 +189,7 @@ export default class CompoundLiquidationChannel {
         
       })
       .catch(err => {
-        logger.error("Error occurred on Compound Liquidation for Address Liquidation amount: %s: %o", userAddress, err);
+        logger.error(`[${new Date(Date.now())}]-[Compound]- Error occurred on Compound Liquidation for Address Liquidation amount: %s: %o`, userAddress, err);
         resolve({
           success: false,
           err: err
@@ -225,7 +225,7 @@ export default class CompoundLiquidationChannel {
 
         this.checkLiquidity(compound, networkToMonitor, userAddress)
         .then(results =>{
-          logger.info("Market Address is in: %o | Address: :%o ", marketAddress, results.name);
+          logger.info(`[${new Date(Date.now())}]-[Compound]- Market Address is in: %o | Address: :%o `, marketAddress, results.name);
           for (let i = 0; i < marketAddress.length; i++) {
             let cAddresses = [0xf0d0eb522cfa50b716b3b1604c4f0fa6f04376ad, 0x4a77fAeE9650b09849Ff459eA1476eaB01606C7a,0x41b5844f4680a8c38fbb695b7f9cfd1f64474a72,
               0xa4ec170599a1cf87240a35b9b1b8ff823f448b57,0xb3f7fb482492f4220833de6d6bfcc81157214bec,0x35a18000230da775cac24873d00ff85bccded550,
@@ -256,7 +256,7 @@ export default class CompoundLiquidationChannel {
 
         })
         .catch(err => {
-          logger.error("Error occurred in checkLiquidity: %o", userAddress, err);
+          logger.error(`[${new Date(Date.now())}]-[Compound]- Error occurred in checkLiquidity: %o`, userAddress, err);
           resolve({
             success: false,
             err: err
@@ -264,7 +264,7 @@ export default class CompoundLiquidationChannel {
         })
       })
       .catch(err => {
-        logger.error("Error occurred in getAssetsIn: %o", userAddress, err);
+        logger.error(`[${new Date(Date.now())}]-[Compound]- Error occurred in getAssetsIn: %o`, userAddress, err);
         resolve({
           success: false,
           err: err
@@ -288,7 +288,7 @@ export default class CompoundLiquidationChannel {
           for (let i = 0; i < result.length; i++) {
             sumAllLiquidityOfAsset += result[i];
           }
-          logger.info("Entire Liquidity Address has: %o | Address: %o ", sumAllLiquidityOfAsset, results.addressName);
+          logger.info(`[${new Date(Date.now())}]-[Compound]- Entire Liquidity Address has: %o | Address: %o `, sumAllLiquidityOfAsset, results.addressName);
           // get 10% of user liquidity
           let liquidityAlert = 10*sumAllLiquidityOfAsset/100;
 
@@ -308,7 +308,7 @@ export default class CompoundLiquidationChannel {
 
                   })
                   .catch(err => {
-                    logger.error("Unable to obtain ipfshash for wallet: %s, error: %o", userAddress, err)
+                    logger.error(`[${new Date(Date.now())}]-[Compound]- Unable to obtain ipfshash for wallet: %s, error: %o`, userAddress, err)
                     resolve({
                       success: false,
                       err: "Unable to obtain ipfshash for wallet: " + userAddress + " | error: " + err
@@ -316,7 +316,7 @@ export default class CompoundLiquidationChannel {
                   });
               })
               .catch(err => {
-                logger.error("Unable to proceed with Compound Liquidation Alert!Function for wallet: %s, error: %o", userAddress, err);
+                logger.error(`[${new Date(Date.now())}]-[Compound]- Unable to proceed with Compound Liquidation Alert!Function for wallet: %s, error: %o`, userAddress, err);
                 resolve({
                   success: false,
                   err: "Unable to proceed with Compound Liquidation Alert! Function for wallet: " + userAddress + " | error: " + err
@@ -344,7 +344,7 @@ export default class CompoundLiquidationChannel {
 
   public async getUserTotalLiquidityFromAllAssetEntered(contract, address, compound, price, userAddress) {
     const logger = this.logger;
-    logger.debug('Preparing user liquidity info...');
+    logger.debug(`[${new Date(Date.now())}]-[Compound]- Preparing user liquidity info...`);
     return await new Promise((resolve, reject) => {
       let sumCollateral;
       let cTokenBalance;
@@ -375,17 +375,17 @@ export default class CompoundLiquidationChannel {
         resolve(sumCollateral)
       })
       .catch(err => {
-        logger.error("Error occurred while looking at markets: %o", err);
+        logger.error(`[${new Date(Date.now())}]-[Compound]- Error occurred while looking at markets: %o`, err);
         reject(err);
       })
       })
       .catch(err => {
-        logger.error("Error occurred while looking at getUnderlyingPrice: %o", err);
+        logger.error(`[${new Date(Date.now())}]-[Compound]- Error occurred while looking at getUnderlyingPrice: %o`, err);
         reject(err);
       })
      })
      .catch(err => {
-      logger.error("Error occurred while looking at getAccountSnapshot: %o", err);
+      logger.error(`[${new Date(Date.now())}]-[Compound]- Error occurred while looking at getAccountSnapshot: %o`, err);
       reject(err);
     })
      })
@@ -393,7 +393,7 @@ export default class CompoundLiquidationChannel {
 
   public async getCompoundLiquidityPayload(addressName, liquidity, sumAllLiquidityOfAsset) {
     const logger = this.logger;
-    logger.debug('Preparing payload...');
+    logger.debug(`[${new Date(Date.now())}]-[Compound]- Preparing payload...`);
     return await new Promise(async(resolve, reject) => {
 
       const percentage = Math.floor((liquidity*100) /sumAllLiquidityOfAsset);
@@ -414,7 +414,7 @@ export default class CompoundLiquidationChannel {
         null,                                                               // internal img of youtube link
       );
 
-      logger.debug('Payload Prepared: %o', payload);
+      logger.debug(`[${new Date(Date.now())}]-[Compound]- Payload Prepared: %o`, payload);
 
       resolve(payload);
     });

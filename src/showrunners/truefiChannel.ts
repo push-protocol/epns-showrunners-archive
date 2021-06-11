@@ -184,7 +184,7 @@ export default class TruefiChannel {
   public async checkBorrower(epns, users, loan, truefiNetwork, simulate) {
     const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
     if (!users) users = logicOverride && simulate.logicOverride.hasOwnProperty("users") ? simulate.logicOverride.users : [];
-    if (!loan) loan = logicOverride && simulate.logicOverride.hasOwnProperty("loans") ? simulate.logicOverride.loan[0] : "";
+    if (!loan) loan = logicOverride && simulate.logicOverride.hasOwnProperty("loans") ? simulate.logicOverride.loans[0] : "";
     const epnsNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("epnsNetwork") ? simulate.logicOverride.epnsNetwork : config.web3RopstenNetwork;
     if(!truefiNetwork) truefiNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("truefiNetwork") ? simulate.logicOverride.truefiNetwork : config.web3MainnetNetwork;
     if(!epns){
@@ -208,12 +208,12 @@ export default class TruefiChannel {
     if(!epns){
       epns = this.getEPNSInteractableContract(epnsNetwork)
     }
-    if (!users) {
+    if (!borrower) {
       users = logicOverride && simulate.logicOverride.hasOwnProperty("users") ? simulate.logicOverride.users : [];
       borrower = users[0]
     }
     if (!loanContract) {
-      loan = logicOverride && simulate.logicOverride.hasOwnProperty("loans") ? simulate.logicOverride.loan[0] : "";
+      loan = logicOverride && simulate.logicOverride.hasOwnProperty("loans") ? simulate.logicOverride.loans[0] : "";
       loanContract = await this.getContracts(loan, config.truefiLoanTokenDeployedContractABI, truefiNetwork)
     }
     
@@ -347,8 +347,8 @@ export default class TruefiChannel {
           break;
         case NOTIFICATION_TYPE.NEW_LOAN:
           title = "Truefi New Loan";
-          message = data.loans?.length > 1?  "New loans has been posted on truefi, visit to vote" : "A new loan has been posted on truefi, visit to vote";
-          payloadMsg = data.loans?.length > 1?  "New loans has been posted on truefi, visit to vote" : "A new loan has been posted on truefi, visit to vote";
+          message = data.loans?.length > 1?  "New loans have been posted on truefi, visit to vote" : "A new loan has been posted on truefi, visit to vote";
+          payloadMsg = data.loans?.length > 1?  "New loans have been posted on truefi, visit to vote" : "A new loan has been posted on truefi, visit to vote";
           payloadTitle = "Truefi New Loan";
           break;
         default:
