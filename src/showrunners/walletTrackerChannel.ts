@@ -275,6 +275,10 @@ export default class WalletTrackerChannel {
               addedToken,
             })
           })
+          .catch (err => {
+            logger.error(`[${new Date(Date.now())}]-[Wallet Tracker]-🔥Error --> addUserTokenToDB(): %o`, err);
+            reject(err);
+          });
         }
         else{
           let userTokenFromDB
@@ -299,9 +303,17 @@ export default class WalletTrackerChannel {
               resultToken
             })
           })
+          .catch (err => {
+            logger.error(`[${new Date(Date.now())}]-[Wallet Tracker]-🔥Error --> compareTokenBalance(): %o`, err);
+            reject(err);
+          });
         }
       })
     })
+    .catch (err => {
+      logger.error(`[${new Date(Date.now())}]-[Wallet Tracker]-🔥Error --> getTokenBalance(): %o`, err);
+      reject(err);
+    });
   })
   }
 
@@ -348,10 +360,11 @@ export default class WalletTrackerChannel {
     const simulateRandomEthBal = logicOverride && (simulateApplyToAddr == user || !simulateApplyToAddr) && simulate.logicOverride.hasOwnProperty("randomEthBalance") ? simulate.logicOverride.randomEthBalance : false;
     const simulateRandomTokenBal = logicOverride && (simulateApplyToAddr == user || !simulateApplyToAddr) && simulate.logicOverride.hasOwnProperty("randomTokenBalance") ? simulate.logicOverride.randomTokenBalance : false;
 
-    return await new Promise((resolve, reject) => {
+    return await new Promise(async(resolve, reject) => {
 
       if (ticker === 'ETH' ){
-        tokenContract.contract.provider.getBalance(user).then(balance => {
+        tokenContract.contract.provider.getBalance(user)
+        .then(balance => {
           // logger.info("wei balance" + balance);
           let etherBalance;
 
@@ -370,6 +383,10 @@ export default class WalletTrackerChannel {
             balance: etherBalance
           }
           resolve (tokenInfo)
+        })
+        .catch (err => {
+          logger.error(`[${new Date(Date.now())}]-[Wallet Tracker]-🔥Error --> provider.getBalance(): %o`, err);
+          reject(err);
         });
       }
 
@@ -398,6 +415,10 @@ export default class WalletTrackerChannel {
           }
           resolve (tokenInfo)
         })
+        .catch (err => {
+          logger.error(`[${new Date(Date.now())}]-[Wallet Tracker]-🔥Error --> contract.balanceOf(): %o`, err);
+          reject(err);
+        });
       }
     })
   }
