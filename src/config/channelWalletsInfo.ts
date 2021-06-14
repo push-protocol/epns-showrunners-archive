@@ -39,6 +39,9 @@ const wallets = [
             truefiPrivateKey_1: process.env.TRUEFI_PRIVATE_KEY
         },
         {
+            alphahomoraPrivateKey_1: process.env.ALPHAHOMORA_PRIVATE_KEY
+        },
+        {
             helloWorldPrivateKey_1: process.env.HELLO_WORLD_PRIVATE_KEY
         }
 ]

@@ -8,7 +8,7 @@ import channelWalletsInfo from '../config/channelWalletsInfo';
 import { ethers, logger } from 'ethers';
 import epnsHelper, {InfuraSettings, NetWorkSettings} from '@epnsproject/backend-sdk'
 // const queue = new PQueue();
-const channelKey = channelWalletsInfo.walletsKV['btcTickerPrivateKey_1']
+const channelKey = channelWalletsInfo.walletsKV['alphahomoraPrivateKey_1']
 
 const infuraSettings: InfuraSettings = {
   projectID: config.infuraAPI.projectID,
