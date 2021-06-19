@@ -14,6 +14,18 @@ import socketWeb3 from './routes/sockets/socketWeb3';
 import helloWorld from './routes/showrunners_helloWorld';
 import aave from './routes/showrunners_aave';
 
+import btcTicker_sdk from './routes/showrunners_sdk/showrunners_btcticker';
+import ethTicker_sdk from './routes/showrunners_sdk/showrunners_ethticker';
+import ensDomain_sdk from './routes/showrunners_sdk/showrunners_ensdomain';
+import compoundTicker_sdk from './routes/showrunners_sdk/showrunners_compoundLiquidation';
+import gasPrice_sdk from './routes/showrunners_sdk/showrunners_gasprice';
+import wallet_tracker_sdk from './routes/showrunners_sdk/showrunners_wallet_tracker';
+import everest_sdk from './routes/showrunners_sdk/showrunners_everest';
+import truefi_sdk from './routes/showrunners_sdk/showrunners_truefi';
+import alphahomora_sdk from './routes/showrunners_sdk/showrunners_alphaHomora';
+import helloWorld_sdk from './routes/showrunners_sdk/showrunners_helloWorld';
+import aave_sdk from './routes/showrunners_sdk/showrunners_aave';
+
 import mailing from './routes/mailing';
 
 // guaranteed to get dependencies
@@ -33,6 +45,18 @@ export default () => {
 	helloWorld(app);
 	alphahomora(app);
 	aave(app);
+
+	btcTicker_sdk(app);
+	ethTicker_sdk(app);
+	ensDomain_sdk(app);
+	compoundTicker_sdk(app);
+	gasPrice_sdk(app);
+	wallet_tracker_sdk(app);
+	everest_sdk(app);
+	truefi_sdk(app);
+	helloWorld_sdk(app);
+	alphahomora_sdk(app);
+	aave_sdk(app);
   
 	// SOCKETS
 	socketWeb3(app);
