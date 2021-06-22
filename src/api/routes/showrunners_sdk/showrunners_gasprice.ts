@@ -1,13 +1,13 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { Container } from 'typedi';
-import EthGasStationChannel from '../../../showrunners/ethGasChannel';
+import EthGasStationChannel from '../../../showrunners-sdk/ethGasChannel';
 import middlewares from '../../middlewares';
 import { celebrate, Joi } from 'celebrate';
 
 const route = Router();
 
 export default (app: Router) => {
-  app.use('/showrunners/gasprice', route);
+  app.use('/showrunners-sdk/gasprice', route);
 
   // for checking and sending gas price alerts
   route.post(
@@ -20,12 +20,12 @@ export default (app: Router) => {
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/gasprice/send_message endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners-sdk/gasprice/send_message endpoint with body: %o', req.body )
       try {
         const ethGasChannel = Container.get(EthGasStationChannel);
-        const { success, data} = await ethGasChannel.sendMessageToContract(req.body.simulate);
+        const response = await ethGasChannel.sendMessageToContract(req.body.simulate);
 
-        return res.status(201).json({ success, data });
+        return res.status(201).json(response);
       } catch (e) {
         Logger.error('🔥 error: %o', e);
         return next(e);
@@ -39,7 +39,7 @@ export default (app: Router) => {
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/update_gasprice_average endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners-sdk/update_gasprice_average endpoint with body: %o', req.body )
       try {
         const ethGasChannel = Container.get(EthGasStationChannel);
         const average = await ethGasChannel.updateGasPriceAverage();
@@ -58,7 +58,7 @@ export default (app: Router) => {
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/get_gas_price endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners-sdk/get_gas_price endpoint with body: %o', req.body )
       try {
         const ethGasChannel = Container.get(EthGasStationChannel);
         const gasPrice = await ethGasChannel.getGasPrice();
@@ -77,7 +77,7 @@ export default (app: Router) => {
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/get_average_gas_price endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners-sdk/get_average_gas_price endpoint with body: %o', req.body )
       try {
         const ethGasChannel = Container.get(EthGasStationChannel);
         const averageGasPrice = await ethGasChannel.getAverageGasPrice();
@@ -96,7 +96,7 @@ export default (app: Router) => {
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/clear_gas_price endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners-sdk/clear_gas_price endpoint with body: %o', req.body )
       try {
         const ethGasChannel = Container.get(EthGasStationChannel);
         await ethGasChannel.clearGasPrices();

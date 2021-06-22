@@ -24,9 +24,9 @@ export default (app: Router) => {
 
       try {
         const btcTicker = Container.get(BtcTickerChannel);
-        const { success, data } = await btcTicker.sendMessageToContract(req.body.simulate);
+        const response = await btcTicker.sendMessageToContract(req.body.simulate);
 
-        return res.status(201).json({ success, data });
+        return res.status(201).json(response);
       } catch (e) {
         Logger.error('🔥 error: %o', e);
         return next(e);

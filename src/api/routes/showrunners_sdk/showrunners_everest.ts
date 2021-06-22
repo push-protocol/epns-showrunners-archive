@@ -7,7 +7,7 @@ import { celebrate, Joi } from 'celebrate';
 const route = Router();
 
 export default (app: Router) => {
-  app.use('/showrunners/everest', route);
+  app.use('/showrunners-sdk/everest', route);
 
   // to add an incoming feed
   route.post(
@@ -20,12 +20,12 @@ export default (app: Router) => {
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/everest ticker endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners-sdk/everest ticker endpoint with body: %o', req.body )
       try {
         const everest = Container.get(Everest);
-        const { success,  data } = await everest.sendMessageToContract(req.body.simulate);
+        const response = await everest.sendMessageToContract(req.body.simulate);
 
-        return res.status(201).json({ success,  data });
+        return res.status(201).json(response);
       } catch (e) {
         Logger.error('🔥 error: %o', e);
         return next(e);
@@ -46,7 +46,7 @@ export default (app: Router) => {
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/everest ticker endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners-sdk/everest ticker endpoint with body: %o', req.body )
       try {
         const everest = Container.get(Everest);
         const response = await everest.checkMemberChallengedEvent(req.body.web3network, null, req.body.fromBlock, req.body.toBlock, req.body.simulate);
@@ -70,7 +70,7 @@ export default (app: Router) => {
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/everest ticker endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners-sdk/everest ticker endpoint with body: %o', req.body )
       try {
         const everest = Container.get(Everest);
         const { success,  data } = await everest.getTransaction(req.body.address,req.body.simulate);
@@ -93,7 +93,7 @@ export default (app: Router) => {
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/everest ticker endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners-sdk/everest ticker endpoint with body: %o', req.body )
       try {
         const everest = Container.get(Everest);
         const { success,  data } = await everest.prepareEverestChallengePayload(req.body.address);

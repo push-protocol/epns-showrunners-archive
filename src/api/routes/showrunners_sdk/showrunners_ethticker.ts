@@ -7,7 +7,7 @@ import { celebrate, Joi } from 'celebrate';
 const route = Router();
 
 export default (app: Router) => {
-  app.use('/showrunners/ethticker', route);
+  app.use('/showrunners-sdk/ethticker', route);
 
   // to add an incoming feed
   route.post(
@@ -20,13 +20,13 @@ export default (app: Router) => {
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/ethticker endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners-sdk/ethticker endpoint with body: %o', req.body )
 
       try {
         const ethTicker = Container.get(EthTickerChannel);
-        const { success, data } = await ethTicker.sendMessageToContract(req.body.simulate);
+        const response = await ethTicker.sendMessageToContract(req.body.simulate);
 
-        return res.status(201).json({ success, data });
+        return res.status(201).json(response);
       } catch (e) {
         Logger.error('🔥 error: %o', e);
         return next(e);
@@ -40,7 +40,7 @@ export default (app: Router) => {
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/ethticker endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners-sdk/ethticker endpoint with body: %o', req.body )
 
       try {
         const ethTicker = Container.get(EthTickerChannel);

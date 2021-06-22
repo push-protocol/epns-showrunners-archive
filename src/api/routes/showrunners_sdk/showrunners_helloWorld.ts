@@ -7,7 +7,7 @@ import { celebrate, Joi } from 'celebrate';
 const route = Router();
 
 export default (app: Router) => {
-  app.use('/showrunners/helloticker', route);
+  app.use('/showrunners-sdk/helloticker', route);
 
   // to add an incoming feed
   route.post(
@@ -20,7 +20,7 @@ export default (app: Router) => {
     middlewares.onlyLocalhost,
     async (req: Request, res: Response, next: NextFunction) => {
       const Logger = Container.get('logger');
-      Logger.debug('Calling /showrunners/helloWorld endpoint with body: %o', req.body )
+      Logger.debug('Calling /showrunners-sdk/helloWorld endpoint with body: %o', req.body )
 
       try {
         const helloTicker = Container.get(HelloWorldChannel);
