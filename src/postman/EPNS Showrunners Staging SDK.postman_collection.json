@@ -22,17 +22,17 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Simulated\",\n\t\t\"txMode\": \"Simulated\",\n\t\t\"logicOverride\": {\n\t\t\t\"applyToAddr\": \"0x108C2E758BC771AFF2F7B0B006c9deD1101440AE\",\n\t\t\t\"randomEthBalance\": true,\n\t\t\t\"randomTokenBalance\": true\n\t\t},\n\t\t\"txOverride\": {\n\t\t\t\"recipientAddr\": \"0x108C2E758BC771AFF2F7B0B006c9deD1101440AE\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}"
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Simulated\",\n\t\t\"txMode\": \"Simulated\",\n\t\t\"logicOverride\": {\n            \"mode\": false,\n\t\t\t\"applyToAddr\": \"0x108C2E758BC771AFF2F7B0B006c9deD1101440AE\",\n\t\t\t\"randomEthBalance\": true,\n\t\t\t\"randomTokenBalance\": true\n\t\t},\n\t\t\"txOverride\": {\n            \"mode\": true,\n\t\t\t\"recipientAddr\": \"0x108C2E758BC771AFF2F7B0B006c9deD1101440AE\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}"
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/wallet_tracker/send_message",
+							"raw": "localhost:5432/apis/showrunners-sdk/wallet_tracker/send_message",
 							"host": [
 								"localhost"
 							],
 							"port": "5432",
 							"path": [
 								"apis",
-								"showrunners",
+								"showrunners-sdk",
 								"wallet_tracker",
 								"send_message"
 							]
@@ -327,70 +327,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "/get_wallet_tracker_payload",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"changedTokens\": [\n            {\n                \"ticker\": \"ETH\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -0.002931772656126874,\n                    \"tokenBalance\": 4.964172359267811\n                }\n            },\n            {\n                \"ticker\": \"DAI\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -100,\n                    \"tokenBalance\": 82403\n                }\n            }\n        ]\n}"
-						},
-						"url": {
-							"raw": "localhost:5432/apis/showrunners/wallet_tracker/get_wallet_tracker_payload",
-							"host": [
-								"localhost"
-							],
-							"port": "5432",
-							"path": [
-								"apis",
-								"showrunners",
-								"wallet_tracker",
-								"get_wallet_tracker_payload"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "/get_payload_hash",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n   \"user\": \"0x59f28203a6b0c338b998633111eD09D745CCF47d\",\n    \"simulate\": false,\n    \"changedTokens\": [\n            {\n                \"ticker\": \"ETH\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -0.002931772656126874,\n                    \"tokenBalance\": 4.964172359267811\n                }\n            },\n            {\n                \"ticker\": \"DAI\",\n                \"resultToken\": {\n                    \"changed\": true,\n                    \"increased\": false,\n                    \"tokenDifference\": -100,\n                    \"tokenBalance\": 82403\n                }\n            }\n        ]\n}"
-						},
-						"url": {
-							"raw": "localhost:5432/apis/showrunners/wallet_tracker/get_payload_hash",
-							"host": [
-								"localhost"
-							],
-							"port": "5432",
-							"path": [
-								"apis",
-								"showrunners",
-								"wallet_tracker",
-								"get_payload_hash"
-							]
-						}
-					},
-					"response": []
 				}
 			]
 		},
@@ -411,17 +347,17 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": ""
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Simulated\",\n\t\t\"txMode\": \"Simulated\",\n\t\t\"logicOverride\": {\n            \"mode\": false\n\t\t},\n\t\t\"txOverride\": {\n            \"mode\": true,\n\t\t\t\"recipientAddr\": \"0x108C2E758BC771AFF2F7B0B006c9deD1101440AE\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}"
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/ethticker/send_message",
+							"raw": "localhost:5432/apis/showrunners-sdk/ethticker/send_message",
 							"host": [
 								"localhost"
 							],
 							"port": "5432",
 							"path": [
 								"apis",
-								"showrunners",
+								"showrunners-sdk",
 								"ethticker",
 								"send_message"
 							]
@@ -503,14 +439,14 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/compound/send_message",
+							"raw": "localhost:5432/apis/showrunners-sdk/compound/send_message",
 							"host": [
 								"localhost"
 							],
 							"port": "5432",
 							"path": [
 								"apis",
-								"showrunners",
+								"showrunners-sdk",
 								"compound",
 								"send_message"
 							]
@@ -633,17 +569,17 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}"
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n            \"mode\": false\n\t\t},\n\t\t\"txOverride\": {\n            \"mode\": true,\n\t\t\t\"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}"
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/gasprice/send_message",
+							"raw": "localhost:5432/apis/showrunners-sdk/gasprice/send_message",
 							"host": [
 								"localhost"
 							],
 							"port": "5432",
 							"path": [
 								"apis",
-								"showrunners",
+								"showrunners-sdk",
 								"gasprice",
 								"send_message"
 							]
@@ -801,14 +737,14 @@
 							"raw": "{\n    \"simulate\": true\n}"
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/ensdomain/send_message",
+							"raw": "localhost:5432/apis/showrunners-sdk/ensdomain/send_message",
 							"host": [
 								"localhost"
 							],
 							"port": "5432",
 							"path": [
 								"apis",
-								"showrunners",
+								"showrunners-sdk",
 								"ensdomain",
 								"send_message"
 							]
@@ -886,7 +822,7 @@
 			"name": "BTC Ticker",
 			"item": [
 				{
-					"name": "ethticker/send_message",
+					"name": "btcticker/send_message",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -899,18 +835,18 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": ""
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n            \"mode\": false\n\t\t},\n\t\t\"txOverride\": {\n            \"mode\": true,\n\t\t\t\"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}"
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/ethticker/send_message",
+							"raw": "localhost:5432/apis/showrunners-sdk/btcticker/send_message",
 							"host": [
 								"localhost"
 							],
 							"port": "5432",
 							"path": [
 								"apis",
-								"showrunners",
-								"ethticker",
+								"showrunners-sdk",
+								"btcticker",
 								"send_message"
 							]
 						}
@@ -968,17 +904,17 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n\t\t\t\"fromBlock\": 11350301,\n\t\t\t\"toBlock\": 11360301\n\t\t},\n\t\t\"txOverride\": {\n\t\t\t\"recipientAddr\": \"0x108C2E758BC771AFF2F7B0B006c9deD1101440AE\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}"
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n            \"mode\": true,\n\t\t\t\"fromBlock\": 11350301,\n\t\t\t\"toBlock\": 11380301\n\t\t},\n\t\t\"txOverride\": {\n            \"mode\": true,\n\t\t\t\"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}"
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/everest/send_message",
+							"raw": "localhost:5432/apis/showrunners-sdk/everest/send_message",
 							"host": [
 								"localhost"
 							],
 							"port": "5432",
 							"path": [
 								"apis",
-								"showrunners",
+								"showrunners-sdk",
 								"everest",
 								"send_message"
 							]
@@ -1094,7 +1030,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\":true\n}",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n            \"mode\": false\n\t\t},\n\t\t\"txOverride\": {\n            \"mode\": true,\n\t\t\t\"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1102,14 +1038,14 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/helloticker/send_message",
+							"raw": "localhost:5432/apis/showrunners-sdk/helloticker/send_message",
 							"host": [
 								"localhost"
 							],
 							"port": "5432",
 							"path": [
 								"apis",
-								"showrunners",
+								"showrunners-sdk",
 								"helloticker",
 								"send_message"
 							]
@@ -1129,7 +1065,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Simulated\",\n\t\t\"txMode\": \"Simulated\",\n\t\t\"logicOverride\": {\n            \"mode\": false,\n\t\t\t\"aaveNetwork\": \"kovan\",\n\t\t\t\"applyToAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\"\n\t\t},\n\t\t\"txOverride\": {\n\t\t\t\"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n            \"mode\": false,\n\t\t\t\"aaveNetwork\": \"kovan\",\n\t\t\t\"applyToAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\"\n\t\t},\n\t\t\"txOverride\": {\n            \"mode\": true,\n\t\t\t\"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1137,14 +1073,14 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/aave/send_message",
+							"raw": "localhost:5432/apis/showrunners-sdk/aave/send_message",
 							"host": [
 								"localhost"
 							],
 							"port": "5432",
 							"path": [
 								"apis",
-								"showrunners",
+								"showrunners-sdk",
 								"aave",
 								"send_message"
 							]
@@ -1185,6 +1121,41 @@
 			]
 		},
 		{
+			"name": "Alpha Homora",
+			"item": [
+				{
+					"name": "/send_message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n            \"mode\": false\n\t\t},\n\t\t\"txOverride\": {\n            \"mode\": true,\n\t\t\t\"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners-sdk/alphahomora/send_message",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners-sdk",
+								"alphahomora",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Truefi",
 			"item": [
 				{
@@ -1194,7 +1165,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": {\n        \"payloadMode\": \"Real\",\n        \"txMode\": \"Real\",\n        \"logicOverride\": {\n            \"users\": [\n                \"0xa5F5496376E699314abc3F6B0ce764f91941D308\",\n                \"0x108C2E758BC771AFF2F7B0B006c9deD1101440AE\",\n                \"0x855ba92444F437A8a0F71de1dD0490ADD4c3Ea90\",\n                \"0x52542B1Fc37E6AAe19ab23881fAb71E818389ADF\",\n                \"0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D\",\n                \"0xB68d2b87B4F2Cf7BeC3Ea1bC6d96bf4298DCeB7b\",\n                \"0x7b200C3E7fb825b17c3d7da1e7d29379036cFbed\",\n                \"0x06b75101418151a6ADAe4154251eB4aA2A7b7943\",\n                \"0x6D7425A60F44EBB717Ab81A58e5a246d4d344bec\",\n                \"0xa5bdC4aa63275CA599316285048A900efE032C86\"\n                ],\n            \"loans\": [\n                \"0x7206bEf38daA7188c22271436017c044d477bACC\",\n                \"0xA2FEE3736F85145AD33d4D834886df8042bcBD66\",\n                \"0xa42f00Db95BE452C59EFaC6292294D6B44b500c3\",\n                \"0x6ed5F68F11826F36e12D134845032BD8f53B4e22\",\n                \"0x3c8B970862BDEcBbFf51ccC26e21dc5bc90808E5\",\n                \"0x24AaBF488d14dE3404726A386Fe1650650c513c3\",\n                \"0xa22f04a6B4FF923C9DB3A0F75429d82EB3787cCF\",\n                \"0x3344fC6Db44382Ac5c0A7cCDeF2A3dD5db8A4229\",\n                \"0x9a30c20CFeE80CB7C201ae86D6559fB4BD1C3F57\",\n                \"0x94a86455210db3d49794861579C55b30940111b4\",\n                \"0x24682b0cef4836EE5539B7Eaba0f16b9990E7Ab0\",\n                \"0x3431587892b7aCC501122bCcf5c5933cC31a2934\"\n            ],\n            \"truefiNetwork\": \"homestead\",\n            \"epnsNetwork\": \"ropsten\",\n            \"applyToAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\"\n        },\n        \"txOverride\": {\n            \"mode\": false,\n            \"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n            \"notificationType\": 3\n        }\n    }\n}",
+							"raw": "{\n    \"simulate\": {\n        \"payloadMode\": \"Real\",\n        \"txMode\": \"Real\",\n        \"logicOverride\": {\n            \"mode\": true,\n            \"users\": [\n                \"0xa5F5496376E699314abc3F6B0ce764f91941D308\",\n                \"0x108C2E758BC771AFF2F7B0B006c9deD1101440AE\",\n                \"0x855ba92444F437A8a0F71de1dD0490ADD4c3Ea90\",\n                \"0x52542B1Fc37E6AAe19ab23881fAb71E818389ADF\",\n                \"0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D\",\n                \"0xB68d2b87B4F2Cf7BeC3Ea1bC6d96bf4298DCeB7b\",\n                \"0x7b200C3E7fb825b17c3d7da1e7d29379036cFbed\",\n                \"0x06b75101418151a6ADAe4154251eB4aA2A7b7943\",\n                \"0x6D7425A60F44EBB717Ab81A58e5a246d4d344bec\",\n                \"0xa5bdC4aa63275CA599316285048A900efE032C86\"\n                ],\n            \"loans\": [\n                \"0x7206bEf38daA7188c22271436017c044d477bACC\",\n                \"0xA2FEE3736F85145AD33d4D834886df8042bcBD66\",\n                \"0xa42f00Db95BE452C59EFaC6292294D6B44b500c3\",\n                \"0x6ed5F68F11826F36e12D134845032BD8f53B4e22\",\n                \"0x3c8B970862BDEcBbFf51ccC26e21dc5bc90808E5\",\n                \"0x24AaBF488d14dE3404726A386Fe1650650c513c3\",\n                \"0xa22f04a6B4FF923C9DB3A0F75429d82EB3787cCF\",\n                \"0x3344fC6Db44382Ac5c0A7cCDeF2A3dD5db8A4229\",\n                \"0x9a30c20CFeE80CB7C201ae86D6559fB4BD1C3F57\",\n                \"0x94a86455210db3d49794861579C55b30940111b4\",\n                \"0x24682b0cef4836EE5539B7Eaba0f16b9990E7Ab0\",\n                \"0x3431587892b7aCC501122bCcf5c5933cC31a2934\"\n            ],\n            \"truefiNetwork\": \"homestead\",\n            \"epnsNetwork\": \"ropsten\",\n            \"applyToAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\"\n        },\n        \"txOverride\": {\n            \"mode\": true,\n            \"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n            \"notificationType\": 3\n        }\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1202,46 +1173,16 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:5432/apis/showrunners/truefi/send_message",
+							"raw": "localhost:5432/apis/showrunners-sdk/truefi/send_message",
 							"host": [
 								"localhost"
 							],
 							"port": "5432",
 							"path": [
 								"apis",
-								"showrunners",
+								"showrunners-sdk",
 								"truefi",
 								"send_message"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "truefi/get_subscribed_users",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"simulate\": {\n        \"payloadMode\": \"Real\",\n        \"txMode\": \"Real\",\n        \"logicOverride\": {\n            \"users\": [\n                \"0xa5F5496376E699314abc3F6B0ce764f91941D308\",\n                \"0x108C2E758BC771AFF2F7B0B006c9deD1101440AE\",\n                \"0x855ba92444F437A8a0F71de1dD0490ADD4c3Ea90\",\n                \"0x52542B1Fc37E6AAe19ab23881fAb71E818389ADF\",\n                \"0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D\",\n                \"0xB68d2b87B4F2Cf7BeC3Ea1bC6d96bf4298DCeB7b\",\n                \"0x7b200C3E7fb825b17c3d7da1e7d29379036cFbed\",\n                \"0x06b75101418151a6ADAe4154251eB4aA2A7b7943\",\n                \"0x6D7425A60F44EBB717Ab81A58e5a246d4d344bec\",\n                \"0xa5bdC4aa63275CA599316285048A900efE032C86\"\n                ],\n            \"loans\": [\n                \"0x7206bEf38daA7188c22271436017c044d477bACC\",\n                \"0xA2FEE3736F85145AD33d4D834886df8042bcBD66\",\n                \"0xa42f00Db95BE452C59EFaC6292294D6B44b500c3\",\n                \"0x6ed5F68F11826F36e12D134845032BD8f53B4e22\",\n                \"0x3c8B970862BDEcBbFf51ccC26e21dc5bc90808E5\",\n                \"0x24AaBF488d14dE3404726A386Fe1650650c513c3\",\n                \"0xa22f04a6B4FF923C9DB3A0F75429d82EB3787cCF\",\n                \"0x3344fC6Db44382Ac5c0A7cCDeF2A3dD5db8A4229\",\n                \"0x9a30c20CFeE80CB7C201ae86D6559fB4BD1C3F57\",\n                \"0x94a86455210db3d49794861579C55b30940111b4\",\n                \"0x24682b0cef4836EE5539B7Eaba0f16b9990E7Ab0\",\n                \"0x3431587892b7aCC501122bCcf5c5933cC31a2934\"\n            ],\n            \"truefiNetwork\": \"homestead\",\n            \"epnsNetwork\": \"ropsten\",\n            \"applyToAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\"\n        },\n        \"txOverride\": {\n            \"mode\": false,\n            \"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n            \"notificationType\": 3\n        }\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:5432/apis/showrunners/truefi/get_subscribed_users",
-							"host": [
-								"localhost"
-							],
-							"port": "5432",
-							"path": [
-								"apis",
-								"showrunners",
-								"truefi",
-								"get_subscribed_users"
 							]
 						}
 					},
