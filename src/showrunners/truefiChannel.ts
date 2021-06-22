@@ -294,7 +294,7 @@ export default class TruefiChannel {
       logger.info("Transaction successful: %o | Notification Sent", tx.hash);
       logger.info("🙌 TrueFi Channel Logic Completed!");
     } catch (error) {
-      logger.debug("Sending notifications failed: ", error)
+      logger.error("Sending notifications failed: %o", error)
       // if (retries <=5 ) {
       //   retries++
       //   await queue.add(() => this.processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s));

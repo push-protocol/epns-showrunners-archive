@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/ethereum-push-notification-system/epns-push-register-service#readme",
   "dependencies": {
-    "@epnsproject/backend-sdk": "^1.0.7",
+    "@epnsproject/backend-sdk": "^1.0.17",
     "@rodrigogs/mysql-events": "0.6.0",
     "agenda": "^2.0.2",
     "agendash": "^1.0.0",
@@ -61,7 +61,7 @@
     "graphql": "^15.4.0",
     "graphql-request": "^3.4.0",
     "image-size": "0.8.3",
-    "ipfs-http-client": "^50.1.1",
+    "ipfs-http-client": "^50.1.2",
     "jsonwebtoken": "^8.2.0",
     "lodash": "^4.17.13",
     "mailgun-js": "^0.22.0",

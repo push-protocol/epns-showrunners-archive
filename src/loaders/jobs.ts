@@ -18,17 +18,17 @@ import schedule from 'node-schedule';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 
 
-import BtcTickerChannel from '../showrunners/btcTickerChannel';
-import EthTickerChannel from '../showrunners/ethTickerChannel';
+import BtcTickerChannel from '../showrunners-sdk/btcTickerChannel';
+import EthTickerChannel from '../showrunners-sdk/ethTickerChannel';
 import EnsExpirationChannel from '../showrunners/ensExpirationChannel';
-import EthGasStationChannel from '../showrunners/ethGasChannel';
+import EthGasStationChannel from '../showrunners-sdk/ethGasChannel';
 import CompoundLiquidationChannel from '../showrunners/compoundLiquidationChannel';
 import Everest from '../showrunners/everestChannel';
-import WalletTrackerChannel from '../showrunners/walletTrackerChannel';
+import WalletTrackerChannel from '../showrunners-sdk/walletTrackerChannel';
 import WalletMonitoring from '../services/walletMonitoring';
-import HelloWorld from '../showrunners/helloWorldChannel';
-import AaveChannel from '../showrunners/aaveChannel';
-import TruefiChannel from '../showrunners/truefiChannel';
+import HelloWorld from '../showrunners-sdk/helloWorldChannel';
+import AaveChannel from '../showrunners-sdk/aaveChannel';
+import TruefiChannel from '../showrunners-sdk/truefiChannel';
 
 export default ({ logger }) => {
   // 1. SHOWRUNNERS SERVICE

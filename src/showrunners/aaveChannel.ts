@@ -9,7 +9,7 @@ import { ethers } from 'ethers';
 import epnsNotify from '../helpers/epnsNotifyHelper';
 
 const NETWORK_TO_MONITOR = config.web3PolygonMainnetRPC;
-const HEALTH_FACTOR_THRESHOLD = 1.4;
+const HEALTH_FACTOR_THRESHOLD = 1.6;
 const CUSTOMIZABLE_SETTINGS = {
   'precision': 3,
 }
@@ -182,7 +182,7 @@ export default class AaveChannel {
 
   public async getHealthFactor(aave, networkToMonitor, userAddress, simulate){
     // Check simulate object
-    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
+    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride")  && simulate.logicOverride.mode ? simulate.logicOverride.mode : false) : false;
     const mode = logicOverride && simulate.logicOverride.mode ? simulate.logicOverride.mode : false;
     const simulateApplyToAddr = logicOverride && simulate.logicOverride.hasOwnProperty("applyToAddr") ? simulate.logicOverride.applyToAddr : false;
     const simulateAaveNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("aaveNetwork") ? simulate.logicOverride.aaveNetwork : false;
