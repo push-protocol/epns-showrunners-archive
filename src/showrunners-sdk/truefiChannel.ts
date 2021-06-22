@@ -9,7 +9,8 @@ import PQueue from 'p-queue';
 import epnsHelper, {InfuraSettings, NetWorkSettings, EPNSSettings} from '../sdk'
 // import epnsHelper, {InfuraSettings, NetWorkSettings} from '@epnsproject/backend-sdk'
 const queue = new PQueue();
-const channelKey = channelWalletsInfo.walletsKV['truefiPrivateKey_1']
+const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
+const channelKey = channelWalletsInfo.walletsKV['truefiPrivateKey_1'];
 
 const infuraSettings: InfuraSettings = {
   projectID: config.infuraAPI.projectID,
@@ -25,7 +26,7 @@ const epnsSettings: EPNSSettings = {
   contractAddress: config.deployedContract,
   contractABI: config.deployedContractABI
 }
-const sdk = new epnsHelper(config.web3MainnetNetwork, channelKey, settings, epnsSettings)
+const sdk = new epnsHelper(NETWORK_TO_MONITOR, channelKey, settings, epnsSettings)
 
 // SET CONSTANTS
 const BLOCK_NUMBER = 'truefi_block_number';
@@ -40,7 +41,6 @@ const NOTIFICATION_TYPE = Object.freeze({
 @Service()
 export default class TruefiChannel {
   constructor(
-    @Inject('logger') private logger,
     @Inject('cached') private cached,
   ) {
     this.cached.setCache(BLOCK_NUMBER, 0);
@@ -51,13 +51,13 @@ export default class TruefiChannel {
   public async sendMessageToContract(simulate) {
     const cache = this.cached;
     // Check simulate object
-    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
+    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") && simulate.logicOverride.mode ? simulate.logicOverride.mode : false) : false;
     const epnsNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("epnsNetwork") ? simulate.logicOverride.epnsNetwork : config.web3RopstenNetwork;
     const truefiNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("truefiNetwork") ? simulate.logicOverride.truefiNetwork : config.web3MainnetNetwork;
     // -- End Override logic
     // Call Helper function to get interactableContracts
     const epns = sdk.advanced.getInteractableContracts(config.web3RopstenNetwork, settings, channelKey, config.deployedContract, config.deployedContractABI);
-    logger.debug('Checking for truefi address... ');
+    logger.info('Checking for truefi address... ');
     const users = await sdk.getSubscribedUsers()
     const loans = await this.checkNewLoans(epns, users, truefiNetwork, simulate)
     await this.checkActiveLoans(loans, truefiNetwork, simulate)
@@ -131,7 +131,6 @@ export default class TruefiChannel {
       loanContract = await sdk.getContract(loan, config.truefiLoanTokenDeployedContractABI)
     }
     
-    const logger = this.logger;
     let [start, term] = await Promise.all([loanContract.contract.start(), loanContract.contract.term()])
     start = Number(start.toString())
     term = Number(term.toString())
@@ -169,48 +168,52 @@ export default class TruefiChannel {
     startBlock = Number(startBlock)
     const eventLog = await truefi.contract.queryFilter(filter, startBlock)
     const loans = eventLog.map((log) => log.args.contractAddress)
-    logger.debug("loans: %o, startBlock: %o", loans, startBlock)
+    logger.info("loans: %o, startBlock: %o", loans, startBlock)
     for (let index = 0; index < users.length; index++) {
-      await queue.add(() => this.sendNotification(epns, users[index], {loans}, NOTIFICATION_TYPE.NEW_LOAN, simulate));
+      await queue.add(async() => this.sendNotification(epns, users[index], {loans}, NOTIFICATION_TYPE.NEW_LOAN, simulate));
       logger.info(" Added processAndSendNotification `New Loans` for user:%o ", users[index])
     }
     return loans;
   }
 
   public async sendNotification(epns, user, data, notificationType, simulate) {
-    const logger = this.logger;
     try{
-      logger.debug('Preparing payload...');
-      let title, message, payloadTitle, payloadMsg;
+      logger.info('Preparing payload...');
+      let title, message, payloadTitle, payloadMsg, notifType;
       switch (notificationType) {
         case NOTIFICATION_TYPE.RATE:
           title = "Truefi Rate Change";
           message = "Truefi loan rate has been changed to " + data.rate;
-          payloadMsg = "Truefi loan rate has been changed to " + data.rate;
+          payloadMsg = `Truefi loan rate has been changed to ${data.rate}`;
           payloadTitle = "Truefi Rate Change";
+          notifType = 3;
           break;
         case NOTIFICATION_TYPE.DUE_LOAN:
           title = "Truefi Loan Due";
           message = "Your Truefi loan is due in " + data.days + " days";
           payloadMsg = "Your Truefi loan is due in " + data.days + " days";
+          payloadMsg = `Your Truefi loan is due in ${data.days} days`;
           payloadTitle = "Truefi Loan Due";
+          notifType = 3;
           break;
         case NOTIFICATION_TYPE.NEW_LOAN:
           title = "Truefi New Loan";
           message = data.loans?.length > 1?  "New loans have been posted on truefi, visit to vote" : "A new loan has been posted on truefi, visit to vote";
           payloadMsg = data.loans?.length > 1?  "New loans have been posted on truefi, visit to vote" : "A new loan has been posted on truefi, visit to vote";
           payloadTitle = "Truefi New Loan";
+          notifType = 1;
           break;
         default:
           break;
       }
 
-      const tx = await sdk.sendNotification(user, title, message, payloadTitle, payloadMsg, simulate)
+      const txPromise = await sdk.sendNotification(user, title, message, payloadTitle, payloadMsg, notifType, simulate)
+      console.log("🚀 ~ file: truefiChannel.ts ~ line 207 ~ TruefiChannel ~ sendNotification ~ txPromise", txPromise)
+      const tx = await txPromise;
       logger.info(tx);
       logger.info("Transaction successful: %o | Notification Sent", tx.hash);
-      logger.info("🙌 TrueFi Channel Logic Completed!");
     } catch (error) {
-      logger.debug("Sending notifications failed: ", error)
+      logger.throwError("Sending notifications failed: %o", error)
       // if (retries <=5 ) {
       //   retries++
       //   await queue.add(() => this.processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s));

@@ -47,7 +47,7 @@ export default class EverestChannel {
     logger.debug(`[${new Date(Date.now())}]-[Everest]- Checking for challenged projects addresses...`);
 
     // Overide logic if need be
-    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
+    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") && simulate.logicOverride.mode ? simulate.logicOverride.mode : false) : false;
 
     const epnsNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("epnsNetwork") ? simulate.logicOverride.epnsNetwork : config.web3RopstenNetwork;
     const everestNetwork = logicOverride && simulate.logicOverride.hasOwnProperty("everestNetwork") ? simulate.logicOverride.everestNetwork : config.web3MainnetNetwork;
@@ -92,7 +92,8 @@ export default class EverestChannel {
         const message = `A challenge has been made on your Everest Project`;
         const payloadTitle = 'Challenge made';
         const payloadMsg = `A challenge has been made on your Everest Project`;
-        const tx = await sdk.sendNotification(user, title, message, payloadTitle, payloadMsg, simulate)
+        const notificationType = 3;
+        const tx = await sdk.sendNotification(user, title, message, payloadTitle, payloadMsg, notificationType, simulate)
         logger.info(tx);
       }
     })

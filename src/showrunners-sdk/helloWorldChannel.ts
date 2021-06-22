@@ -30,13 +30,18 @@ const sdk = new epnsHelper(config.web3MainnetNetwork, channelKey, settings, epns
 export default class HelloWorldChannel {
   // To form and write to smart contract
   public async sendMessageToContract(simulate) {
-    logger.debug(`[${new Date(Date.now())}]-[Hello World]- uploading payload and interacting with smart contract...`);
+    logger.info(`[${new Date(Date.now())}]-[Hello World]- uploading payload and interacting with smart contract...`);
     const title = 'Demo Channel';
     const message = `Hello World`;
     const payloadTitle = 'Demo Channel';
     const payloadMsg = `Hello World`;
-    const walletAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['helloWorldPrivateKey_1']);
-    const tx = await sdk.sendNotification(walletAddress, title, message, payloadTitle, payloadMsg, simulate)
+    const channelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['helloWorldPrivateKey_1'])
+    const notificationType = 1; //broadcasted notification
+    const tx = await sdk.sendNotification(channelAddress, title, message, payloadTitle, payloadMsg, notificationType, simulate)
     logger.info(tx);
+    return{
+      success: true,
+      data: tx
+    }
   }
 }

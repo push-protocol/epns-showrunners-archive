@@ -1,7 +1,7 @@
 // @name: Wallet Tracker Cnannel
 // @version: 1.0
 
-import { Service, Inject } from 'typedi';
+import { Service, Inject, Container } from 'typedi';
 import config from '../config';
 import channelWalletsInfo from '../config/channelWalletsInfo';
 import PQueue from 'p-queue';
@@ -46,20 +46,21 @@ const CUSTOMIZABLE_SETTINGS = {
 export default class WalletTrackerChannel {
   running: any;
   UserTokenModel: any;
-  constructor(
-    @Inject('logger') private logger,
-    @Inject('cached') private cached,
-  ) {
+  constructor() {
     let running = false;
     // this.running =  false;
   }
 
-  public getSupportedERC20sArray(web3network) {
-    const logger = this.logger;
+  public async getSupportedERC20sArray(web3network) {
     let erc20s = [];
 
     for (const ticker in SUPPORTED_TOKENS) {
-      erc20s[`${ticker}`] = sdk.getContract(SUPPORTED_TOKENS[ticker].address, config.erc20DeployedContractABI )
+      await sdk.getContract(SUPPORTED_TOKENS[ticker].address, config.erc20DeployedContractABI )
+      .then(res => {
+        erc20s[`${ticker}`] = res
+
+      })
+      // erc20s[`${ticker}`] = await sdk.getContract(SUPPORTED_TOKENS[ticker].address, config.erc20DeployedContractABI )
     }
 
     return erc20s;
@@ -69,7 +70,7 @@ export default class WalletTrackerChannel {
 
     // Ignore call if this is already running
     if (this.running) {
-      logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- Wallet Tracker instance is already running! Skipping...`);
+      logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Wallet Tracker instance is already running! Skipping...`);
       return;
     }
     this.running = true;
@@ -77,17 +78,17 @@ export default class WalletTrackerChannel {
     const users = await sdk.getSubscribedUsers()
 
     // const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
-    const interactableERC20s = this.getSupportedERC20sArray(NETWORK_TO_MONITOR);
+    const interactableERC20s = await this.getSupportedERC20sArray(NETWORK_TO_MONITOR);
     const epns = sdk.advanced.getInteractableContracts(config.web3RopstenNetwork, settings, channelKey, config.deployedContract, config.deployedContractABI);
 
-    users.array.forEach(async user => {
+    users.forEach(async user => {
       await queue.add(() => this.processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s));
       logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Added processAndSendNotification for user:%o `, user)
     });
     
     await queue.onIdle();
     this.running = false;
-    logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- Done for all`);
+    logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Done for all`);
   }
 
   public async processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s) {
@@ -108,7 +109,7 @@ export default class WalletTrackerChannel {
         logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- No wallet movement: %o`, object)
       }
     } catch (error) {
-      logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- Sending notifications failed to user: %o | error: %o`, user, error)
+      logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Sending notifications failed to user: %o | error: %o`, user, error)
       if (retries <=5 ) {
         retries++
         await queue.add(() => this.processAndSendNotification(epns, user, NETWORK_TO_MONITOR, simulate, interactableERC20s));
@@ -119,7 +120,6 @@ export default class WalletTrackerChannel {
   }
 
   public async checkWalletMovement(user, networkToMonitor, simulate, interactableERC20s) {
-    const logger = this.logger;
 
     // check and return if the wallet is the channel owner
     if (this.isChannelOwner(user)) {
@@ -172,7 +172,6 @@ export default class WalletTrackerChannel {
   }
 
   public async checkTokenMovement(user, networkToMonitor, ticker, interactableERC20s, simulate) {
-    const logger = this.logger;
 
     // check and recreate provider mostly for routes
     if (!interactableERC20s) {
@@ -185,11 +184,11 @@ export default class WalletTrackerChannel {
     return new Promise((resolve) => {
 
     this.getTokenBalance(user, networkToMonitor, ticker, interactableERC20s[ticker], simulate)
-    .then(userToken => {
+    .then((userToken: any) => {
 
       // logger.info('userToken: %o', userToken)
       this.getTokenBalanceFromDB(user, ticker)
-      .then(userTokenArrayFromDB =>{
+      .then((userTokenArrayFromDB: any) =>{
         // logger.info('userTokenArrayFromDB: %o', userTokenArrayFromDB)
         // logger.info('userTokenArrayFromDB.length: %o', userTokenArrayFromDB.length)
         if(userTokenArrayFromDB.length == 0){
@@ -236,14 +235,13 @@ export default class WalletTrackerChannel {
  
 
   public async getTokenBalance(user, networkToMonitor, ticker, tokenContract, simulate){
-    const logger = this.logger;
 
     if(!tokenContract){
       tokenContract = sdk.getContract(SUPPORTED_TOKENS[ticker].address, config.erc20DeployedContractABI )
     }
 
     // Check simulate object
-    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride") ? simulate.hasOwnProperty("logicOverride") : false) : false;
+    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride" && simulate.logicOverride.mode) ? simulate.logicOverride.mode : false) : false;
     const simulateApplyToAddr = logicOverride && simulate.logicOverride.hasOwnProperty("applyToAddr") ? simulate.logicOverride.applyToAddr : false;
     const simulateRandomEthBal = logicOverride && (simulateApplyToAddr == user || !simulateApplyToAddr) && simulate.logicOverride.hasOwnProperty("randomEthBalance") ? simulate.logicOverride.randomEthBalance : false;
     const simulateRandomTokenBal = logicOverride && (simulateApplyToAddr == user || !simulateApplyToAddr) && simulate.logicOverride.hasOwnProperty("randomTokenBalance") ? simulate.logicOverride.randomTokenBalance : false;
@@ -251,7 +249,7 @@ export default class WalletTrackerChannel {
     return await new Promise((resolve, reject) => {
 
       if (ticker === 'ETH' ){
-        tokenContract.contract.provider.getBalance(user).then(balance => {
+        tokenContract.provider.getBalance(user).then(balance => {
           // logger.info("wei balance" + balance);
           let etherBalance;
 
@@ -372,7 +370,6 @@ export default class WalletTrackerChannel {
 
   //MONGODB
   public async getTokenBalanceFromDB(userAddress: string, ticker: string): Promise<{}> {
-    const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       let userTokenData
@@ -385,13 +382,12 @@ export default class WalletTrackerChannel {
       // logger.info('userTokenDataDB: %o', userTokenData)
       return userTokenData
     } catch (error) {
-      logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- getTokenBalanceFromDB Error: %o`, error);
+      logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- getTokenBalanceFromDB Error: %o`, error);
     }
   }
 
   //MONGODB
   public async addUserTokenToDB(user: string, ticker: string, balance: String): Promise<{}> {
-    const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       const userToken = await this.UserTokenModel.create({
@@ -402,13 +398,12 @@ export default class WalletTrackerChannel {
       // logger.info('addUserTokenToDB: %o', userToken)
       return userToken;
     } catch (error) {
-      logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- addUserTokenToDB Error: %o`, error);
+      logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- addUserTokenToDB Error: %o`, error);
     }
   }
 
   //MONGODB
   public async updateUserTokenBalance(user: string, ticker: string, balance: string): Promise<{}> {
-    const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       const userToken = await this.UserTokenModel.findOneAndUpdate(
@@ -419,19 +414,18 @@ export default class WalletTrackerChannel {
       logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- updatedUserToken: %o`, userToken)
       return userToken;
     } catch (error) {
-      logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- updateUserTokenBalance Error: %o`, error);
+      logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- updateUserTokenBalance Error: %o`, error);
     }
   }
 
   //MONGODB
   public async clearUserTokenDB(): Promise<boolean> {
-    const logger = this.logger;
     this.UserTokenModel = Container.get('UserTokenModel');
     try {
       await this.UserTokenModel.deleteMany({})
       return true;
     } catch (error) {
-      logger.debug(`[${new Date(Date.now())}]-[Wallet Tracker]- clearUserTokenDB Error: %o`, error);
+      logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- clearUserTokenDB Error: %o`, error);
     }
   }
 }

@@ -2,7 +2,7 @@
 // @version: 1.1.1
 // @recent_changes: Changed Price Threshold logic
 
-import { Service, Inject } from 'typedi';
+import { Service, Inject, Container } from 'typedi';
 import config from '../config';
 import channelWalletsInfo from '../config/channelWalletsInfo';
 // import PQueue from 'p-queue';
@@ -131,7 +131,9 @@ export default class GasStationChannel {
         message = `Eth Gas Price is back to normal, current cost: ${gasPrice} Gwei`;
         payloadMsg = `[d:⬇] Hooray! Gas Price is back to normal rates.\n\n[d:Current] Price: [d: ${gasPrice} Gwei]\n[s:Usual] Price: [b: ${avgPrice} Gwei] [timestamp: ${Math.floor(new Date() / 1000)}]`;
       }
-      const tx = await sdk.sendNotification(channelKey, title, message, payloadTitle, payloadMsg, simulate)
+      const channelAddress = ethers.utils.computeAddress(channelWalletsInfo.walletsKV['ethGasStationPrivateKey_1'])
+      const notificationType = 1; //broadcasted notification
+      const tx = await sdk.sendNotification(channelAddress, title, message, payloadTitle, payloadMsg, notificationType, simulate)
       logger.info(tx);
   }
 

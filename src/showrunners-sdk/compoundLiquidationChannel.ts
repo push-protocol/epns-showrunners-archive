@@ -179,8 +179,9 @@ export default class CompoundLiquidationChannel {
             const title = "Compound Liquidity Alert!";
             const message =  results.addressName + " your account has %"+ percentage + " left before it gets liquidated";
             const payloadTitle = "Compound Liquidity Alert!";
-            const payloadMsg = "Dear [d:" + results.addressName + "] your account has %"+ percentage + " left before it gets liquidated";
-            const tx = await sdk.sendNotification(results.addressName, title, message, payloadTitle, payloadMsg, simulate)
+            const payloadMsg = `Dear [d: ${results.addressName}] your account has ${percentage} left before it gets liquidated. [timestamp: ${Math.floor(new Date() / 1000)}]`;
+            const notificationType = 3;
+            const tx = await sdk.sendNotification(results.addressName, title, message, payloadTitle, payloadMsg, notificationType, simulate)
             logger.info(tx);
           }
           else {

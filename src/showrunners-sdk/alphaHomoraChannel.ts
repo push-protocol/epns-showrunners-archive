@@ -49,12 +49,14 @@ export default class AlphaHomoraChannel {
     const debtRatio = (borrowCredit / collateralCredit) * 100
     logger.info({ debtRatio })
     if (debtRatio > Number(config.homoraDebtRatioThreshold)) {
+      const notificationType = 3;
       const tx = await sdk.sendNotification(
         position.owner,
         'Position Liquidation',
         `Your position of id: ${id} is at ${config.homoraDebtRatioThreshold}% debt ratio and is at risk of liquidation`,
         'Position Liquidation',
-        `Your position of id: ${id} is at ${config.homoraDebtRatioThreshold}% debt ratio and is at risk of liquidation`,
+        `Your position of id: ${id} is at ${config.homoraDebtRatioThreshold}% debt ratio and is at risk of liquidation. [timestamp: ${Math.floor(new Date() / 1000)}]`,
+        notificationType,
         simulate
       )
       logger.info(tx)
