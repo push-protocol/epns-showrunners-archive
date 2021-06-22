@@ -41,7 +41,7 @@ export default () => {
 	//wallet_tracker(app);
 	everest(app);
 	//truefi(app);
-	wallet_monitoring(app);
+	// wallet_monitoring(app);
 	helloWorld(app);
 	//alphahomora(app);
 	//aave(app);
