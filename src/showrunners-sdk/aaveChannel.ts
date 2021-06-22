@@ -5,8 +5,7 @@ import { Service, Inject } from 'typedi';
 import config from '../config';
 import channelWalletsInfo from '../config/channelWalletsInfo';
 import { ethers, logger} from 'ethers';
-import epnsHelper, {InfuraSettings, NetWorkSettings, EPNSSettings} from '../sdk'
-// import epnsHelper, {InfuraSettings, NetWorkSettings} from '@epnsproject/backend-sdk'
+import epnsHelper, {InfuraSettings, NetWorkSettings, EPNSSettings} from '@epnsproject/backend-sdk'
 const channelKey = channelWalletsInfo.walletsKV['aavePrivateKey_1']
 
 const infuraSettings: InfuraSettings = {
