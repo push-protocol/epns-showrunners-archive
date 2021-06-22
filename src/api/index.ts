@@ -33,26 +33,23 @@ export default () => {
 	const app = Router();
 
 	// -- SHOWRUNNERS ROUTES
-	btcTicker(app);
-	ethTicker(app);
+	//btcTicker(app);
+	//ethTicker(app);
 	ensDomain(app);
 	compoundTicker(app);
-	gasPrice(app);
-	wallet_tracker(app);
+	//gasPrice(app);
+	//wallet_tracker(app);
 	everest(app);
-	truefi(app);
+	//truefi(app);
 	wallet_monitoring(app);
 	helloWorld(app);
-	alphahomora(app);
-	aave(app);
+	//alphahomora(app);
+	//aave(app);
 
 	btcTicker_sdk(app);
-	ethTicker_sdk(app);
-	ensDomain_sdk(app);
-	compoundTicker_sdk(app);
+	ethTicker_sdk(app);	
 	gasPrice_sdk(app);
 	wallet_tracker_sdk(app);
-	everest_sdk(app);
 	truefi_sdk(app);
 	helloWorld_sdk(app);
 	alphahomora_sdk(app);
