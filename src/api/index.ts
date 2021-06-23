@@ -33,7 +33,7 @@ export default () => {
 	ensDomain(app);
 	compoundTicker(app);
 	everest(app);
-	wallet_monitoring(app);
+	// wallet_monitoring(app);
 	// aave(app);
 
 	btcTicker_sdk(app);
