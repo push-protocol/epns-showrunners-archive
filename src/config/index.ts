@@ -148,6 +148,21 @@ export default {
   everestDeployedContract: process.env.EVEREST_DEPLOYED_CONTRACT,
   everestDeployedContractABI: require('./everest.json'),
 
+  /**
+   * TRUEFI Related
+   */
+   truefiLenderDeployedContract: process.env.TRUEFI_LENDER_DEPLOYED_CONTRACT,
+   truefiLenderDeployedContractABI: require('./truefiLender.json'),
+ 
+   truefiRatingAgencyDeployedContract: process.env.TRUEFI_RATING_AGENCY_V2_CONTRACT,
+   truefiRatingAgencyDeployedContractABI: require('./TrueRatingAgencyV2.json'),
+ 
+   truefiLoanFactoryDeployedContract: process.env.TRUEFI_LOAN_FACTORY_CONTRACT,
+   truefiLoanFactoryDeployedContractABI: require('./truefiLoanFactory.json'),
+ 
+   truefiLoanTokenDeployedContractABI: require('./truefiLoanToken.json'),
+   truefiDueLoanDays: process.env.TRUEFI_DUE_LOAN_DAYS,
+
     /**
    * AlphaHomora Related
    */
