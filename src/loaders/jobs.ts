@@ -18,15 +18,16 @@ import schedule from 'node-schedule';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 
 
-import BtcTickerChannel from '../showrunners/btcTickerChannel';
-import EthTickerChannel from '../showrunners/ethTickerChannel';
+import BtcTickerChannel from '../showrunners-sdk/btcTickerChannel';
+import EthTickerChannel from '../showrunners-sdk/ethTickerChannel';
 import EnsExpirationChannel from '../showrunners/ensExpirationChannel';
-import EthGasStationChannel from '../showrunners/ethGasChannel';
+import EthGasStationChannel from '../showrunners-sdk/ethGasChannel';
 import CompoundLiquidationChannel from '../showrunners/compoundLiquidationChannel';
 import Everest from '../showrunners/everestChannel';
-import WalletTrackerChannel from '../showrunners/walletTrackerChannel';
+import WalletTrackerChannel from '../showrunners-sdk/walletTrackerChannel';
 import WalletMonitoring from '../services/walletMonitoring';
-import AaveChannel from '../showrunners/aaveChannel';
+import AaveChannel from '../showrunners-sdk/aaveChannel';
+import TruefiChannel from '../showrunners-sdk/truefiChannel';
 
 
 export default ({ logger }) => {
@@ -203,6 +204,22 @@ export default ({ logger }) => {
     catch (err) {
       logger.error(`[${new Date(Date.now())}] ❌ Cron Task Failed -- ${taskName}`);
       logger.error(`[${new Date(Date.now())}] Error Object: %o`, err);
+    }
+  });
+
+  // 1.10 TrueFI CHANNEL
+  schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
+    logger.info('-- 🛵 Scheduling Showrunner - Everest Channel [on 24 Hours]');
+    const truefiTicker = Container.get(TruefiChannel);
+    const taskName = 'Truefi event checks and sendMessageToContract()';
+
+    try {
+      await truefiTicker.sendMessageToContract(false);
+      logger.info(`🐣 Cron Task Completed -- ${taskName}`);
+    }
+    catch (err) {
+      logger.error(`❌ Cron Task Failed -- ${taskName}`);
+      logger.error(`Error Object: %o`, err);
     }
   });
 
