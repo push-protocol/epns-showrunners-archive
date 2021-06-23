@@ -1,5 +1,5 @@
 import winston from 'winston';
-
+require ('winston-daily-rotate-file');
 const moment = require('moment'); // time library
 
 const customLevels = {
@@ -62,6 +62,12 @@ const formatter = winston.format.combine(
     all: true,
   }),
 ),
+
+var transport = new (winston.transports.DailyRotateFile)(options.file);
+transport.on('rotate', function(oldFilename, newFilename) {
+  // do something fun
+  console.log("login rotated from: %o | %o", oldFilename, newFilename)
+});
 
 const transports = [];
 transports.push(

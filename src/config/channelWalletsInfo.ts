@@ -31,6 +31,12 @@ const wallets = [
         },
         {
             aavePrivateKey_1: process.env.AAVE_PRIVATE_KEY
+        },
+        {
+            truefiPrivateKey_1: process.env.TRUEFI_PRIVATE_KEY
+        },
+        {
+            alphahomoraPrivateKey_1: process.env.ALPHAHOMORA_PRIVATE_KEY
         }
 ]
     

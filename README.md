@@ -2,17 +2,23 @@
 
 The EPNS Showrunners handles the channels created and maintaned by us. It also shows how easy it is to interact with the protocol to build highly customized notifications for your dApp, smart contracts or even centralized services.
 
-## List of Showrunner Channels
+## Installation and Set Up Guide
 
-The following channels are actively running on EPNS protocol:
+- Install docker 
+- Clone the repo
+``` git clone https://github.com/ethereum-push-notification-service/epns-showrunners.git```
+- Open the root folder in a terminal and enter 
+```docker-compose up```. This initalises mongodb, redis and ipfs local instances
+- Open the root folder in another terminal and enter
+```npm install```
+```npm start```
 
-| Showrunner                    | Type           | Purpose                                                                                                      | Idea Contributor                |
-| ----------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------- |
-| **[x] ETH Gas Price Alerter** | Watcher        | Watches and sends notification about abnormal gas price increase                                             | Daniell Mesquita (TG Community) |
-| **[-] Transaction Watcher**   | Watcher        | Watches individual subscribers wallets for transactions and sends them encrypted notification on transaction | Vedran (TG Community)           |
-| **[x] ENS Domain Expiry**     | Watcher        | Sends notification to a subscriber when their ENS domain name is expiring                                    | EPNS Team                       |
-| **[x] BTC Tracker**           | Price Tracking | Send \$BTC price alerts every 6 hours                                                                        | EPNS Team                       |
-| **[x] ETH Tracker**           | Price Tracking | Send \$ETH price alerts every 6 hours                                                                        | EPNS Team                       |
+### To exit 
+- To stop running the showrunners server, press ```Ctrl + C```
+- To stop running the docker, press ```Ctrl + C``` and enter
+```docker-compose down```
+
+## Showrunner Channels
 
 - To subscribe to channels, please visit our [Alpha dApp](https://app.epns.io)
 - Currently notifications can be recieved through our [Google Play Alpha App](https://play.google.com/store/apps/details?id=io.epns.epns)
