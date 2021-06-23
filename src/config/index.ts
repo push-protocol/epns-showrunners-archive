@@ -149,6 +149,13 @@ export default {
   everestDeployedContractABI: require('./everest.json'),
 
     /**
+   * AlphaHomora Related
+   */
+    homoraBankDeployedContract: process.env.HOMORA_BANK_DEPLOYED_CONTRACT,
+    homoraBankDeployedContractABI: require('./HomoraBank.json'),
+    homoraDebtRatioThreshold: process.env.HOMORA_DEBT_RATIO_THRESHOLD,
+
+    /**
    * AAVE Related
    */
      aaveLendingPoolDeployedContractKovan: process.env.AAVE_LENDINGPOOL_DEPLOYED_CONTRACT_KOVAN,
