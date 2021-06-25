@@ -189,7 +189,7 @@ export default class GasStationChannel {
       new_price = Number(gasPrice[0].price) + Number(price)
       new_price = Number(new_price) / 2
     }
-    this.logger.info(`[${new Date(Date.now())}]-[ETH Gas]- gas price set: %o, price: %o`, new_price, price);
+    logger.info(`[${new Date(Date.now())}]-[ETH Gas]- gas price set: %o, price: %o`, new_price, price);
     let latestGasPrice = await this.GasPriceModel.create({
       price: new_price,
     });
@@ -206,7 +206,6 @@ export default class GasStationChannel {
    * @return {Promise<{ average: Number }>}
    */
   public async getAverageGasPrice(): Promise<{ average: Number }> {
-    // this.logger.silly('Get gas price');
     this.GasPriceModel = Container.get('GasPriceModel');
     try {
       const gasPrices = await this.GasPriceModel.find()
