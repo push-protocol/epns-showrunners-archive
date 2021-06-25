@@ -28,6 +28,7 @@ import WalletTrackerChannel from '../showrunners-sdk/walletTrackerChannel';
 import WalletMonitoring from '../services/walletMonitoring';
 import AaveChannel from '../showrunners-sdk/aaveChannel';
 import TruefiChannel from '../showrunners-sdk/truefiChannel';
+import Uniswap from '../showrunners-sdk/uniSwapChannel';
 
 
 export default ({ logger }) => {
@@ -199,6 +200,22 @@ export default ({ logger }) => {
 
     try {
       await aaveTicker.sendMessageToContract(false);
+      logger.info(`[${new Date(Date.now())}] 🐣 Cron Task Completed -- ${taskName}`);
+    }
+    catch (err) {
+      logger.error(`[${new Date(Date.now())}] ❌ Cron Task Failed -- ${taskName}`);
+      logger.error(`[${new Date(Date.now())}] Error Object: %o`, err);
+    }
+  });
+
+  // 1.9 UNISWAP CHANNEL
+  schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
+    logger.info(`[${new Date(Date.now())}]-- 🛵 Scheduling Showrunner - UniSwap Governance Channel [on 24 Hours]`);
+    const uniswap = Container.get(Uniswap);
+    const taskName = 'UniSwap proposal event checks and sendMessageToContract()';
+
+    try {
+      await uniswap.sendMessageToContract(false);
       logger.info(`[${new Date(Date.now())}] 🐣 Cron Task Completed -- ${taskName}`);
     }
     catch (err) {

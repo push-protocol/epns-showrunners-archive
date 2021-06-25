@@ -734,7 +734,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"simulate\": true\n}"
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n            \"mode\": false\n\t\t},\n\t\t\"txOverride\": {\n            \"mode\": true,\n\t\t\t\"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}"
 						},
 						"url": {
 							"raw": "localhost:5432/apis/showrunners-sdk/ensdomain/send_message",
@@ -1303,6 +1303,101 @@
 								"showrunners",
 								"truefi",
 								"check_new_loans"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Uniswap",
+			"item": [
+				{
+					"name": "/send_message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Real\",\n\t\t\"txMode\": \"Real\",\n\t\t\"logicOverride\": {\n            \"mode\": false,\n\t\t\t\"uniswapNetwork\": \"ropsten\",\n            \"fromBlock\": 0,\n            \"toBlock\": \"latest\"\n\t\t},\n\t\t\"txOverride\": {\n            \"mode\": false,\n\t\t\t\"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners-sdk/uniswap/send_message",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners-sdk",
+								"uniswap",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/check_for_new_proposal",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Simulated\",\n\t\t\"txMode\": \"Simulated\",\n\t\t\"logicOverride\": {\n            \"mode\": true,\n\t\t\t\"uniswapNetwork\": \"ropsten\",\n            \"fromBlock\": 0,\n            \"toBlock\": \"latest\"\n\t\t},\n\t\t\"txOverride\": {\n            \"mode\": false,\n\t\t\t\"recipientAddr\": \"0x276B820E8382f17ECB9FA77B0952ca4E67287601\",\n\t\t\t\"notificationType\": 3\n\t\t}\n\t}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/uniswap/check_for_new_proposal",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"uniswap",
+								"check_for_new_proposal"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/get_proposal_payload",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"simulate\": {\n\t\t\"payloadMode\": \"Simulated\",\n\t\t\"txMode\": \"Simulated\",\n\t\t\"logicOverride\": {\n            \"mode\": true,\n\t\t\t\"message\": \"New Proposal\",\n            \"payloadMessage\": \"New proposal is made\"\n\t\t}\n\t}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:5432/apis/showrunners/uniswap/get_proposal_payload",
+							"host": [
+								"localhost"
+							],
+							"port": "5432",
+							"path": [
+								"apis",
+								"showrunners",
+								"uniswap",
+								"get_proposal_payload"
 							]
 						}
 					},

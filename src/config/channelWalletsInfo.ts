@@ -37,6 +37,9 @@ const wallets = [
         },
         {
             alphahomoraPrivateKey_1: process.env.ALPHAHOMORA_PRIVATE_KEY
+        },
+        {
+            uniSwapPrivateKey_1: process.env.UNISWAP_PRIVATE_KEY
         }
 ]
     

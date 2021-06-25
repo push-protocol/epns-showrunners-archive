@@ -178,6 +178,13 @@ export default {
      aaveLendingPoolDeployedContractPolygonMainnet: process.env.AAVE_LENDINGPOOL_DEPLOYED_CONTRACT_POLYGON_MAINNET,
      aaveLendingPoolDeployedContractPolygonMumbai: process.env.AAVE_LENDINGPOOL_DEPLOYED_CONTRACT_POLYGON_MUMBAI,
      aaveLendingPoolDeployedContractABI: require('./aave_LendingPool.json'),
+
+    /**
+     * UNISWAP Related
+     */
+    uniswapDeployedContractRopsten: process.env.UNI_GOVERNANCE_DEPLOYED_CONTRACT_ROPSTEN,
+    uniswapDeployedContractMainnet: process.env.UNI_GOVERNANCE_DEPLOYED_CONTRACT_MAINNET,
+    uniswapDeployedContractABI: require('./uni_contract.json'),
   
   /**
    * WALLET TRACKER related
