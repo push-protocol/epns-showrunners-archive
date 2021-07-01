@@ -99,7 +99,8 @@ export default class WalletTrackerChannel {
         const message = "Crypto Movement from your wallet detected!";
         const payloadTitle = "Crypto Movement Alert!";
         const payloadMsg = this.prettyTokenBalances(object.changedTokens);
-        const tx = await sdk.sendNotification(user, title, message, payloadTitle, payloadMsg, simulate)
+        const notificationType = 3;
+        const tx = await sdk.sendNotification(user, title, message, payloadTitle, payloadMsg, notificationType, simulate)
         logger.info(tx);
         logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Transaction successful: %o | Notification Sent`, tx.hash);
         logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- 🙌 Wallet Tracker Channel Logic Completed for user : %o`, user);
