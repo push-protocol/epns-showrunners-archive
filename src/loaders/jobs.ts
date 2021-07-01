@@ -24,7 +24,7 @@ import EnsExpirationChannel from '../showrunners/ensExpirationChannel';
 import EthGasStationChannel from '../showrunners-sdk/ethGasChannel';
 import CompoundLiquidationChannel from '../showrunners/compoundLiquidationChannel';
 import Everest from '../showrunners/everestChannel';
-import WalletTrackerChannel from '../showrunners-sdk/walletTrackerChannel';
+import WalletTrackerChannel from '../showrunners/walletTrackerChannel';
 import WalletMonitoring from '../services/walletMonitoring';
 import AaveChannel from '../showrunners-sdk/aaveChannel';
 import TruefiChannel from '../showrunners-sdk/truefiChannel';
