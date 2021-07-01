@@ -65,7 +65,7 @@
     "image-size": "0.8.3",
     "ipfs-http-client": "^50.1.0",
     "jsonwebtoken": "^8.2.0",
-    "lodash": "^4.17.13",
+    "lodash": "^4.17.21",
     "mailgun-js": "^0.22.0",
     "method-override": "^3.0.0",
     "moment": "^2.23.0",
