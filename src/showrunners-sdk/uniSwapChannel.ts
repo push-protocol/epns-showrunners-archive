@@ -23,7 +23,7 @@ const epnsSettings: EPNSSettings = {
   contractAddress: config.deployedContract,
   contractABI: config.deployedContractABI
 }
-const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
+const NETWORK_TO_MONITOR = config.web3MainnetNetwork;
 const sdk = new epnsHelper(NETWORK_TO_MONITOR, channelKey, settings, epnsSettings)
 
 
