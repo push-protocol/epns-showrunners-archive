@@ -24,7 +24,7 @@ import EnsExpirationChannel from '../showrunners/ensExpirationChannel';
 import EthGasStationChannel from '../showrunners-sdk/ethGasChannel';
 import CompoundLiquidationChannel from '../showrunners/compoundLiquidationChannel';
 import Everest from '../showrunners/everestChannel';
-import WalletTrackerChannel from '../showrunners/walletTrackerChannel';
+import WalletTrackerChannel from '../showrunners-sdk/walletTrackerChannel';
 import WalletMonitoring from '../services/walletMonitoring';
 import AaveChannel from '../showrunners-sdk/aaveChannel';
 import TruefiChannel from '../showrunners-sdk/truefiChannel';
@@ -177,7 +177,7 @@ export default ({ logger }) => {
   });
 
   // 1.7 WALLET TRACKER CHANNEL
-  /*
+  
   schedule.scheduleJob({ start: startTime, rule: thirtyMinuteRule }, async function () {
     logger.info(`[${new Date(Date.now())}] -- 🛵 Scheduling Showrunner - Wallet Tracker Channel [on 2.5 Minutes]`);
     const walletTracker = Container.get(WalletTrackerChannel);
@@ -192,7 +192,7 @@ export default ({ logger }) => {
       logger.error(`[${new Date(Date.now())}] Error Object: %o`, err);
     }
   });
-  */
+  
 
   // 1.8 AAVE CHANNEL
   schedule.scheduleJob({ start: startTime, rule: dailyRule }, async function () {
