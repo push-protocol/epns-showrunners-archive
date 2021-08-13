@@ -9,6 +9,7 @@ import { ethers, logger } from 'ethers';
 import epnsHelper, {InfuraSettings, NetWorkSettings, EPNSSettings} from '@epnsproject/backend-sdk'
 const queue = new PQueue();
 let retries = 0
+let getTokenBalanceRetries = 0
 const channelKey = channelWalletsInfo.walletsKV['walletTrackerPrivateKey_1']
 const NETWORK_TO_MONITOR = config.web3RopstenNetwork;
 
@@ -75,8 +76,6 @@ export default class WalletTrackerChannel {
     this.running = true;
 
     const users = await sdk.getSubscribedUsers()
-
-    // const epns = this.getEPNSInteractableContract(config.web3RopstenNetwork);
     const interactableERC20s = await this.getSupportedERC20sArray(NETWORK_TO_MONITOR);
     const epns = sdk.advanced.getInteractableContracts(config.web3RopstenNetwork, settings, channelKey, config.deployedContract, config.deployedContractABI);
 
@@ -147,7 +146,6 @@ export default class WalletTrackerChannel {
 
     const results = await Promise.all(promises)
     changedTokens = results.filter(token => token.resultToken.changed === true)
-    // logger.info('changedTokens: %o', changedTokens)
     if(changedTokens.length>0){
       return {
         success: true,
@@ -186,11 +184,8 @@ export default class WalletTrackerChannel {
     this.getTokenBalance(user, networkToMonitor, ticker, interactableERC20s[ticker], simulate)
     .then((userToken: any) => {
 
-      // logger.info('userToken: %o', userToken)
       this.getTokenBalanceFromDB(user, ticker)
       .then((userTokenArrayFromDB: any) =>{
-        // logger.info('userTokenArrayFromDB: %o', userTokenArrayFromDB)
-        // logger.info('userTokenArrayFromDB.length: %o', userTokenArrayFromDB.length)
         if(userTokenArrayFromDB.length == 0){
           this.addUserTokenToDB(user, ticker, userToken.balance)
           .then(addedToken =>{
@@ -209,7 +204,6 @@ export default class WalletTrackerChannel {
             return userTokenFromDB = usertoken
           })
 
-          // logger.info('userTokenFromDB: %o', userTokenFromDB)
           let tokenBalanceStr= userToken.balance
           let tokenBalance= Number(tokenBalanceStr.replace(/,/g, ''))
           let tokenBalanceFromDBStr= userTokenFromDB.balance
@@ -217,7 +211,6 @@ export default class WalletTrackerChannel {
 
           this.compareTokenBalance(tokenBalance, tokenBalanceFromDB)
           .then(resultToken => {
-            // logger.info('resultToken: %o', resultToken)
             if(resultToken.changed){
               this.updateUserTokenBalance(user, ticker, resultToken.tokenBalance)
             }
@@ -235,69 +228,76 @@ export default class WalletTrackerChannel {
  
 
   public async getTokenBalance(user, networkToMonitor, ticker, tokenContract, simulate){
+    try{
 
-    if(!tokenContract){
-      tokenContract = sdk.getContract(SUPPORTED_TOKENS[ticker].address, config.erc20DeployedContractABI )
+      if(!tokenContract){
+        tokenContract = sdk.getContract(SUPPORTED_TOKENS[ticker].address, config.erc20DeployedContractABI )
+      }
+
+      // Check simulate object
+      const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride" && simulate.logicOverride.mode) ? simulate.logicOverride.mode : false) : false;
+      const simulateApplyToAddr = logicOverride && simulate.logicOverride.hasOwnProperty("applyToAddr") ? simulate.logicOverride.applyToAddr : false;
+      const simulateRandomEthBal = logicOverride && (simulateApplyToAddr == user || !simulateApplyToAddr) && simulate.logicOverride.hasOwnProperty("randomEthBalance") ? simulate.logicOverride.randomEthBalance : false;
+      const simulateRandomTokenBal = logicOverride && (simulateApplyToAddr == user || !simulateApplyToAddr) && simulate.logicOverride.hasOwnProperty("randomTokenBalance") ? simulate.logicOverride.randomTokenBalance : false;
+
+      return await new Promise((resolve, reject) => {
+
+        if (ticker === 'ETH' ){
+          tokenContract.provider.getBalance(user).then(balance => {
+            let etherBalance;
+
+            if (simulateRandomEthBal) {
+              balance = ethers.utils.parseEther((Math.random() * 100001 / 100).toString());
+              logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Simulating Random Ether Balance: %s`, ethers.utils.formatEther(balance));
+            }
+
+            // balance is a BigNumber (in wei); format is as a string (in ether)
+            etherBalance = ethers.utils.formatEther(balance);
+            let tokenInfo = {
+              user,
+              ticker,
+              balance: etherBalance
+            }
+            resolve (tokenInfo)
+          });
+        }
+
+        else{
+          let tokenBalance
+          tokenContract.contract.balanceOf(user)
+          .then(res=> {
+            let decimals = SUPPORTED_TOKENS[ticker].decimals
+
+            // Simulate random balance
+            if (simulateRandomTokenBal) {
+              const random = ethers.BigNumber.from(Math.floor(Math.random() * 10000));
+              const randBal = ethers.BigNumber.from(10).pow(SUPPORTED_TOKENS[ticker].decimals - 2);
+              res = random.mul(randBal);
+              logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Simulating Random Token Balance [%s]: %s`, SUPPORTED_TOKENS[ticker].ticker, res.toString());
+            }
+
+            let rawBalance = Number(Number(res));
+
+            tokenBalance = Number(rawBalance/Math.pow(10, decimals)).toLocaleString()
+            let tokenInfo = {
+              user,
+              ticker,
+              balance: tokenBalance
+            }
+            resolve (tokenInfo)
+          })
+        }
+      })
     }
-
-    // Check simulate object
-    const logicOverride = typeof simulate == 'object' ? (simulate.hasOwnProperty("logicOverride" && simulate.logicOverride.mode) ? simulate.logicOverride.mode : false) : false;
-    const simulateApplyToAddr = logicOverride && simulate.logicOverride.hasOwnProperty("applyToAddr") ? simulate.logicOverride.applyToAddr : false;
-    const simulateRandomEthBal = logicOverride && (simulateApplyToAddr == user || !simulateApplyToAddr) && simulate.logicOverride.hasOwnProperty("randomEthBalance") ? simulate.logicOverride.randomEthBalance : false;
-    const simulateRandomTokenBal = logicOverride && (simulateApplyToAddr == user || !simulateApplyToAddr) && simulate.logicOverride.hasOwnProperty("randomTokenBalance") ? simulate.logicOverride.randomTokenBalance : false;
-
-    return await new Promise((resolve, reject) => {
-
-      if (ticker === 'ETH' ){
-        tokenContract.provider.getBalance(user).then(balance => {
-          // logger.info("wei balance" + balance);
-          let etherBalance;
-
-          if (simulateRandomEthBal) {
-            balance = ethers.utils.parseEther((Math.random() * 100001 / 100).toString());
-            logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Simulating Random Ether Balance: %s`, ethers.utils.formatEther(balance));
-          }
-
-          // balance is a BigNumber (in wei); format is as a string (in ether)
-          etherBalance = ethers.utils.formatEther(balance);
-
-          // logger.info("Ether Balance: " + etherBalance);
-          let tokenInfo = {
-            user,
-            ticker,
-            balance: etherBalance
-          }
-          resolve (tokenInfo)
-        });
+    catch(err){
+      logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Getting token balance failed to user: %o | error: %o`, user, error)
+      if (getTokenBalanceRetries <=5 ) {
+        getTokenBalanceRetries++
+        await queue.add(() => this.getTokenBalance(user, networkToMonitor, ticker, tokenContract, simulate));
+      } else {
+        getTokenBalanceRetries = 0
       }
-
-      else{
-        let tokenBalance
-        tokenContract.contract.balanceOf(user)
-        .then(res=> {
-          let decimals = SUPPORTED_TOKENS[ticker].decimals
-
-          // Simulate random balance
-          if (simulateRandomTokenBal) {
-            const random = ethers.BigNumber.from(Math.floor(Math.random() * 10000));
-            const randBal = ethers.BigNumber.from(10).pow(SUPPORTED_TOKENS[ticker].decimals - 2);
-            res = random.mul(randBal);
-            logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- Simulating Random Token Balance [%s]: %s`, SUPPORTED_TOKENS[ticker].ticker, res.toString());
-          }
-
-          let rawBalance = Number(Number(res));
-
-          tokenBalance = Number(rawBalance/Math.pow(10, decimals)).toLocaleString()
-          // logger.info("tokenBalance: " + tokenBalance);
-          let tokenInfo = {
-            user,
-            ticker,
-            balance: tokenBalance
-          }
-          resolve (tokenInfo)
-        })
-      }
-    })
+    }
   }
 
   public async compareTokenBalance(tokenBalance, tokenBalanceFromDB){
@@ -378,8 +378,6 @@ export default class WalletTrackerChannel {
       } else {
         userTokenData = await this.UserTokenModel.find({ user: userAddress }).populate("token")
       }
-
-      // logger.info('userTokenDataDB: %o', userTokenData)
       return userTokenData
     } catch (error) {
       logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- getTokenBalanceFromDB Error: %o`, error);
@@ -395,7 +393,6 @@ export default class WalletTrackerChannel {
         ticker,
         balance
       })
-      // logger.info('addUserTokenToDB: %o', userToken)
       return userToken;
     } catch (error) {
       logger.info(`[${new Date(Date.now())}]-[Wallet Tracker]- addUserTokenToDB Error: %o`, error);
