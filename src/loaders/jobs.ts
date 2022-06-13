@@ -34,6 +34,7 @@ import Uniswap from '../showrunners-sdk/uniSwapChannel';
 export default ({ logger }) => {
   // 1. SHOWRUNNERS SERVICE
   const startTime = new Date(new Date().setHours(0, 0, 0, 0));
+  // console.log
   // const startTime = new Date(Date.now());
   // console.log(startTime, Date.now())
 
